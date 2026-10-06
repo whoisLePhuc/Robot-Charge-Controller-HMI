@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RCC HMI – Overview, landscape 480×320 (watch palette)</title>
+<style>
+  :root{
+    /* ===== Palette estimated from the watch photo ===== */
+    --bg:#000000;
+    --card:#1A1A1F;
+    --txt:#FFFFFF; --txt2:#D8D8E0;
+    --label:#9A9A9A; --dim:#5C5C66;
+    --sun:#F5C518;
+    --day:#A8705C; --day-cur:#E8553A; --day-box:#2A1A16;
+    --heart:#FF4D7A;
+    --kcal:#F7B731;  --kcal-t:#3A2A1C;
+    --steps:#F26B3A; --steps-t:#4A2420;
+    --pow:#1FA3F0;   --pow-t:#1A2A48;
+    --copper:#B87A5E;
+    /* ===== Semantic roles ===== */
+    --ok:var(--pow);        /* online / confirmed */
+    --warn:var(--sun);      /* warning / inhibit / unknown */
+    --fault:var(--heart);   /* fault */
+    --off:var(--label);     /* offline / stale data */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#2a2a30;font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--txt);
+       display:flex;flex-direction:column;gap:14px;padding:24px;align-items:center}
+  .ctrl{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  .ctrl button{background:#3a3a42;color:#eee;border:1px solid #555;border-radius:6px;padding:6px 10px;font-size:13px;cursor:pointer}
+  .ctrl button.on{background:var(--pow);color:#000;border-color:var(--pow)}
+  .zoom{transform-origin:top center}
+
+  /* ===== 480x320 screen ===== */
+  .scr{width:480px;height:320px;background:var(--bg);position:relative;overflow:hidden;border-radius:4px;
+       box-shadow:0 0 0 10px #111,0 0 0 11px #333}
+  .abs{position:absolute}
+
+  /* left nav rail */
+  .rail{left:0;top:0;width:52px;height:320px;border-right:1px solid #1c1c22;display:flex;flex-direction:column}
+  .tab{height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:8.5px;letter-spacing:-.2px;color:var(--dim);font-weight:600;position:relative}
+  .tab.on{color:var(--txt)}
+  .tab.on::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;background:var(--day-cur);border-radius:2px}
+  .tab .badge{position:absolute;top:12px;right:12px;width:7px;height:7px;border-radius:50%;background:var(--fault)}
+
+  /* header */
+  .hdr{left:60px;top:0;width:412px;height:34px;display:flex;align-items:center;justify-content:space-between}
+  .dev{font-size:12px;color:var(--label);letter-spacing:1px;font-weight:600}
+  .link{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:12px;background:var(--card)}
+  .dot{width:8px;height:8px;border-radius:50%}
+  .faultic{width:30px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:var(--card)}
+  .banner{left:52px;top:34px;width:428px;height:18px;font-size:10.5px;font-weight:700;display:none;align-items:center;justify-content:center;gap:6px;letter-spacing:.4px}
+
+  /* hero */
+  .hero{left:60px;width:412px;text-align:center}
+  .state{font-weight:900;font-style:italic;font-size:48px;line-height:56px;letter-spacing:1px;transform:skewX(-6deg);
+         background:linear-gradient(180deg,#FFFFFF 0%,#D8D8E0 60%,#A9A9B6 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:10.5px;color:var(--label);letter-spacing:1.5px;font-weight:600}
+
+  /* stage strip, styled like the S M T W row */
+  .div{left:72px;width:388px;height:1px;background:linear-gradient(90deg,transparent,var(--copper) 18%,var(--copper) 82%,transparent)}
+  .strip{left:64px;top:116px;width:404px;height:26px;display:flex;justify-content:space-around;align-items:center}
+  .stg{font-size:12px;font-weight:700;letter-spacing:1.2px;color:var(--day);padding:3px 7px;border-radius:5px}
+  .stg.fut{opacity:.45}
+  .stg.cur{color:var(--day-cur);background:var(--day-box)}
+
+  /* left column: card + rows */
+  .left{left:60px;top:152px;width:196px;height:110px}
+  .card{width:196px;height:42px;background:var(--card);border-radius:12px;display:flex;align-items:center;gap:10px;padding:0 12px}
+  .card .big{font-size:17px;font-weight:800}
+  .card .lb{font-size:10px;color:var(--label);letter-spacing:1px}
+  .lines{margin-top:6px}
+  .ln{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;height:20px;white-space:nowrap;
+      border-bottom:1px solid transparent;border-image:linear-gradient(90deg,transparent,#3a2a22 30%,#3a2a22 70%,transparent) 1}
+  .ln:last-child{border-bottom:none}
+  .ln.sm{font-size:11px;font-weight:500;color:var(--txt2)}
+  .ln b{font-weight:700;color:#fff;margin-left:auto}
+
+  /* right column: 3 rings */
+  .mets{left:262px;top:150px;width:212px;height:100px;display:flex;justify-content:space-between}
+  .met{width:70px;display:flex;flex-direction:column;align-items:center}
+  .val{font-size:19px;font-weight:800;line-height:20px}
+  .val.stale{color:var(--dim)}
+  .unit{font-size:9.5px;color:var(--label);letter-spacing:1.1px;margin:2px 0 3px;white-space:nowrap}
+  .ring{position:relative;width:58px;height:58px}
+  .ring > svg{position:absolute;inset:0}
+  .ring .ico{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+
+  .reason{left:262px;top:252px;width:212px;text-align:center;font-size:10px;color:var(--warn);display:none;white-space:nowrap}
+  .act{left:60px;top:268px;width:412px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:10px;
+       font-size:17px;font-weight:800;letter-spacing:2px}
+
+  .notes{max-width:640px;color:#ddd;font-size:13px;line-height:1.55}
+  .notes h3{margin:10px 0 4px;color:#fff;font-size:14px}
+  .notes code{background:#1c1c22;padding:1px 4px;border-radius:3px;font-size:12px}
+  .notes table{border-collapse:collapse;margin-top:4px}
+  .notes td{padding:2px 10px 2px 0;font-size:12.5px}
+  .sw{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-2px;margin-right:5px;border:1px solid #444}
+</style>
+</head>
+<body>
+  <div class="ctrl" id="ctrl"></div>
+  <div class="ctrl"><button onclick="setZoom(1)">1×</button><button onclick="setZoom(1.5)">1.5×</button><button onclick="setZoom(2)">2×</button></div>
+
+  <div class="zoom" id="zoom">
+  <div class="scr" id="scr">
+    <div class="abs rail" id="rail"></div>
+    <div class="abs hdr">
+      <div class="dev">RCC-01</div>
+      <div class="link"><span class="dot" id="ldot"></span><span id="ltxt"></span></div>
+      <div class="faultic" id="fic"></div>
+    </div>
+    <div class="abs banner" id="banner"></div>
+    <div class="abs hero" id="hero">
+      <div class="state" id="state"></div>
+      <div class="sub" id="sub"></div>
+    </div>
+    <div class="abs div" style="top:112px"></div>
+    <div class="abs strip" id="strip"></div>
+    <div class="abs div" style="top:144px"></div>
+
+    <div class="abs left">
+      <div class="card" id="lcard"></div>
+      <div class="lines">
+        <div class="ln" id="lfault"></div>
+        <div class="ln sm" id="lrelay"></div>
+        <div class="ln sm" id="lfb"></div>
+      </div>
+    </div>
+    <div class="abs mets" id="mets"></div>
+    <div class="abs reason" id="reason"></div>
+    <div class="abs act" id="act"></div>
+  </div>
+  </div>
+
+  <div class="notes">
+    <h3>Overview mockup, landscape 480×320 (ST7796 rotated 90°)</h3>
+    Grid (px): nav rail x 0–52 · header y 0–34 · hero y 36–108 · stage strip y 112–144 · left column (card + 3 rows) x 60–256, y 152–262 · 3 rings x 262–474, y 150–250 · action button y 268–312.
+    <h3>Palette (estimated from the watch photo)</h3>
+    <table>
+      <tr><td><span class="sw" style="background:#000"></span>#000000</td><td>Background</td></tr>
+      <tr><td><span class="sw" style="background:#1A1A1F"></span>#1A1A1F</td><td>Card</td></tr>
+      <tr><td><span class="sw" style="background:#FFF"></span>#FFFFFF → <span class="sw" style="background:#D8D8E0"></span>#D8D8E0</td><td>Primary text / hero gradient</td></tr>
+      <tr><td><span class="sw" style="background:#9A9A9A"></span>#9A9A9A</td><td>Secondary labels, offline</td></tr>
+      <tr><td><span class="sw" style="background:#A8705C"></span>#A8705C / <span class="sw" style="background:#E8553A"></span>#E8553A</td><td>Stage strip (dim / current), STOP button, active-tab marker</td></tr>
+      <tr><td><span class="sw" style="background:#F7B731"></span>#F7B731 / <span class="sw" style="background:#3A2A1C"></span>#3A2A1C</td><td>VOLT ring (KCAL colours)</td></tr>
+      <tr><td><span class="sw" style="background:#F26B3A"></span>#F26B3A / <span class="sw" style="background:#4A2420"></span>#4A2420</td><td>AMP ring (STEPS colours)</td></tr>
+      <tr><td><span class="sw" style="background:#1FA3F0"></span>#1FA3F0 / <span class="sw" style="background:#1A2A48"></span>#1A2A48</td><td>WATT ring (POWER colours); online / confirmed; START button</td></tr>
+      <tr><td><span class="sw" style="background:#F5C518"></span>#F5C518</td><td>Warning / unknown (sun)</td></tr>
+      <tr><td><span class="sw" style="background:#FF4D7A"></span>#FF4D7A</td><td>Fault (heart)</td></tr>
+      <tr><td><span class="sw" style="background:#B87A5E"></span>#B87A5E</td><td>Copper dividers</td></tr>
+    </table>
+    <h3>LVGL 8.4 notes</h3>
+    Rotate in one place only (driver <code>swap_xy</code> + mirror, or <code>lv_disp_set_rotation</code>) and redo XPT2046 calibration for landscape. Rings = <code>lv_arc</code>. With English-only text the built-in Montserrat fonts are enough; only the italic hero font needs <code>lv_font_conv</code>. On the device use solid #D8D8E0 instead of the hero gradient. Ring maxima (60 V / 20 A / 1200 W) are placeholders.
+  </div>
+
+<script>
+const ICON={
+  bolt:(c,s=22)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="${c}"/></svg>`,
+  wave:(c,s=22)=>`<svg width="${s}" height="${s}" viewBox="0 0 26 24"><path d="M2 12c3-7 6-7 8 0s5 7 8 0 4-5 6-3" stroke="${c}" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>`,
+  power:(c,s=22)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24"><path d="M12 3v8" stroke="${c}" stroke-width="2.6" stroke-linecap="round"/><path d="M7 6.5a7.5 7.5 0 1 0 10 0" stroke="${c}" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>`,
+  warn:(c,s=16)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24"><path d="M12 3L2 21h20z" fill="none" stroke="${c}" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 10v5" stroke="${c}" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="18" r="1.3" fill="${c}"/></svg>`,
+  check:(c,s=15)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24"><path d="M4 12l5 5L20 6" stroke="${c}" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  relay:(c,s=15)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24"><circle cx="5" cy="15" r="2.4" fill="${c}"/><circle cx="19" cy="15" r="2.4" fill="${c}"/><path d="M6.5 13.5L17 7" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/></svg>`,
+  link:(c,s=22)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.6 0l3-3a4 4 0 0 0-5.6-5.6l-1 1M14 10a4 4 0 0 0-5.6 0l-3 3a4 4 0 0 0 5.6 5.6l1-1" stroke="${c}" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>`,
+  stop:(c,s=18)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2" fill="${c}"/></svg>`,
+  play:(c,s=18)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="${c}"/></svg>`,
+  home:(c,s=20)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z" fill="${c}"/></svg>`,
+  gauge:(c,s=20)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24"><path d="M3 17a9 9 0 1 1 18 0" stroke="${c}" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M12 17l5-6" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/></svg>`,
+  list:(c,s=20)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/><circle cx="3.5" cy="6" r="1.6" fill="${c}"/><circle cx="3.5" cy="12" r="1.6" fill="${c}"/><circle cx="3.5" cy="18" r="1.6" fill="${c}"/></svg>`,
+  chip:(c,s=20)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" stroke="${c}" stroke-width="2.2" fill="none"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4" stroke="${c}" stroke-width="2" stroke-linecap="round"/></svg>`,
+};
+const C=n=>getComputedStyle(document.documentElement).getPropertyValue('--'+n).trim();
+const STAGES=['IDLE','PRE','RELAY','VERIFY','CHG'];
+
+const SC={
+  CHARGING:{link:['ok','ONLINE · 0.4 s'],state:'CHARGING',sc:null,sub:'OPERATIONAL · CHARGING',stage:4,
+    lcard:['ok','0.4 s'],fault:['ok','No active faults',''],relay:['CLOSED','NONE'],v:48.2,a:8.0,stale:false,act:'stop',reason:''},
+  IDLE:{link:['ok','ONLINE · 0.3 s'],state:'IDLE',sc:null,sub:'OPERATIONAL · IDLE · NO SESSION',stage:0,
+    lcard:['ok','0.3 s'],fault:['ok','No active faults',''],relay:['OPEN','NONE'],v:null,a:0,stale:false,act:'start',reason:''},
+  FAULT:{link:['ok','ONLINE · 0.5 s'],state:'LATCHED_FAULT',sc:'fault',sub:'PRIMARY FAULT 0x0402',stage:-1,
+    lcard:['ok','0.5 s'],fault:['fault','Output overcurrent (IOUT_OVERCURRENT)','0x0402'],relay:['OPEN','NONE'],v:47.9,a:0.1,stale:false,act:'stop',
+    reason:'Cannot start: fault active',banner:['fault','NEW FAULT · TAP TO VIEW']},
+  OFFLINE:{link:['off','OFFLINE · 8.2 s'],state:'UNKNOWN',sc:'off',sub:'STATE NOT CONFIRMED',stage:-1,
+    lcard:['off','8.2 s'],fault:['off','Faults unreadable',''],relay:['—','NONE'],v:null,a:null,stale:true,act:'stop',
+    reason:'Cannot start: link lost or stale',banner:['off','LINK LOST · CHARGING MAY CONTINUE']},
+};
+
+function ring(pct,hue,track,icon,dim){
+  const r=30,cir=2*Math.PI*r,seg=cir*0.75,fill=dim?0:seg*Math.max(0,Math.min(1,pct||0));
+  const col=dim?C('dim'):C(hue),tr=dim?'#1a1a1f':C(track);
+  return `<div class="ring"><svg width="58" height="58" viewBox="0 0 70 70" style="transform:rotate(135deg)">
+    <circle cx="35" cy="35" r="${r}" fill="none" stroke="${tr}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${seg} ${cir}"/>
+    <circle cx="35" cy="35" r="${r}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${fill} ${cir}"/>
+    </svg><div class="ico">${ICON[icon](col,20)}</div></div>`;
+}
+const fmt=(x,d)=>x==null?'—':x.toFixed(d);
+
+function render(name){
+  const s=SC[name];
+  document.querySelectorAll('#ctrl button').forEach(b=>b.classList.toggle('on',b.dataset.k===name));
+  const lc=C(s.link[0]);
+  document.getElementById('ldot').style.background=lc;
+  const lt=document.getElementById('ltxt'); lt.textContent=s.link[1]; lt.style.color=lc;
+  const isF=s.fault[0]==='fault';
+  const fic=document.getElementById('fic'); fic.innerHTML=ICON.warn(isF?C('fault'):C('dim'),17); fic.style.background=isF?'#3a1422':'var(--card)';
+  const bn=document.getElementById('banner');
+  if(s.banner){bn.style.display='flex';bn.style.background=s.banner[0]==='fault'?'#3a1422':'#202026';bn.style.color=C(s.banner[0]);bn.innerHTML=ICON.warn(C(s.banner[0]),13)+s.banner[1];}
+  else bn.style.display='none';
+  // hero
+  const hero=document.getElementById('hero'); hero.style.top=s.banner?'52px':'38px';
+  const st=document.getElementById('state'); st.textContent=s.state;
+  st.style.fontSize=s.banner?'40px':'48px'; st.style.lineHeight=s.banner?'44px':'56px';
+  if(s.sc){st.style.background='none';st.style.webkitTextFillColor=C(s.sc);st.style.color=C(s.sc);}
+  else{st.style.background='';st.style.webkitTextFillColor='';st.style.color='';}
+  const sub=document.getElementById('sub'); sub.textContent=s.sub; sub.style.color=s.sc?C(s.sc):'';
+  // strip
+  document.getElementById('strip').innerHTML=STAGES.map((g,i)=>{
+    let cls='stg', st='';
+    if(s.stage<0) cls+=' fut';
+    else if(i>s.stage) cls+=' fut';
+    if(i===s.stage){cls+=' cur'; if(s.sc==='fault') st=`color:${C('fault')};background:#3a1422`;}
+    return `<span class="${cls}" style="${st}">${g}</span>`;}).join('');
+  // left column
+  const cc=C(s.lcard[0]);
+  document.getElementById('lcard').innerHTML=`${ICON.link(cc)}<div><div class="big" style="color:${s.lcard[0]==='off'?cc:'#fff'}">${s.lcard[1]}</div><div class="lb">UART · LAST REPLY</div></div>`;
+  const fc=C(s.fault[0]);
+  document.getElementById('lfault').innerHTML=`${s.fault[0]==='ok'?ICON.check(fc):ICON.warn(fc,15)}<span style="color:${s.fault[0]==='ok'?'#fff':fc}">${s.fault[1]}</span><b style="color:${C('label')};font-weight:500;font-size:11px">${s.fault[2]}</b>`;
+  document.getElementById('lrelay').innerHTML=`${ICON.relay(C('label'))}Relay command<b>${s.relay[0]}</b>`;
+  const conf=s.relay[1]==='CONFIRMED', fbc=conf?C('ok'):C('warn');
+  document.getElementById('lfb').innerHTML=`${conf?ICON.check(fbc):ICON.warn(fbc,15)}Contact feedback<b style="color:${fbc}">${s.relay[1]}</b>`;
+  // rings
+  const p=(s.v!=null&&s.a!=null)?s.v*s.a:null;
+  const M=[[fmt(s.v,1),'VOLT','V',s.v/60,'kcal','kcal-t','bolt'],[fmt(s.a,1),'AMP','A',s.a/20,'steps','steps-t','wave'],[p==null?'—':String(Math.round(p)),'WATT','W',p/1200,'pow','pow-t','power']];
+  document.getElementById('mets').innerHTML=M.map(m=>`<div class="met"><div class="val ${s.stale?'stale':''}">${m[0]}</div><div class="unit">${s.stale?m[2]+' · STALE':m[1]}</div>${ring(m[3],m[4],m[5],m[6],s.stale)}</div>`).join('');
+  // action
+  const rs=document.getElementById('reason'); rs.style.display=s.reason?'block':'none'; rs.textContent=s.reason;
+  const act=document.getElementById('act');
+  if(s.act==='stop'){act.style.background=C('day-cur');act.style.color='#000';act.innerHTML=ICON.stop('#000')+'STOP';}
+  else{act.style.background=C('pow');act.style.color='#000';act.innerHTML=ICON.play('#000')+'START';}
+  // rail
+  const T=[['home','Overview'],['gauge','Measure'],['warn','Faults'],['list','Session'],['chip','Device']];
+  document.getElementById('rail').innerHTML=T.map((t,i)=>`<div class="tab ${i===0?'on':''}">${ICON[t[0]](i===0?'#fff':C('dim'),20)}${t[1]}${(i===2&&isF)?'<span class="badge"></span>':''}</div>`).join('');
+}
+function setZoom(z){const el=document.getElementById('zoom');el.style.transform=`scale(${z})`;el.style.marginBottom=(320*(z-1))+'px';}
+document.getElementById('ctrl').innerHTML=Object.keys(SC).map(k=>`<button data-k="${k}" onclick="render('${k}')">${k}</button>`).join('');
+const q=new URLSearchParams(location.search);
+render(q.get('s')||'CHARGING'); setZoom(+(q.get('z')||1.5));
+</script>
+</body>
+</html>
