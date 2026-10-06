@@ -16,3 +16,5 @@ hardware/ESP32-3248S035-3-5INCH-LCD-main/esp32-s3_*.pdf
 firmware/sdkconfig
 firmware/sdkconfig.*
 !firmware/sdkconfig.defaults
+# Components downloaded by the ESP-IDF component manager; pinned by firmware/dependencies.lock
+firmware/managed_components/

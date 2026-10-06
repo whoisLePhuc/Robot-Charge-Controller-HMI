@@ -3,9 +3,12 @@
 Touchscreen HMI (ESP32-3248S035R, PlatformIO + ESP-IDF + LVGL) that monitors and
 controls the Robot Charge Controller over its operational UART.
 
-**Status (2026-10-06):** design documents; no firmware yet (`firmware/src/main.c` is
-empty). Decisions HMI-D01 to HMI-D09 are settled (the exact LVGL version is pinned by the
-first build, per HMI-D06). See [decisions.md](decisions.md).
+**Status (2026-10-06):** design documents, plus a bring-up app in `firmware/src/` that
+draws on the panel and reads touch (the HMI application itself is not written yet).
+Decisions HMI-D01 to HMI-D09 are settled; the LVGL pins of HMI-D06 are confirmed by
+build and run. The HMI-D03 link test (controller on UART0 via P1) has not been run yet.
+Touch measurements: [hmi-hardware.md §6](hmi-hardware.md#6-touch-measured-behaviour). See
+[decisions.md](decisions.md).
 
 ## Reading order
 

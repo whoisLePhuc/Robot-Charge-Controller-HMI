@@ -43,7 +43,8 @@
 - Open question (`needs_verification`): **without USB**, does CH340C still drive its
   TXD high? If yes, the controller's TX on P1 pin 3 through 100 Ω cannot pull U0RXD low
   and the ESP32 receives nothing. If CH340C leaves TXD undriven without USB, P1 works.
-  The acceptance test in [decisions.md](decisions.md#hmi-d03-link-uart) answers it.
+  The acceptance test in [decisions.md](decisions.md#hmi-d03-link-uart) answers it. It
+  has **not been run yet**: the controller link has not been connected during bring-up.
 - **With USB** (flashing) CH340C does drive U0RXD: the controller must be disconnected
   from P1 then.
 
@@ -101,3 +102,51 @@ Use this if the P1 acceptance test fails.
   (`needs_verification`).
 - A full 480 × 320 × 2-byte framebuffer is 300 KB and does not fit internal SRAM: use
   partial draw buffers.
+
+## 6. Touch: measured behaviour
+
+Measured on the real board on 2026-10-06 (PlatformIO, ESP-IDF 6.1.0, bring-up app in
+`firmware/`). These results supersede an earlier conclusion in this repository's history
+that the touch controller was faulty; it was not.
+
+| Finding | Evidence | Label |
+|---|---|---|
+| XPT2046 wiring is correct: VCC, VREF, IOVDD at 3.3 V, and continuity of CS (GPIO33), DCLK (14), DIN (13), DOUT (12) | multimeter | `confirmed` |
+| PENIRQ (GPIO36) is about 3.3 V idle and goes low when touched | multimeter, on-screen readout | `confirmed` |
+| **The chip returns valid data only at a 100 kHz SPI clock.** At 1 MHz, 2.5 MHz and above every read is zero while PENIRQ is low | on-screen diagnostic, finger held, 100 kHz vs 1 / 2.5 MHz, full- and half-duplex | `confirmed` |
+| A software (bit-banged) read at about 100 kHz gives the same values as the SPI peripheral at 100 kHz | same diagnostic | `confirmed` |
+| The vendor's factory image `8-Burn operation/Burn files/LVGL-3.5R.bin` (TFT_eSPI, touch at 2.5 MHz) does not react to touch on this board | run on the board | `confirmed` |
+| Why the chip fails above 100 kHz (slow DOUT edge from line loading, a clone part, or similar) | not investigated | `needs_verification` |
+| GPIO12 reads about 1.5 V with the internal pull-up on: it is a divider against the strapping pin's internal pull-down, not a short or a driven line | multimeter | `inferred` |
+
+Consequences for the firmware:
+
+- The touch SPI clock is **100 kHz** (`TOUCH_CLOCK_HZ` in `hmi_board.c`). One touch read is
+  several 24-bit transfers, about 1.5 ms at this clock, acceptable for the 30 ms LVGL
+  read period.
+- The bus is the shared SPI3 host through the GPIO matrix, as in the vendor demo; the
+  LCD runs at 40 MHz on the same bus.
+- Raw readings with a finger pressed: Z1 about 970 (12-bit); the driver's pressure
+  threshold is set to 50 in `sdkconfig.defaults`.
+
+### Coordinate mapping
+
+The driver scales raw X to 0..480 (`a`) and raw Y to 0..320 (`b`). Pressing the four
+corners of the landscape screen (text reading direction) gave:
+
+| Corner | a | b |
+|---|---:|---:|
+| top-left | 27 | 302 |
+| top-right | 49 | 31 |
+| bottom-left | 322 | 305 |
+| bottom-right | 350 | 18 |
+
+So screen X follows `b` (reversed) and screen Y follows `a`. `hmi_board.c` maps them
+linearly and leaves the driver's swap and mirror off. After this mapping, pressing the
+top-right and bottom-left corners reads (479, 18) and (0, 304); Y falls about 15 px short
+at the edges because the bezel blocks the fingertip. This is a **coarse two-edge fit**
+for bring-up. A proper 3-point calibration, with targets inset from the edges, is still
+to be done before the UI relies on edge buttons.
+
+Not yet verified after the mapping: top-left, bottom-right and centre points.
+
