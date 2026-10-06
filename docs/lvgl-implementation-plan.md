@@ -88,7 +88,7 @@ Robot-Charge-Controller-HMI/
 ├── firmware/
 │   ├── platformio.ini            # platform pinned (espressif32@<version>), framework = espidf
 │   ├── sdkconfig.defaults        # console off on UART0, LVGL/port options
-│   ├── src/                      # app_main, idf_component.yml (LVGL, esp_lvgl_port, drivers)
+│   ├── src/                      # app_main, hmi_board.c/.h (LCD, touch, LVGL port), idf_component.yml
 │   ├── components/
 │   │   ├── hmi_board/            # ST7796, XPT2046, backlight, board pins, link UART pins
 │   │   ├── hmi_link/             # UART driver, framing, reassembly, transaction manager
@@ -124,6 +124,10 @@ LCD driver in the same change.
 - Check byte order and colour with a test chart; apply rotation in **one** layer only,
   and calibrate touch in the same landscape orientation.
 - Splash as soon as the LCD is ready; never wait for the controller before showing UI.
+- **Touch bus clock is 100 kHz**, not the usual 1–2.5 MHz: the XPT2046 on this board reads
+  zeros above it ([hmi-hardware.md §6](hmi-hardware.md#6-touch-measured-behaviour)).
+  Budget about 1.5 ms per touch read; run the touch read in the LVGL task, not in the
+  protocol path.
 - Backlight dimming when idle is optional; the first touch only wakes the backlight and
   must not activate the control underneath.
 

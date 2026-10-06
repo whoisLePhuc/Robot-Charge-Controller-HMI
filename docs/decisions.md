@@ -118,6 +118,12 @@ Operating conditions:
 
 **Decision (2026-10-06, project owner): landscape, 480 × 320** (ST7796 rotated 90°).
 
+**Confirmed on the panel, 2026-10-06:** `esp_lvgl_port` rotation `swap_xy = true`,
+`mirror_x = false`, `mirror_y = false` gives upright landscape text, with the colour
+order BGR (`LCD_RGB_ELEMENT_ORDER_BGR`) and `swap_bytes = true` (colour bars read red,
+green, blue left to right). Touch is mapped separately; see
+[hmi-hardware.md §6](hmi-hardware.md#6-touch-measured-behaviour).
+
 Consequences: the UI specification follows the landscape grid of
 `mockups/hmi-overview-landscape.html` (left navigation rail, STOP/START button across
 the bottom). The portrait mockup is superseded. Rotation is applied in one layer only
@@ -175,11 +181,18 @@ How the version is fixed:
 3. Pin the exact LVGL and `esp_lvgl_port` versions in `idf_component.yml` and record
    them here, with the date of the build test.
 
-Status: the pins above are **inferred from registry metadata**. They become confirmed
-only when the first PlatformIO build with them succeeds (that build also shows whether
-the four extra LVGL 9.6 dependencies — freetype, libjpeg-turbo, libpng, lz4 — are pulled
-in and what they cost in flash). If it fails, step back one LVGL release at a time and
-record the result here.
+**Confirmed by build and run, 2026-10-06** (PlatformIO `espressif32@7.1.3`, ESP-IDF 6.1.0,
+board ESP32-3248S035R): `lvgl/lvgl` `9.6.0~1`, `espressif/esp_lvgl_port` `2.9.0`,
+`espressif/esp_lcd_st7796` `1.4.0`, `espressif/esp_lcd_touch` `1.2.1` and
+`atanisoft/esp_lcd_touch_xpt2046` `1.0.6` resolve, build, link and draw on the panel.
+
+- Size of the bring-up app: Flash 515 KB of the 1 MB application partition (49 %), RAM
+  81 KB of 320 KB (25 %).
+- The four extra LVGL 9.6 dependencies (freetype, libjpeg-turbo, libpng, lz4) are **not**
+  pulled in; they cost no flash.
+- `atanisoft/esp_lcd_touch_xpt2046` is a community component, not an Espressif one;
+  review it before any product use.
+- Not yet tested: long-run behaviour, memory under a full UI, other LVGL releases.
 
 ## HMI-D07: Time source
 

@@ -1,0 +1,7 @@
+## Exact pins, no ranges (docs/decisions.md HMI-D06).
+dependencies:
+  lvgl/lvgl: "9.6.0~1"
+  espressif/esp_lvgl_port: "2.9.0"
+  espressif/esp_lcd_st7796: "1.4.0"
+  espressif/esp_lcd_touch: "1.2.1"
+  atanisoft/esp_lcd_touch_xpt2046: "1.0.6"

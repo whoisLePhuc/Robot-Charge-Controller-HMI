@@ -1,0 +1,5 @@
+# The operational link uses UART0 (docs/decisions.md HMI-D03): no console, no log text on it.
+CONFIG_ESP_CONSOLE_NONE=y
+CONFIG_BOOTLOADER_LOG_LEVEL_NONE=y
+# XPT2046: minimum pressure for a touch. Measured Z1 is about 970 when pressed.
+CONFIG_XPT2046_Z_THRESHOLD=50
