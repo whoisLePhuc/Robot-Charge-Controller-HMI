@@ -18,3 +18,4 @@ firmware/sdkconfig.*
 !firmware/sdkconfig.defaults
 # Components downloaded by the ESP-IDF component manager; pinned by firmware/dependencies.lock
 firmware/managed_components/
+firmware/tools/sim/out/
