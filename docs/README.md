@@ -3,19 +3,40 @@
 Touchscreen HMI (ESP32-3248S035R, PlatformIO + ESP-IDF + LVGL) that monitors and
 controls the Robot Charge Controller over its operational UART.
 
-**Status (2026-10-06):** design documents, plus a bring-up app in `firmware/src/` that
-draws on the panel and reads touch (the HMI application itself is not written yet).
-Decisions HMI-D01 to HMI-D09 are settled; the LVGL pins of HMI-D06 are confirmed by
-build and run. The HMI-D03 link test (controller on UART0 via P1) has not been run yet.
-Touch measurements: [hmi-hardware.md §6](hmi-hardware.md#6-touch-measured-behaviour). See
-[decisions.md](decisions.md).
+**Status (2026-10-06):** the first integrated HMI image is built and flashed on the
+ESP32-3248S035R through COM4. The display shows the five pages and touch navigation
+works. `firmware/src/` now contains a bounded UART0 codec, polling/transaction task,
+and LVGL pages with START confirmation and a persistent STOP action. The controller
+has **not** been connected to P1, so response parsing, authorization, START/STOP and
+the CH340C contention assumption are **not hardware verified**. The on-device codec
+encoder self-test passed against the controller repository's independent wire vector;
+the observed header was `LINK LOST` rather than `UART/PROTOCOL INIT FAILED`.
+
+The flash chip on this board was read through COM4 as **4 MB**; `sdkconfig.defaults`
+now pins 4 MB and the flashed image uses that size. Decisions HMI-D01 to HMI-D09
+remain the design baseline. Touch measurements:
+[hmi-hardware.md §6](hmi-hardware.md#6-touch-measured-behaviour).
+
+**Next physical test:** disconnect USB, power the HMI through P1 from the controller,
+wire TX/RX/GND as in [hmi-hardware.md §4](hmi-hardware.md#4-link-to-the-controller),
+and run the HMI-D03 PING/GET_STATUS acceptance test. Verify `CONNECTED`, device
+identity, status and measurement validity before exercising START/STOP. Record the
+controller build flags and CONFIG selection; do not infer authority from the HMI
+booting successfully.
 
 ## Reading order
+
+A Python controller simulator is now available for exercising the real HMI through
+COM4 without a connected RCC. Its host suite passed 33 tests, and an 8-second COM4
+monitoring smoke test answered 46 HMI requests with no invalid frames. Touch-driven
+START/STOP scenarios still require observation on the display; see the simulator
+guide below. This does not verify the real controller or its relay path.
 
 | Document | Content |
 |---|---|
 | [decisions.md](decisions.md) | Owner decisions: role, control authority, link UART, orientation, toolchain, LVGL, time source, documentation language, on-screen language |
 | [controller-interface.md](controller-interface.md) | Contract with the controller: authority conditions, framing, byte layouts, code tables, START/STOP semantics, retries |
+| [controller-simulator.md](controller-simulator.md) | Python UART controller simulator over COM4: interactive scenarios, START/STOP, fault injection, host tests |
 | [hmi-hardware.md](hmi-hardware.md) | ESP32-3248S035R from schematic V1.1; wiring to the controller on P1 (UART0), fallback P3 |
 | [ui-pages-and-information.md](ui-pages-and-information.md) | Every screen, state → label → control table, messages |
 | [lvgl-implementation-plan.md](lvgl-implementation-plan.md) | Software architecture, transaction model, tests, implementation sequence |

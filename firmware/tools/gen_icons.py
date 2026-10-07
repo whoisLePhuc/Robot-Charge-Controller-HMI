@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+"""Generates ../src/hmi_icons.c/.h: A8 (alpha mask) LVGL images from the SVG icons of
+docs/mockups/hmi-ui-landscape.html. Tinted at run time with image recolor.
+Needs: pip install cairosvg pillow.   Usage: python gen_icons.py"""
+import io, os
+import cairosvg
+from PIL import Image
+
+W = "#ffffff"
+SVG = {  # name: (viewBox w, h, body)
+ "checkc": (24, 24, f'<circle cx="12" cy="12" r="9" stroke="{W}" stroke-width="2.2" fill="none"/><path d="M8 12.5l2.7 2.7L16 9.8" stroke="{W}" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
+ "sensor": (24, 24, f'<circle cx="12" cy="12" r="3" fill="{W}"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4" stroke="{W}" stroke-width="2.2" fill="none" stroke-linecap="round"/>'),
+ "bolt": (24, 24, f'<path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="{W}"/>'),
+ "wave": (26, 24, f'<path d="M2 12c3-7 6-7 8 0s5 7 8 0 4-5 6-3" stroke="{W}" stroke-width="2.6" fill="none" stroke-linecap="round"/>'),
+ "power": (24, 24, f'<path d="M12 3v8" stroke="{W}" stroke-width="2.6" stroke-linecap="round"/><path d="M7 6.5a7.5 7.5 0 1 0 10 0" stroke="{W}" stroke-width="2.6" fill="none" stroke-linecap="round"/>'),
+ "warn": (24, 24, f'<path d="M12 3L2 21h20z" fill="none" stroke="{W}" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 10v5" stroke="{W}" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="18" r="1.3" fill="{W}"/>'),
+ "check": (24, 24, f'<path d="M4 12l5 5L20 6" stroke="{W}" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
+ "cross": (24, 24, f'<path d="M6 6l12 12M18 6L6 18" stroke="{W}" stroke-width="3" fill="none" stroke-linecap="round"/>'),
+ "relay": (24, 24, f'<circle cx="5" cy="15" r="2.4" fill="{W}"/><circle cx="19" cy="15" r="2.4" fill="{W}"/><path d="M6.5 13.5L17 7" stroke="{W}" stroke-width="2.4" stroke-linecap="round"/>'),
+ "link": (24, 24, f'<path d="M10 14a4 4 0 0 0 5.6 0l3-3a4 4 0 0 0-5.6-5.6l-1 1M14 10a4 4 0 0 0-5.6 0l-3 3a4 4 0 0 0 5.6 5.6l1-1" stroke="{W}" stroke-width="2.4" fill="none" stroke-linecap="round"/>'),
+ "stop": (24, 24, f'<rect x="5" y="5" width="14" height="14" rx="2" fill="{W}"/>'),
+ "play": (24, 24, f'<path d="M7 4l13 8-13 8z" fill="{W}"/>'),
+ "spin": (24, 24, f'<circle cx="12" cy="12" r="9" stroke="{W}" stroke-opacity=".3" stroke-width="3" fill="none"/><path d="M12 3a9 9 0 0 1 9 9" stroke="{W}" stroke-width="3" fill="none" stroke-linecap="round"/>'),
+ "refresh": (24, 24, f'<path d="M20 12a8 8 0 1 1-2.4-5.7M20 4v5h-5" stroke="{W}" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'),
+ "home": (24, 24, f'<path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z" fill="{W}"/>'),
+ "gauge": (24, 24, f'<path d="M3 17a9 9 0 1 1 18 0" stroke="{W}" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M12 17l5-6" stroke="{W}" stroke-width="2.4" stroke-linecap="round"/>'),
+ "list": (24, 24, f'<path d="M8 6h13M8 12h13M8 18h13" stroke="{W}" stroke-width="2.4" stroke-linecap="round"/><circle cx="3.5" cy="6" r="1.6" fill="{W}"/><circle cx="3.5" cy="12" r="1.6" fill="{W}"/><circle cx="3.5" cy="18" r="1.6" fill="{W}"/>'),
+ "chip": (24, 24, f'<rect x="6" y="6" width="12" height="12" rx="2" stroke="{W}" stroke-width="2.2" fill="none"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4" stroke="{W}" stroke-width="2" stroke-linecap="round"/>'),
+}
+SIZES = {  # sizes (px, square box; the wave keeps its 26:24 ratio)
+ "home": [22], "gauge": [22], "warn": [14, 15, 17, 18, 22], "list": [22], "chip": [22],
+ "checkc": [17, 22], "check": [14, 15], "cross": [13], "relay": [15], "sensor": [15],
+ "link": [22], "bolt": [20], "wave": [20], "power": [20], "stop": [18], "play": [18],
+ "spin": [18], "refresh": [15, 18],
+}
+
+def raster(name, size):
+    vw, vh, body = SVG[name]
+    w = size; h = round(size * vh / vw)
+    svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {vw} {vh}">{body}</svg>'
+    png = cairosvg.svg2png(bytestring=svg.encode(), output_width=w, output_height=h)
+    return w, h, Image.open(io.BytesIO(png)).convert("RGBA").getchannel("A").tobytes()
+
+here = os.path.dirname(os.path.abspath(__file__))
+src = os.path.join(here, "..", "src")
+decl, defs = [], []
+for name, sizes in SIZES.items():
+    for size in sizes:
+        w, h, a8 = raster(name, size)
+        sym = f"hmi_icon_{name}_{size}"
+        decl.append(f"LV_IMAGE_DECLARE({sym});")
+        rows = ",\n  ".join(", ".join(f"0x{b:02x}" for b in a8[i:i + 16]) for i in range(0, len(a8), 16))
+        defs.append(f"static const uint8_t {sym}_map[] = {{\n  {rows}\n}};\n"
+                    f"const lv_image_dsc_t {sym} = {{\n"
+                    f"  .header = {{.magic = LV_IMAGE_HEADER_MAGIC, .cf = LV_COLOR_FORMAT_A8, .w = {w}, .h = {h}, .stride = {w}}},\n"
+                    f"  .data_size = {len(a8)},\n  .data = {sym}_map,\n}};\n")
+with open(os.path.join(src, "hmi_icons.h"), "w") as f:
+    f.write("/* Generated by tools/gen_icons.py from docs/mockups/hmi-ui-landscape.html. Do not edit. */\n"
+            "#pragma once\n#include \"lvgl.h\"\n\n" + "\n".join(decl) + "\n")
+with open(os.path.join(src, "hmi_icons.c"), "w") as f:
+    f.write("/* Generated by tools/gen_icons.py. Do not edit. A8 masks, tinted with image recolor. */\n"
+            "#include \"hmi_icons.h\"\n\n" + "\n".join(defs))
+print(len(defs), "icons")

@@ -1,5 +1,13 @@
 # The operational link uses UART0 (docs/decisions.md HMI-D03): no console, no log text on it.
 CONFIG_ESP_CONSOLE_NONE=y
 CONFIG_BOOTLOADER_LOG_LEVEL_NONE=y
+# Verified with esptool flash_id on the ESP32-3248S035R at COM4 (2026-10-06).
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 # XPT2046: minimum pressure for a touch. Measured Z1 is about 970 when pressed.
 CONFIG_XPT2046_Z_THRESHOLD=50
+# Fonts used by the landscape mockup UI.
+CONFIG_LV_FONT_MONTSERRAT_12=y
+CONFIG_LV_FONT_MONTSERRAT_16=y
+CONFIG_LV_FONT_MONTSERRAT_20=y
+CONFIG_LV_FONT_MONTSERRAT_28=y
+CONFIG_LV_FONT_MONTSERRAT_40=y
