@@ -3,15 +3,19 @@
 #include <limits.h>
 #include <string.h>
 
+#include "driver/gpio.h"
 #include "driver/uart.h"
 #include "esp_random.h"
+#include "esp_task_wdt.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
 #include "rcc_codec.h"
 
-#define LINK_UART UART_NUM_0
+#define LINK_UART UART_NUM_1
+#define LINK_TX_PIN GPIO_NUM_43
+#define LINK_RX_PIN GPIO_NUM_44
 #define LINK_BAUD 115200
 #define CMD_PING 0x0001u
 #define CMD_DEVICE 0x0002u
@@ -317,7 +321,9 @@ static void link_task(void *argument)
 {
     (void)argument;
     uint8_t bytes[96];
+    esp_task_wdt_add(NULL);
     for (;;) {
+        esp_task_wdt_reset();
         const int64_t now = esp_timer_get_time();
         const int read = uart_read_bytes(LINK_UART, bytes, sizeof(bytes), pdMS_TO_TICKS(10));
         if (read > 0) {
@@ -379,8 +385,8 @@ esp_err_t rcc_link_start(void)
         .source_clk = UART_SCLK_DEFAULT,
     };
     esp_err_t err = uart_param_config(LINK_UART, &config);
-    if (err == ESP_OK) err = uart_set_pin(LINK_UART, 1, 3, UART_PIN_NO_CHANGE,
-                                         UART_PIN_NO_CHANGE);
+    if (err == ESP_OK) err = uart_set_pin(LINK_UART, LINK_TX_PIN, LINK_RX_PIN,
+                                          UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
     if (err == ESP_OK) err = uart_driver_install(LINK_UART, 2048, 2048, 0, NULL, 0);
     if (err == ESP_OK && xTaskCreate(link_task, "rcc_link", 6144, NULL, 5, NULL) != pdPASS) {
         err = ESP_ERR_NO_MEM;

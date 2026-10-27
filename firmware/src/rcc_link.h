@@ -73,7 +73,7 @@ typedef struct {
     uint32_t end_duration_ms;
 } rcc_snapshot_t;
 
-/* UART0 owner. Call once after board init. Does not send START or STOP on boot. */
+/* Controller transport facade. The current Elecrow build binds the offline backend. */
 esp_err_t rcc_link_start(void);
 /* Copies a coherent snapshot. May be called from the LVGL task. */
 void rcc_link_snapshot(rcc_snapshot_t *out);

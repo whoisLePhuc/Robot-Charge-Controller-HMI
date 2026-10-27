@@ -1,4 +1,4 @@
-# HMI ↔ Robot Charge Controller interface (operational UART)
+# HMI ↔ Robot Charge Controller interface
 
 Everything the HMI needs to know about the controller, in one place: the conditions for
 control authority, framing, byte layouts of every command and response, code tables and
@@ -20,8 +20,8 @@ on the operational UART all of the following must hold:
 
 | # | Condition | Set by | State on 2026-10-06 |
 |---|---|---|---|
-| A1 | CONFIG `operational_interface = OPERATIONAL_UART` (3) and `operational_node = 0` | service UART, through a controlled CONFIG transaction | bench is on RS485 (2), node `0x02`; change required by [HMI-D01](decisions.md#hmi-d01-role-of-the-hmi) |
-| A2 | build profile `operational_node_authorized = true` (GET_DEVICE_INFO build flag bit2) | controller build | bench image `-DRCC_BENCH_OPERATIONAL_NODE=1` per [HMI-D02](decisions.md#hmi-d02-control-authority); **no production path** (`FDD10-OPEN-005`, `ICD-OPEN-006`) |
+| A1 | CONFIG `operational_interface = OPERATIONAL_UART` (3) and `operational_node = 0` | service UART, through a controlled CONFIG transaction | bench is on RS485 (2), node `0x02`; requires a controlled configuration change |
+| A2 | build profile `operational_node_authorized = true` (GET_DEVICE_INFO build flag bit2) | controller build | bench image requires `-DRCC_BENCH_OPERATIONAL_NODE=1`; **no production path** (`FDD10-OPEN-005`, `ICD-OPEN-006`) |
 | A3 | for the relay to actually close in a session: `relay_enable_authorized = true` (build flag bit1) | controller build | only with `VERIFIED` limits or a `-DRCC_BENCH_RELAY_ENABLE=1` bench build |
 
 Consequences:
@@ -44,7 +44,8 @@ Consequences:
 | Character format | 115 200 bit/s, 8N1, no flow control | `UART.md` §3.1 |
 | Topology | point-to-point, full duplex | `UART.md` §3.1 |
 
-HMI side: [hmi-hardware.md §4](hmi-hardware.md#4-link-to-the-controller).
+HMI side: the Elecrow board's controller UART pins remain unassigned pending
+hardware confirmation; see [the Elecrow bring-up guide](elecrow-s3-bringup.md).
 
 ## 3. Framing
 
@@ -109,7 +110,7 @@ The HMI host tests should reuse exactly these vectors.
 | `0x0021` | STOP_CHARGE | empty | only with A1 + A2 |
 
 `SET_TIME` (`0x0022`, `utc_ms` u64) exists but the HMI does not send it
-([HMI-D07](decisions.md#hmi-d07-time-source)). A payload of the wrong length is
+The HMI does not send `SET_TIME`. A payload of the wrong length is
 `REJECTED/MALFORMED_MESSAGE`. CONFIG/CAL/CLEAR_FAULT are always denied on the
 operational UART (ICD §10); the HMI never sends them.
 
