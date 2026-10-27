@@ -49,8 +49,8 @@ appear.
 ## CR-04: Production authorization of the operational node
 
 **Problem.** `operational_node_authorized` is enabled only by a bench knob. An HMI that
-controls the charger cannot run with an ordinary image
-([HMI-D02](decisions.md#hmi-d02-control-authority) uses a bench image for development).
+controls the charger cannot run with an ordinary image. The current HMI firmware keeps
+the transport offline; bench-image requirements apply when transport is brought back.
 
 **Proposal.** Covered by `FDD10-OPEN-005` (controlled bench-enable mechanism and artifact
 allowlists) and `ICD-OPEN-006` (peer identity). To be decided in the controller
@@ -67,7 +67,6 @@ the window within which a retry with the same `request_id` counts as a duplicate
 ## Note: controller time stays unsynchronized
 
 Only the active control interface may send `SET_TIME`. With the HMI as that interface
-([HMI-D01](decisions.md#hmi-d01-role-of-the-hmi)) and not sending `SET_TIME`
-([HMI-D07](decisions.md#hmi-d07-time-source)), the controller's UTC annotation stays
+and not sending `SET_TIME`, the controller's UTC annotation stays
 unsynchronized; event times are relative only. This is not a change request, only a
 consequence to keep in mind if wall-clock event times are ever required.

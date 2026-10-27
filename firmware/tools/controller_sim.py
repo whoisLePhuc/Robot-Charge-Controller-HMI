@@ -582,7 +582,7 @@ def run_serial(args):
     try:
         port.open()
         print(f"SIMULATED RCC on {args.port}, 115200 8N1. No physical relay outputs.")
-        print("Keep controller P1 disconnected; close Serial Monitor/upload tools.")
+        print("Keep the physical controller disconnected; close other serial-port tools.")
         print(HELP if not args.no_console else controller.command("status"))
         while deadline is None or time.monotonic() < deadline:
             while not console.empty():
@@ -641,7 +641,7 @@ def run_serial(args):
 
 def main():
     cli = argparse.ArgumentParser(description=__doc__)
-    cli.add_argument("--port", default="COM4", help="HMI USB serial port (default COM4)")
+    cli.add_argument("--port", required=True, help="Serial port connected to an enabled HMI controller link")
     cli.add_argument("--scenario", choices=("ready", "charging", "fault", "inhibited", "unauthorized"),
                      default="ready")
     cli.add_argument("--verbose", action="store_true", help="log all polling traffic")

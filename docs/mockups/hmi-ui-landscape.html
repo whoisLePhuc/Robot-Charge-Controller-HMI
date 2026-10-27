@@ -506,7 +506,7 @@ function pageDevice(s){
     body=`<div class="row2">
       <div class="cardx" style="flex:1 1 auto"><div style="display:flex;align-items:center;gap:8px;height:24px"><span class="dot" style="background:${c}"></span><span style="font-size:var(--f16);font-weight:800;color:${c}">${on?'ONLINE':'OFFLINE'}</span><span style="margin-left:auto;font-size:var(--f12);color:${C('label')}">${s.age} ago</span></div>
         <div class="row2" style="gap:14px"><div>${kv('Timeouts',K.to)}${kv('CRC-16',K.c16)}${kv('CRC-32',K.c32)}</div><div>${kv('Malformed',K.mal)}${kv('Reconnects',K.rec)}${kv('Unmatched',K.unm)}</div></div></div>
-      <div class="cardx" style="flex:0 0 150px">${sect('HMI UART')}${kv('UART0','115200 8N1')}${kv('Pins','TX 1 · RX 3')}
+      <div class="cardx" style="flex:0 0 150px">${sect('HMI LINK')}${kv('Transport','DISABLED')}${kv('Pins','Unassigned')}
         <div class="pbtn" style="margin-top:4px">${ICON.refresh(C('day-cur'))}RECONNECT</div></div>
     </div>`;
   }

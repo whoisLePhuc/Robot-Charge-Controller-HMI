@@ -44,8 +44,42 @@ int main(int argc, char **argv)
     hmi_ui_start(true);
     run(100);
     if (page > 0) { click(26, page * 64 + 32); run(100); }
-    if (!strcmp(tab, "link")) { click(60 + 308, 62 + 28); run(1200); }
+    if (!strcmp(tab, "link")) { click(64 + 3 + 134 + 67, 34 + 30 + 16); run(1200); }
+    if (!strcmp(tab, "settings")) { click(64 + 3 + 268 + 67, 34 + 30 + 16); run(1200); }
     if (!strcmp(click_what, "confirm")) { click(260, 290); run(100); }
+    { int cx, cy; if (sscanf(click_what, "%d,%d", &cx, &cy) == 2) { click(cx, cy); run(1200); } }
+    { int x0, y0, y1; if (sscanf(click_what, "drag=%d,%d,%d", &x0, &y0, &y1) == 3) {
+        pt.x = x0; pt.y = y0; down = true; run(60);
+        for (int k = 1; k <= 10; ++k) { pt.y = y0 + (y1 - y0) * k / 10; run(30); }
+        down = false; run(1500); } }
+    if (!strncmp(click_what, "wifi=", 5)) {
+        const char *w = click_what + 5;
+        hmi_ui_open_wifi(); run(400);
+        if (strcmp(w, "list")) {
+            if (!strcmp(w, "scroll")) {
+                pt.x = 240; pt.y = 250; down = true; run(60);
+                for (int k = 1; k <= 10; ++k) { pt.y = 250 - 12 * k; run(30); }
+                down = false; run(1500);
+            } else if (!strcmp(w, "taps")) {
+                click(240, 78 + 44 + 20); run(400);
+                click(37, 254); run(300); click(26, 172); run(300); click(73, 172); run(300);   /* Shift, q -> Q, w */
+                click(442, 254); run(300); click(450, 79); run(300);                              /* Backspace, eye */
+                click(26, 172); run(300); click(26, 213); run(300);                               /* q, a */
+            } else if (!strcmp(w, "info")) { click(240, 78 + 20); run(400); }                       /* connected network row */
+            else if (!strcmp(w, "open")) { click(240, 78 + 3 * 44 + 20); run(1200); }            /* Guest: open network */
+            else {
+                click(240, 78 + (!strcmp(w, "noip") ? 4 : 1) * 44 + 15); run(400);                /* MSVN-Office / RCC-Service */
+                if (!strcmp(w, "pass")) { hmi_ui_wifi_inject("msvn12"); run(300); }
+                else if (!strcmp(w, "sym")) { click(26, 296); run(300); hmi_ui_wifi_inject("Ab1"); run(300); }
+                else if (!strcmp(w, "show")) { hmi_ui_wifi_inject("msvn1234"); click(440, 79); run(300); }
+                else if (!strcmp(w, "shift")) { click(26, 255); run(300); click(94, 173); run(300); click(94, 173); run(300); }
+                else {                                  /* busy/done/fail/noap/noip */
+                    hmi_ui_wifi_inject(!strcmp(w, "fail") ? "wrongpass1" : "msvn1234"); run(300);
+                    click(440, 295); run(!strcmp(w, "busy") ? 1000 : !strcmp(w, "busy2") ? 1900 : 3500);
+                }
+            }
+        }
+    }
     run(1100);                                    /* let the 1 s refresh timer settle */
     { lv_mem_monitor_t mon; lv_mem_monitor(&mon);
       fprintf(stderr, "lvgl heap: total %u, free %u, biggest %u, used %u%%, frag %u%%\n",

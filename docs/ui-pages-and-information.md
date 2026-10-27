@@ -1,18 +1,18 @@
 # HMI pages and information
 
 This document specifies the content, behaviour and data of every HMI screen. It
-complements [lvgl-implementation-plan.md](lvgl-implementation-plan.md) and is not LVGL
-code. Every field, code and state comes from
+is a UI contract, not LVGL code. Every field, code and state comes from
 [controller-interface.md](controller-interface.md); where the two differ, the interface
 document is right.
 
-The HMI controls and monitors the charger ([HMI-D01](decisions.md#hmi-d01-role-of-the-hmi)).
+The HMI is intended to monitor the charger and request controller actions. The
+current firmware link is offline, so those actions are disabled.
 While it holds control, the robot can no longer START/STOP over RS485/CAN: a session can
 be stopped only from the HMI or the hardware E-stop, so STOP on the HMI must always be
 available. §3.4 still applies when the controller is not configured for the HMI.
 
-On-screen language is English ([HMI-D09](decisions.md#hmi-d09-on-screen-language)); the
-labels below are the strings shown on the display, kept in one string table.
+On-screen language is English; the labels below are the strings shown on the
+display, kept in one string table.
 
 ## 1. Display principles
 
@@ -32,13 +32,12 @@ labels below are the strings shown on the display, kept in one string table.
    clear-fault operations.
 7. **Warnings use an icon or text as well as colour,** never colour alone.
 8. **Large touch targets:** at least about 44 × 44 px; START/STOP larger and far enough
-   from other targets to avoid mis-taps. The panel is resistive: calibrate touch and
-   avoid swipe gestures for important actions.
+   from other targets to avoid mis-taps. The capacitive panel reports touch
+   coordinates directly; keep important actions tap-based and clearly separated.
 
 ## 2. Frame layout (landscape 480 × 320)
 
-Orientation: landscape ([HMI-D04](decisions.md#hmi-d04-screen-orientation)). Grid
-taken from `mockups/hmi-overview-landscape.html`:
+Orientation: landscape, 480 × 320. Grid taken from `mockups/hmi-ui-landscape.html`:
 
 | Region | Position (px) | Content |
 |---|---|---|
@@ -98,7 +97,7 @@ Example from the bench without INA240: `INHIBITED`, inhibit `RECOVERY`, primary 
 ### 3.3 START/STOP
 
 - **START:** opens a confirmation summarizing state, fault/inhibit and data age. After
-  sending, per [lvgl-implementation-plan.md §7.2](lvgl-implementation-plan.md#72-start):
+  sending, per the command-state contract in this document:
   show `Request accepted — checking` on `ACCEPTED`, and show `Charging` only when the
   terminal result is `COMPLETED` **and** GET_STATUS reports `CHARGING` with
   `charging_established = 1`.
@@ -118,7 +117,7 @@ Example from the bench without INA240: `INHIBITED`, inhibit `RECOVERY`, primary 
 
 Applies on `UNAUTHORIZED_SOURCE`, i.e. the controller has not selected the operational
 UART as the control interface, or its image does not trust the operational node
-([HMI-D02](decisions.md#hmi-d02-control-authority)):
+Controller authority remains with the controller:
 
 - Replace the START/STOP area with `Controller has not granted control to this HMI —
   monitoring only` and a short hint: the operational UART must be configured on the
@@ -203,8 +202,8 @@ raw codes.
 - Read with GET_EVENT_LOG by cursor; loaded when the page opens and on `Load newer`.
 - The log lives in controller RAM, keeps the last 32 events and is **lost when the
   controller restarts**. Show `missed` when > 0: `n events overwritten`.
-- Time column: the HMI does not send `SET_TIME`
-  ([HMI-D07](decisions.md#hmi-d07-time-source)), so controller time stays unsynchronized.
+- Time column: the HMI does not send `SET_TIME`, so controller time stays
+  unsynchronized.
   Show time relative to now or to the controller boot, from `monotonic_us`; show UTC only
   if an event carries `time_synchronized` = 1.
 - `STATE_CHANGED`, `INHIBIT_CHANGED` and `FAULT_CHANGED` are coalesced; the log is not a
@@ -221,7 +220,7 @@ raw codes.
 - Build flags: `provisional`, `relay_enable`, `operational_node` (read-only, with a short
   explanation).
 - When `provisional` = 1 or `operational_node` = 1: a permanent notice `Controller runs a
-  bench image — not a product build` ([HMI-D02](decisions.md#hmi-d02-control-authority)).
+  bench image — not a product build.
   When `relay_enable` = 0: add `Relay is locked in this build — START will not close the
   relay`.
 - Links running on the controller: CAN, RS485, operational UART, service UART.
@@ -236,14 +235,14 @@ known.
 
 - Online/offline, age of the last valid reply.
 - HMI-side counters: timeouts, CRC-16 errors, CRC-32 errors, malformed frames, reconnects.
-- HMI UART configuration (port, pins, baud), kept apart from controller information.
+- HMI transport state and diagnostics, kept apart from controller information.
 - `Reconnect`: restarts communication and queries only; never resets the controller and
   never sends START/STOP.
 
 ## 8. Time
 
 The HMI does not send `SET_TIME` and has no clock setting
-([HMI-D07](decisions.md#hmi-d07-time-source)). There is no time page.
+There is no time page.
 
 ## 9. Modals, toasts and banners
 

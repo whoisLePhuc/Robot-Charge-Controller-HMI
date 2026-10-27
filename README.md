@@ -1,10 +1,9 @@
 <div align="center">
   <h1>Robot Charge Controller HMI</h1>
-  <p><strong>An ESP32 touchscreen interface for monitoring and controlling the Robot Charge Controller over its operational UART.</strong></p>
-
+  <p><strong>An Elecrow ESP32-S3 touchscreen interface for the Robot Charge Controller.</strong></p>
   <p>
     <img alt="Status: development prototype" src="https://img.shields.io/badge/status-development_prototype-d29922">
-    <img alt="Board: ESP32-3248S035R" src="https://img.shields.io/badge/board-ESP32--3248S035R-E7352C?logo=espressif&amp;logoColor=white">
+    <img alt="Board: Elecrow ESP32-S3" src="https://img.shields.io/badge/board-Elecrow_ESP32--S3-E7352C?logo=espressif&amp;logoColor=white">
     <img alt="PlatformIO" src="https://img.shields.io/badge/build-PlatformIO-F5822A?logo=platformio&amp;logoColor=white">
     <img alt="ESP-IDF 6.1.0" src="https://img.shields.io/badge/ESP--IDF-6.1.0-314CB0">
     <img alt="LVGL 9.6.0" src="https://img.shields.io/badge/LVGL-9.6.0-2ea44f">
@@ -78,10 +77,10 @@ powershell -ExecutionPolicy Bypass -File firmware/tools/export_readme_previews.p
 
 ## Overview
 
-Robot Charge Controller HMI runs on the **ESP32-3248S035R** in **480 × 320 landscape**
-orientation, using **PlatformIO, ESP-IDF and LVGL**. It reads controller status and
-measurements, displays faults and session history, and requests START/STOP through
-the operational UART.
+Robot Charge Controller HMI targets the **Elecrow DLE06235B / ES3C35P ESP32-S3**
+in **480 × 320 landscape** orientation, using **PlatformIO, ESP-IDF and LVGL**.
+The five-page UI is integrated; the current firmware uses an offline controller
+backend until the new board's UART pins are confirmed.
 
 Charging decisions, interlocks and relay control remain owned by the controller.
 
@@ -114,15 +113,15 @@ Charging decisions, interlocks and relay control remain owned by the controller.
 
 | Item | Configuration |
 |---|---|
-| Board | ESP32-3248S035R |
-| Display | ST7796, 480 × 320 landscape |
-| Touch | XPT2046 resistive touchscreen |
-| Flash | 4 MB, verified on the development board |
+| Board | Elecrow DLE06235B / ES3C35P, ESP32-S3 |
+| Display | ST77922 QSPI, native 320 × 480; LVGL landscape 480 × 320 |
+| Touch | Integrated capacitive touch, ST77922 I²C at 0x55 |
+| Flash / PSRAM | 16 MB / 8 MB |
 | Build system | PlatformIO |
 | Platform | Espressif32 7.1.3 |
 | Framework | ESP-IDF 6.1.0 |
 | UI | LVGL 9.6.0 |
-| Controller link | UART0 on P1, 115200 baud, 8N1 |
+| Controller link | Disabled pending confirmation of Elecrow UART pins |
 
 ## Key Features
 
@@ -133,48 +132,54 @@ Charging decisions, interlocks and relay control remain owned by the controller.
 - Device identity, build flags and UART diagnostics.
 - START confirmation, STOP requests and command-result feedback.
 - Lost-link and unconfirmed-command indications.
-- Python controller simulator for testing the real display over USB.
+- Python controller simulator for use after the HMI transport is enabled.
 
 ## Project Status
 
 | Area | Current state |
 |---|---|
 | Firmware build | Successful |
-| Display and touch | Initialization and navigation tested on the development board |
+| Display and touch | LCD and touch tested; five-page HMI flashed, visual acceptance pending |
 | UART simulator host tests | 33 tests passed |
-| COM4 monitoring smoke test | 46 requests answered in eight seconds; no invalid frames |
+| Controller simulator link | Pending transport integration for Elecrow |
 | Touch-driven START/STOP workflows | Hardware verification pending |
 | Real controller integration | Pending |
 | Long-duration operation | Pending |
 
 ## Build and Upload
 
+The `elecrow_s3` image runs the shared five-page HMI on the ST77922 QSPI LCD with
+integrated capacitive touch. Controller UART remains disabled until its board
+pins are confirmed. Bare `pio run` uses the Elecrow environment.
+See the [bring-up guide](docs/elecrow-s3-bringup.md) for hardware details.
+
 Install PlatformIO, then run from the repository root:
 
 ~~~sh
 cd firmware
 pio run
-pio run --target upload --upload-port COM4
+pio run --target upload --upload-port COM15
 ~~~
 
-Replace COM4 with the display's USB serial port.
+Replace COM15 with the board's current USB serial port.
 
-UART0 carries the binary controller protocol, so application console logging is
-disabled. Close Serial Monitor and the controller simulator before uploading.
+USB Serial/JTAG carries application logs. Close Serial Monitor before uploading.
+The controller link backend is offline, so the displayed START/STOP controls do
+not send commands.
 
-See [hardware documentation](docs/hmi-hardware.md) for controller wiring and
-power arrangements.
+See the [Elecrow bring-up guide](docs/elecrow-s3-bringup.md) for board wiring.
 
 ## Controller Simulator
 
-Keep the real controller disconnected from P1 TX/RX. Connect the display to the
-PC over USB and close Serial Monitor.
+The simulator requires an enabled HMI controller transport. That transport is
+not yet enabled on the Elecrow board; USB Serial/JTAG is the log console, not the
+controller UART.
 
 From the firmware directory:
 
 ~~~sh
 python -m pip install -r tools/controller_sim_requirements.txt
-python tools/controller_sim.py --port COM4
+python tools/controller_sim.py --port COMx
 ~~~
 
 The simulator starts with the controller in IDLE. Use the touchscreen to request
@@ -232,15 +237,15 @@ Robot-Charge-Controller-HMI/
 ├── README.md
 ├── assets/                  # Original design images
 │   └── ui/                  # Five individual v2 page previews
-├── docs/                    # Design decisions, protocol and test guides
+├── docs/                    # Elecrow, protocol and test guides
 │   └── mockups/             # HTML interface references
 ├── firmware/
-│   ├── platformio.ini       # Pinned build environment
-│   ├── src/                 # Board support, LVGL UI, UART codec and link task
+│   ├── platformio.ini       # Elecrow S3 is the default and only board target
+│   ├── config/              # ESP-IDF defaults for the Elecrow S3
+│   ├── src/                 # Elecrow LCD/touch, LVGL UI and offline link binding
 │   │   └── hmi_fonts/       # Generated UI fonts
 │   ├── test/host/           # Host-side tests
 │   └── tools/               # UART controller simulator and UI tooling
-└── hardware/                # Board reference material
 ~~~
 
 ## Documentation
@@ -248,8 +253,7 @@ Robot-Charge-Controller-HMI/
 | Resource | Description |
 |---|---|
 | [Documentation Index](docs/README.md) | Reading order and implementation status |
-| [Design Decisions](docs/decisions.md) | Board, UART, toolchain and language decisions |
-| [Hardware and Wiring](docs/hmi-hardware.md) | Display hardware, power and controller connection |
+| [Elecrow Bring-up](docs/elecrow-s3-bringup.md) | Elecrow S3 build, display, touch and HMI status |
 | [Controller Interface](docs/controller-interface.md) | Framing, command payloads and control semantics |
 | [UI Pages and Information](docs/ui-pages-and-information.md) | Page contents, states and operator feedback |
 | [Landscape UI Mockup](docs/mockups/hmi-ui-landscape.html) | Interactive design reference; open locally in a browser |

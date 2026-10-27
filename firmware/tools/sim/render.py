@@ -26,6 +26,7 @@ sheets = {}
 for s in SCEN:
     ims = [render(f"{s}-{p}", s, i, []) for i, p in enumerate(PAGES)]
     ims.append(render(f"{s}-device-link", s, 4, ["tab=link"]))
+    render(f"{s}-device-settings", s, 4, ["tab=settings"])
     sheets[s] = ims
 for s, o, extra in OVL:
     render(f"ovl-{o}", s, 0, extra)

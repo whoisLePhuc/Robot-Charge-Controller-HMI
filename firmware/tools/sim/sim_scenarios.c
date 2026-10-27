@@ -65,6 +65,11 @@ int sim_scenario(const char *name)
         ev(m, 0x0013, 118, 100, 17, 0, 0, 0); ev(m, 0x0014, 119, 120, 17, 48200, 8000, 0);
         ev(m, 0x0012, 130, 1200, 0, 1u << 11, 0x0402, 0); ev(m, 0x0016, 131, 1200, 17, 4, 1084000, 47900);
         ev(m, 0x0010, 132, 1200, ST(4,6,6,0), 0, 0, 0);
+    } else if (!strcmp(name, "MANYFAULT")) {
+        m->top_state = 6; m->primary_fault = 0x0402; m->active_fault_mask = 0x0007F9A5u; m->inhibit_mask = 0x7; m->build_flags = 0x07;
+        m->session_id = 17; m->vout_mv = 47900; m->vout_filtered_mv = 47900; m->iout_ma = 100; m->iout_filtered_ma = 100;
+        m->end_valid = true; m->end_session_id = 17; m->end_reason = 4; m->end_duration_ms = 1084000;
+        for (int i = 0; i < 8; ++i) ev(m, 0x0012, 100 + i * 7, 1000 + i, 0, 1u << (i + 3), 0x0402, 0);
     } else if (!strcmp(name, "OFFLINE")) {
         m->online = false; m->reply_age_ms = 8200; m->status_age_ms = 8200; m->measurement_age_ms = 8200;
         m->faults_age_ms = 8200; m->top_state = 4; m->operational_state = 6; m->timeouts = 14;
