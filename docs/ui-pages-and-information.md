@@ -105,8 +105,6 @@ steps, defaults, rollback behavior and current limitations.
 
 ## Known differences and acceptance work
 
-- COMM LINK still says `UART0` / `GPIO1 / 3`; the actual transport uses UART1 /
-  GPIO43 / GPIO44. Use the transport source for wiring.
 - English/Vietnamese selection is saved but main labels are not translated.
 - The earlier design required STOP accessibility through every modal. The
   current START modal covers the action-bar area and `action_click()` returns

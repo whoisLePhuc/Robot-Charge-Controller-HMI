@@ -1,6 +1,6 @@
 /*
  * HMI pages. Modern Bento UI v3.2 (Zero-Overlap, Spacious, LVGL 9.6, 480x320 landscape).
- * Follows rcc_hmi_modern_bento_ui_v3_2_zero_overlap_spacious_lvgl_9_6_480_320.html.
+ * docs/mockups/hmi-ui-landscape.html is a browser port of this file; keep the two in step.
  * Called only under the LVGL port lock.
  */
 #include "hmi_ui.h"
@@ -1058,9 +1058,10 @@ static void page_device(lv_obj_t *p, const rcc_snapshot_t *m, int H)
         lv_obj_t *c2 = card_box(p, 241, ry, 167, ch, CARD, 10, LINE);
         section(c2, 13, 7, 141, "HMI PORT", NULL, 0);
         const int g = (ih - 16 - 54) / 3;
-        kv(c2, 13, 7 + 16 + g, 141, 18, "Bus", "UART0", WHITE);
+        /* Must match LINK_UART / LINK_TX_PIN / LINK_RX_PIN in rcc_link.c. */
+        kv(c2, 13, 7 + 16 + g, 141, 18, "Bus", "UART1", WHITE);
         kv(c2, 13, 7 + 16 + 2 * g + 18, 141, 18, "Baud", "115200 8N1", WHITE);
-        kv(c2, 13, 7 + 16 + 3 * g + 36, 141, 18, "Pins", "GPIO1 / 3", WHITE);
+        kv(c2, 13, 7 + 16 + 3 * g + 36, 141, 18, "Pins", "GPIO43 / 44", WHITE);
     } else {
         const hmi_settings_t *cfg = hmi_settings_get();
 
