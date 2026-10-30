@@ -16,7 +16,7 @@ they do not establish hardware acceptance.
 | [settings-wifi-and-ota.md](settings-wifi-and-ota.md) | Local settings, networking, update procedure and limits |
 | [controller-simulator.md](controller-simulator.md) | PC simulator through an external USB-to-UART adapter |
 | [controller-change-requests.md](controller-change-requests.md) | Open dependencies owned by the controller repository |
-| [mockups/](mockups/) | Visual references; these can differ from the current UI |
+| [mockups/](mockups/) | Interactive replica of the firmware UI (`hmi_ui.c`); the firmware is authoritative |
 
 ## Implementation and verification
 

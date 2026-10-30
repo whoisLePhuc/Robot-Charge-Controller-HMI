@@ -72,20 +72,30 @@ static uint32_t tick_cb(void)
     return (uint32_t)(clock() * 1000 / CLOCKS_PER_SEC);
 }
 
-static void render_and_save(lv_display_t *disp, int page, int tab, const char *out_name)
+void mock_set_scenario(int scenario);   /* mock_runtime.c */
+
+static void settle(lv_display_t *disp)
 {
-    hmi_ui_select_page(page, tab);
-    lv_timer_handler(); // process async call
+    for (int i = 0; i < 4; ++i) lv_timer_handler();   /* page switches are async calls */
     lv_obj_invalidate(lv_screen_active());
     lv_refr_now(disp);
-    lv_timer_handler();
-    save_bmp(out_name, SCREEN_W, SCREEN_H, g_framebuffer);
 }
 
+static void render_and_save(lv_display_t *disp, const char *dir, int scenario, int page, int tab, const char *name)
+{
+    char path[512];
+    mock_set_scenario(scenario);
+    hmi_ui_select_page(page, tab);
+    settle(disp);
+    snprintf(path, sizeof(path), "%s/%s.bmp", dir, name);
+    save_bmp(path, SCREEN_W, SCREEN_H, g_framebuffer);
+}
+
+/* Renders the README previews (480x320 BMP) into argv[1], default ".".
+ * tools/snapshot/export_previews.py upscales them to assets/ui/*.png. */
 int main(int argc, char **argv)
 {
-    (void)argc; (void)argv;
-    printf("Initializing LVGL 9 Headless Renderer...\n");
+    const char *dir = argc > 1 ? argv[1] : ".";
     lv_init();
     lv_tick_set_cb(tick_cb);
 
@@ -95,29 +105,20 @@ int main(int argc, char **argv)
     lv_display_set_color_format(disp, LV_COLOR_FORMAT_ARGB8888);
     lv_display_set_flush_cb(disp, my_flush_cb);
 
-    printf("Starting HMI UI from repository source code...\n");
+    mock_set_scenario(0);
     hmi_ui_start(true);
 
-    /* Render and save Overview (0) */
-    render_and_save(disp, 0, 0, "preview_overview.bmp");
+    render_and_save(disp, dir, 0, 0, 0, "overview");
+    render_and_save(disp, dir, 0, 1, 0, "measure");
+    render_and_save(disp, dir, 1, 2, 0, "faults");
+    render_and_save(disp, dir, 0, 3, 0, "session");
+    render_and_save(disp, dir, 0, 4, 0, "device");
+    render_and_save(disp, dir, 0, 4, 2, "settings");
 
-    /* Render and save Telemetry Measure (1) */
-    render_and_save(disp, 1, 0, "preview_measure.bmp");
-
-    /* Render and save Faults (2) */
-    render_and_save(disp, 2, 0, "preview_faults.bmp");
-
-    /* Render and save Device Settings (page 4, tab 2) */
-    render_and_save(disp, 4, 2, "preview_settings.bmp");
-
-    /* Render and save Wi-Fi modal */
+    char path[512];
     hmi_ui_open_wifi();
-    lv_timer_handler();
-    lv_obj_invalidate(lv_screen_active());
-    lv_refr_now(disp);
-    lv_timer_handler();
-    save_bmp("preview_wifi.bmp", SCREEN_W, SCREEN_H, g_framebuffer);
-
-    printf("All snapshots successfully generated!\n");
+    settle(disp);
+    snprintf(path, sizeof(path), "%s/wifi.bmp", dir);
+    save_bmp(path, SCREEN_W, SCREEN_H, g_framebuffer);
     return 0;
 }
