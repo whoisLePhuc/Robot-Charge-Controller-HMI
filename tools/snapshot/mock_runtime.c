@@ -88,10 +88,13 @@ static hmi_ota_status_t s_mock_ota = {
     .progress_pct = 0,
     .running_slot = "ota_0",
     .next_slot = "ota_1",
-    .running_version = "v3.2 Bento",
+    .running_version = "snapshot",
     .version = 1,
 };
 
+esp_err_t hmi_ota_init(void) { return ESP_OK; }
+void hmi_ota_arm(void) { s_mock_ota.armed = true; snprintf(s_mock_ota.pin, sizeof(s_mock_ota.pin), "482913"); s_mock_ota.arm_seq++; s_mock_ota.version++; }
+void hmi_ota_disarm(void) { s_mock_ota.armed = false; s_mock_ota.pin[0] = '\0'; s_mock_ota.arm_seq++; s_mock_ota.version++; }
 esp_err_t hmi_ota_start_server(void) { return ESP_OK; }
 void hmi_ota_stop_server(void) {}
 bool hmi_ota_server_is_running(void) { return true; }

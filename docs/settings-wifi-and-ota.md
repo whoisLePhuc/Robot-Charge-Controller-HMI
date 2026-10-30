@@ -46,14 +46,37 @@ travel over UART1; Wi-Fi does not grant controller authority.
    [the bring-up guide](elecrow-s3-bringup.md).
 2. Build the Elecrow application with `pio run` from `firmware/`.
 3. Connect the HMI to Wi-Fi and read its IP address on the Wi-Fi screen.
-4. From a computer on the same reachable network, open `http://<HMI-IP>/`.
-5. Select `firmware/.pio/build/elecrow_s3/firmware.bin` and upload it. Use the
-   application binary, not a bootloader, merged image or partition table.
-   Keep power connected while writing and rebooting.
+4. On the HMI, open the connected network's Wi-Fi screen and tap
+   **ENABLE OTA**. The WEB OTA cell shows a 6-digit PIN.
+5. From a computer on the same reachable network, open `http://<HMI-IP>/`.
+6. Enter the PIN, select `firmware/.pio/build/elecrow_s3/firmware.bin` and
+   upload it. Use the application binary, not a bootloader, merged image or
+   partition table. Keep power connected while writing and rebooting.
 
 `hmi_wifi.c` starts the HTTP server after the station obtains an IP address.
 It uses port 80: GET `/` and GET `/update` serve the upload page, GET
-`/api/status` reports state, and POST `/update` receives the raw binary.
+`/api/status` reports state (including `armed`), and POST `/update` receives
+the raw binary.
+
+### Upload authorization
+
+POST `/update` is refused unless OTA was enabled on the touchscreen:
+
+- **ENABLE OTA** generates a random 6-digit PIN (hardware RNG) that is shown
+  only on the HMI and is never logged. It is valid for 10 minutes.
+- The upload must carry the PIN in the `X-OTA-PIN` header; the web page does
+  this. Without an enabled window the server answers 403; a wrong or missing
+  PIN answers 401.
+- The PIN is single-use: the first accepted upload consumes it, whether or not
+  the flash write then succeeds. Five wrong PINs, expiry, **LOCK OTA**, or
+  Wi-Fi loss (server stop) also close the window. Enable OTA again for a new
+  PIN.
+
+Command-line upload while enabled:
+
+~~~sh
+curl -H "X-OTA-PIN: 123456" --data-binary @.pio/build/elecrow_s3/firmware.bin http://<HMI-IP>/update
+~~~
 
 The updater writes the next app slot with the ESP-IDF OTA API, checks the image
 magic and finalizes with `esp_ota_end()`, then selects the boot slot. Success
@@ -67,15 +90,18 @@ or every HMI feature. Rollback and power-loss acceptance tests remain pending.
 
 ## Current implementation limits
 
-- HTTP upload handlers implement no login, TLS or application-level image
-  signature verification. Format/integrity validation does not establish
-  publisher identity. Anyone with network access to the service can attempt
-  an upload; use a controlled bench network for this prototype.
+- Uploads need a touchscreen-enabled window and its one-time PIN, but the
+  service uses plain HTTP (no TLS) and has no image signature verification.
+  Someone who can watch the network traffic during an enabled window can see
+  the PIN. Format/integrity validation does not establish publisher identity.
+  Keep OTA locked except while updating, and use a controlled bench network
+  for this prototype.
 - The updater has no charging-state gate and can reboot the HMI during a
   session. Losing the HMI link does not automatically stop charging. Run
   update acceptance checks with the charging path inactive.
-- Version strings in settings/OTA screens are hard-coded labels, not verified
-  source revisions or image identities.
+- The Device page and OTA page show the running image's
+  `esp_app_desc_t.version` (`git describe` at build time unless `PROJECT_VER`
+  is set). It identifies the build tree, not a signed or released image.
 - Failure-state overlay recovery, network interruption, repeated uploads and
   recovery from a failed image need hardware acceptance checks.
 

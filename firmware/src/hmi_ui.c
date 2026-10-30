@@ -1133,7 +1133,9 @@ static void page_device(lv_obj_t *p, const rcc_snapshot_t *m, int H)
 
         kv(c2, 13, 74, 174, 18, "Task watchdog", "5.0 s", WHITE);
         kv(c2, 13, 92, 174, 18, "LCD driver", "ST77922 QSPI", WHITE);
-        kv(c2, 13, 110, 174, 18, "UI version", "v3.3 OTA Bento", OK_COL);
+        hmi_ota_status_t ota;
+        hmi_ota_get_status(&ota);
+        kv(c2, 13, 110, 174, 18, "Firmware", ota.running_version[0] ? ota.running_version : "unknown", OK_COL);
 
         hmi_wifi_get(&ws);
         lv_obj_t *wr = button(c2, 13, 132, 174, 22, SURFACE2, 6, wifi_open_cb, NULL);
@@ -1392,6 +1394,22 @@ static void wifi_scan_cb(lv_event_t *e) { (void)e; hmi_wifi_scan(); wifi_redraw(
 static void wifi_disc_cb(lv_event_t *e) { (void)e; hmi_wifi_disconnect(); wifi_redraw(); }
 static void wifi_forget_cb(lv_event_t *e) { (void)e; hmi_wifi_forget(); wifi_view = WV_LIST; wifi_redraw(); }
 static void wifi_done_cb(lv_event_t *e) { (void)e; wifi_view = WV_LIST; wifi_redraw(); }
+static void wifi_ota_cb(lv_event_t *e)
+{
+    (void)e;
+    hmi_ota_status_t ota;
+    hmi_ota_get_status(&ota);
+    if (ota.armed) hmi_ota_disarm(); else hmi_ota_arm();
+    wifi_redraw();
+}
+/* Re-render on Wi-Fi changes and OTA arm/disarm/expiry, not on upload progress. */
+static uint32_t wifi_signature(void)
+{
+    hmi_ota_status_t ota;
+    hmi_ota_get_status(&ota);
+    return ws.version * 16u + (uint32_t)wifi_view * 4u + (ws.state == HMI_WIFI_CONNECTING ? ws.step : 0u) +
+           ws.state * 1000003u + ota.arm_seq * 7919u;
+}
 
 static void wifi_do_connect(void)
 {
@@ -1787,15 +1805,18 @@ static void wifi_view_info(lv_obj_t *l)
 
     hmi_ota_status_t ota;
     hmi_ota_get_status(&ota);
-    char ota_url[64];
-    snprintf(ota_url, sizeof(ota_url), "http://%s/update", ws.ip);
+    char ota_val[64];
+    if (ota.armed) snprintf(ota_val, sizeof(ota_val), "PIN %s \xC2\xB7 /update", ota.pin);
+    else snprintf(ota_val, sizeof(ota_val), "Locked");
     char slot_str[80];
     snprintf(slot_str, sizeof(slot_str), "%s (Target: %s)", ota.running_slot, ota.next_slot);
-    wifi_cell(l, 8, 218, "WEB OTA", ota_url);
+    wifi_cell(l, 8, 218, ota.armed ? "WEB OTA \xC2\xB7 10 MIN, ONE USE" : "WEB OTA", ota_val);
     wifi_cell(l, 243, 218, "DUAL-OTA SLOT", slot_str);
 
-    (void)wifi_btn(l, 8, 268, 228, "FORGET NETWORK", SURFACE2, TXT2, true, wifi_forget_cb);
-    (void)wifi_btn(l, 244, 268, 228, "DONE", START_COL, 0xFFFFFF, false, wifi_done_cb);
+    (void)wifi_btn(l, 8, 268, 148, "FORGET", SURFACE2, TXT2, true, wifi_forget_cb);
+    (void)wifi_btn(l, 166, 268, 148, ota.armed ? "LOCK OTA" : "ENABLE OTA", ota.armed ? WARN_BG : SURFACE2,
+                   ota.armed ? WARN_COL : TXT2, true, wifi_ota_cb);
+    (void)wifi_btn(l, 324, 268, 148, "DONE", START_COL, 0xFFFFFF, false, wifi_done_cb);
 }
 static void wifi_view_fail(lv_obj_t *l)
 {
@@ -1838,7 +1859,7 @@ static void wifi_render(void)
     case WV_FAIL: wifi_view_fail(wifi_layer); break;
     default: wifi_view_list(wifi_layer); break;
     }
-    wifi_sig = ws.version * 16u + (uint32_t)wifi_view * 4u + (ws.state == HMI_WIFI_CONNECTING ? ws.step : 0u) + ws.state * 1000003u;
+    wifi_sig = wifi_signature();
 }
 static void wifi_tick(lv_timer_t *t)
 {
@@ -1851,7 +1872,7 @@ static void wifi_tick(lv_timer_t *t)
     }
     if (wifi_view == WV_INFO && ws.state != HMI_WIFI_CONNECTED) wifi_view = WV_LIST;
     if (wifi_view == WV_PASS) return;
-    const uint32_t sig = ws.version * 16u + (uint32_t)wifi_view * 4u + (ws.state == HMI_WIFI_CONNECTING ? ws.step : 0u) + ws.state * 1000003u;
+    const uint32_t sig = wifi_signature();
     if (sig == wifi_sig) return;
     for (lv_indev_t *i = lv_indev_get_next(NULL); i; i = lv_indev_get_next(i))
         if (lv_indev_get_state(i) == LV_INDEV_STATE_PRESSED) return;

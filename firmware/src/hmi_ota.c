@@ -9,8 +9,11 @@
 #include "esp_partition.h"
 #include "esp_http_server.h"
 #include "esp_system.h"
+#include "esp_app_desc.h"
 #include "esp_app_format.h"
 #include "esp_heap_caps.h"
+#include "esp_random.h"
+#include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
@@ -24,6 +27,61 @@ static SemaphoreHandle_t s_lock = NULL;
 static hmi_ota_status_t s_status;
 static esp_ota_handle_t s_ota_handle = 0;
 static const esp_partition_t *s_update_partition = NULL;
+static int64_t s_arm_deadline_us;
+static uint8_t s_pin_fails;
+
+/* ---- upload authorization (caller holds s_lock) */
+static void disarm_locked(void)
+{
+    if (!s_status.armed) return;
+    s_status.armed = false;
+    memset(s_status.pin, 0, sizeof(s_status.pin));
+    s_pin_fails = 0;
+    s_status.arm_seq++;
+    s_status.version++;
+}
+
+static void expire_locked(void)
+{
+    if (s_status.armed && esp_timer_get_time() >= s_arm_deadline_us) {
+        ESP_LOGI(TAG, "OTA upload window expired");
+        disarm_locked();
+    }
+}
+
+static bool pin_matches(const char *given)
+{
+    uint8_t diff = 0;
+    for (int i = 0; i < HMI_OTA_PIN_LEN; ++i) diff |= (uint8_t)(given[i] ^ s_status.pin[i]);
+    return diff == 0 && given[HMI_OTA_PIN_LEN] == '\0';
+}
+
+/* True when authorized (the PIN is then consumed); otherwise *code and *why describe the refusal. */
+static bool authorize_upload(httpd_req_t *req, httpd_err_code_t *code, const char **why)
+{
+    char given[16] = {0};
+    const bool have = httpd_req_get_hdr_value_str(req, "X-OTA-PIN", given, sizeof(given)) == ESP_OK;
+    bool ok = false;
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    expire_locked();
+    if (!s_status.armed) {
+        *code = HTTPD_403_FORBIDDEN;
+        *why = "OTA locked: tap ENABLE OTA on the HMI Wi-Fi screen";
+    } else if (!have || !pin_matches(given)) {
+        *code = HTTPD_401_UNAUTHORIZED;
+        *why = "Wrong or missing PIN";
+        if (++s_pin_fails >= HMI_OTA_MAX_PIN_FAILS) {
+            ESP_LOGW(TAG, "Too many wrong OTA PINs; upload window closed");
+            disarm_locked();
+            *why = "Too many wrong PINs: OTA locked, enable it again on the HMI";
+        }
+    } else {
+        disarm_locked();                      /* one-time PIN */
+        ok = true;
+    }
+    xSemaphoreGive(s_lock);
+    return ok;
+}
 
 static void update_status_slots(void)
 {
@@ -40,7 +98,8 @@ static void update_status_slots(void)
     } else {
         snprintf(s_status.next_slot, sizeof(s_status.next_slot), "none");
     }
-    snprintf(s_status.running_version, sizeof(s_status.running_version), "v3.3 OTA (IDF %s)", esp_get_idf_version());
+    /* PROJECT_VER, or `git describe` of the build tree when unset. */
+    snprintf(s_status.running_version, sizeof(s_status.running_version), "%s", esp_app_get_description()->version);
 }
 
 static void delayed_restart_task(void *param)
@@ -73,6 +132,7 @@ static const char INDEX_HTML[] =
 ".drop-zone { border: 2px dashed #334155; border-radius: 10px; padding: 24px; text-align: center; cursor: pointer; transition: 0.2s; background: #070d19; margin-bottom: 16px; }\n"
 ".drop-zone:hover { border-color: #38bdf8; background: #0c1829; }\n"
 ".drop-zone input { display: none; }\n"
+".pin { width: 100%; padding: 11px; margin-bottom: 12px; background: #070d19; color: #f8fafc; border: 1px solid #334155; border-radius: 8px; font-size: 15px; letter-spacing: 4px; text-align: center; }\n"
 ".btn { width: 100%; padding: 12px; background: #0284c7; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; }\n"
 ".btn:hover { background: #0369a1; }\n"
 ".btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }\n"
@@ -103,6 +163,8 @@ static const char INDEX_HTML[] =
 "      <p id='file-name' style='font-size:13px; color:#cbd5e1;'>Click to choose <b>firmware.bin</b></p>\n"
 "      <p style='font-size:11px; color:#64748b; margin-top:4px;'>Supports official ESP32-S3 application binary</p>\n"
 "    </div>\n"
+"    <p id='lock-msg' style='font-size:12px; color:#f59e0b; margin-bottom:10px; display:none;'>OTA is locked. On the HMI open Wi-Fi, tap the connected network, then ENABLE OTA.</p>\n"
+"    <input class='pin' id='pin' type='password' inputmode='numeric' autocomplete='off' maxlength='6' placeholder='6-digit PIN shown on the HMI' oninput='updateBtn()'>\n"
 "    <button class='btn' id='btn-upload' disabled onclick='uploadFirmware()'>Upload & Flash Firmware</button>\n"
 "    <div class='progress-wrap' id='prog-wrap'>\n"
 "      <div class='bar-bg'><div class='bar-fill' id='bar-fill'></div></div>\n"
@@ -117,20 +179,25 @@ static const char INDEX_HTML[] =
 "  fetch('/api/status').then(r => r.json()).then(d => {\n"
 "    document.getElementById('slot-cur').innerText = d.running_slot || 'ota_0';\n"
 "    document.getElementById('slot-next').innerText = d.next_slot || 'ota_1';\n"
-"    document.getElementById('fw-ver').innerText = d.version || 'v3.2 Bento';\n"
+"    document.getElementById('fw-ver').innerText = d.version || 'unknown';\n"
 "    document.getElementById('ram-free').innerText = (d.heap_free ? Math.round(d.heap_free/1024) + ' KB' : 'N/A');\n"
+"    document.getElementById('lock-msg').style.display = d.armed ? 'none' : 'block';\n"
 "  }).catch(() => {});\n"
 "}\n"
 "loadStatus();\n"
+"setInterval(loadStatus, 5000);\n"
+"function pinOk() { return /^[0-9]{6}$/.test(document.getElementById('pin').value); }\n"
+"function updateBtn() { document.getElementById('btn-upload').disabled = !(selectedFile && pinOk()); }\n"
 "function fileSelected(inp) {\n"
 "  if (inp.files && inp.files[0]) {\n"
 "    selectedFile = inp.files[0];\n"
-"    document.getElementById('file-name').innerHTML = 'Selected: <b>' + selectedFile.name + '</b> (' + (selectedFile.size/1024).toFixed(1) + ' KB)';\n"
-"    document.getElementById('btn-upload').disabled = false;\n"
+"    const fn = document.getElementById('file-name');\n"
+"    fn.textContent = 'Selected: ' + selectedFile.name + ' (' + (selectedFile.size/1024).toFixed(1) + ' KB)';\n"
+"    updateBtn();\n"
 "  }\n"
 "}\n"
 "function uploadFirmware() {\n"
-"  if (!selectedFile) return;\n"
+"  if (!selectedFile || !pinOk()) return;\n"
 "  const btn = document.getElementById('btn-upload');\n"
 "  btn.disabled = true;\n"
 "  const pw = document.getElementById('prog-wrap');\n"
@@ -141,6 +208,7 @@ static const char INDEX_HTML[] =
 "  al.style.display = 'none';\n"
 "  const xhr = new XMLHttpRequest();\n"
 "  xhr.open('POST', '/update', true);\n"
+"  xhr.setRequestHeader('X-OTA-PIN', document.getElementById('pin').value);\n"
 "  xhr.upload.onprogress = function(e) {\n"
 "    if (e.lengthComputable) {\n"
 "      const p = Math.round((e.loaded / e.total) * 100);\n"
@@ -158,16 +226,20 @@ static const char INDEX_HTML[] =
 "      setTimeout(() => { location.reload(); }, 6000);\n"
 "    } else {\n"
 "      al.className = 'alert alert-err';\n"
-"      al.innerText = 'Flash failed: ' + (xhr.responseText || 'Error ' + xhr.status);\n"
+"      al.innerText = (xhr.status === 401 || xhr.status === 403 ? 'Refused: ' : 'Flash failed: ') + (xhr.responseText || 'Error ' + xhr.status);\n"
 "      al.style.display = 'block';\n"
-"      btn.disabled = false;\n"
+"      pw.style.display = 'none';\n"
+"      document.getElementById('pin').value = '';\n"
+"      loadStatus();\n"
+"      updateBtn();\n"
 "    }\n"
 "  };\n"
 "  xhr.onerror = function() {\n"
 "    al.className = 'alert alert-err';\n"
-"    al.innerText = 'Network error during upload.';\n"
+"    al.innerText = 'Network error during upload. The PIN was used up if the upload started; enable OTA again on the HMI.';\n"
 "    al.style.display = 'block';\n"
-"    btn.disabled = false;\n"
+"    document.getElementById('pin').value = '';\n"
+"    updateBtn();\n"
 "  };\n"
 "  xhr.send(selectedFile);\n"
 "}\n"
@@ -183,18 +255,31 @@ static esp_err_t index_get_handler(httpd_req_t *req)
 
 static esp_err_t status_get_handler(httpd_req_t *req)
 {
-    char buf[256];
+    char buf[288];
+    xSemaphoreTake(s_lock, portMAX_DELAY);
     update_status_slots();
+    expire_locked();
     const size_t free_ram = heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     snprintf(buf, sizeof(buf),
-             "{\"running_slot\":\"%s\",\"next_slot\":\"%s\",\"version\":\"%s\",\"heap_free\":%zu,\"state\":%d,\"progress\":%u}",
-             s_status.running_slot, s_status.next_slot, s_status.running_version, free_ram, (int)s_status.state, s_status.progress_pct);
+             "{\"running_slot\":\"%s\",\"next_slot\":\"%s\",\"version\":\"%s\",\"heap_free\":%zu,\"state\":%d,\"progress\":%u,\"armed\":%s}",
+             s_status.running_slot, s_status.next_slot, s_status.running_version, free_ram, (int)s_status.state, s_status.progress_pct,
+             s_status.armed ? "true" : "false");
+    xSemaphoreGive(s_lock);
     httpd_resp_set_type(req, "application/json");
     return httpd_resp_send(req, buf, strlen(buf));
 }
 
 static esp_err_t update_post_handler(httpd_req_t *req)
 {
+    httpd_err_code_t deny_code;
+    const char *deny_why;
+    if (!authorize_upload(req, &deny_code, &deny_why)) {
+        ESP_LOGW(TAG, "OTA upload refused: %s", deny_why);
+        /* ESP_OK lets httpd drain the body so the browser receives this status. */
+        httpd_resp_send_err(req, deny_code, deny_why);
+        return ESP_OK;
+    }
+
     char *ota_buf = malloc(OTA_BUF_SIZE);
     if (!ota_buf) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Out of internal heap memory");
@@ -323,14 +408,47 @@ static esp_err_t update_post_handler(httpd_req_t *req)
     return ESP_FAIL;
 }
 
+esp_err_t hmi_ota_init(void)
+{
+    if (s_lock) return ESP_OK;
+    s_lock = xSemaphoreCreateMutex();
+    if (!s_lock) return ESP_ERR_NO_MEM;
+    update_status_slots();
+    return ESP_OK;
+}
+
+void hmi_ota_arm(void)
+{
+    if (!s_lock) return;
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    /* Rejection sampling keeps the 6-digit PIN uniform. */
+    uint32_t r;
+    do { r = esp_random(); } while (r >= 4294000000u);
+    snprintf(s_status.pin, sizeof(s_status.pin), "%06" PRIu32, r % 1000000u);
+    s_status.armed = true;
+    s_pin_fails = 0;
+    s_arm_deadline_us = esp_timer_get_time() + (int64_t)HMI_OTA_ARM_WINDOW_S * 1000000;
+    s_status.arm_seq++;
+    s_status.version++;
+    xSemaphoreGive(s_lock);
+    ESP_LOGI(TAG, "OTA upload window opened for %d s", HMI_OTA_ARM_WINDOW_S);   /* PIN is not logged */
+}
+
+void hmi_ota_disarm(void)
+{
+    if (!s_lock) return;
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    disarm_locked();
+    xSemaphoreGive(s_lock);
+}
+
 esp_err_t hmi_ota_start_server(void)
 {
     if (s_server) {
         return ESP_OK;
     }
     if (!s_lock) {
-        s_lock = xSemaphoreCreateMutex();
-        update_status_slots();
+        return ESP_ERR_INVALID_STATE;
     }
 
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -389,6 +507,7 @@ void hmi_ota_stop_server(void)
         httpd_stop(s_server);
         s_server = NULL;
     }
+    hmi_ota_disarm();
 }
 
 bool hmi_ota_server_is_running(void)
@@ -400,6 +519,7 @@ void hmi_ota_get_status(hmi_ota_status_t *out)
 {
     if (!out) return;
     if (s_lock && xSemaphoreTake(s_lock, pdMS_TO_TICKS(50)) == pdTRUE) {
+        expire_locked();
         *out = s_status;
         xSemaphoreGive(s_lock);
     } else {
