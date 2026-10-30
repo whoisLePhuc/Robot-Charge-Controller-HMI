@@ -45,6 +45,10 @@ typedef struct {
     uint32_t firmware_revision;
     uint32_t hardware_revision;
     uint8_t build_flags;
+    /* GET_STATUS byte 19 / flags bit5 (controller CR-01): the interface the
+     * controller's CONFIG grants START/STOP, and whether that is this HMI. */
+    uint8_t control_interface;
+    bool is_control;
     uint64_t boot_id;
     uint16_t last_command;
     rcc_command_state_t command_state;
