@@ -232,6 +232,8 @@ static void parse_reply_data(uint16_t command, const uint8_t *data,
         s_model.charging_established = (data[18] & 1u) != 0u;
         s_model.simulated_measurements = (data[18] & 0x08u) != 0u;
         s_model.simulated_ready = (data[18] & 0x10u) != 0u;
+        s_model.is_control = (data[18] & 0x20u) != 0u;
+        s_model.control_interface = data[19];
         s_model.session_id = u32(&data[20]);
         s_model.status_valid = true;
         s_last_status_us = now;

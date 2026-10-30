@@ -1017,13 +1017,27 @@ static void page_device(lv_obj_t *p, const rcc_snapshot_t *m, int H)
         lv_obj_t *c2 = card_box(p, 208, ry, 200, ch, CARD, 10, LINE);
         section(c2, 13, 7, 174, "BUILD FLAGS & BUSES", NULL, 0);
         const int g2 = (ih - 16 - 54 - 20) / 4;
-        static const char *const fl[3] = {"Provisional", "Relay enable", "Op. node"};
+        /*
+         * Row 3 is control authority from GET_STATUS (controller CR-01): the
+         * controller's CONFIG names one interface; "THIS HMI" when it is ours.
+         * Build-flag bit2 is reserved on current controllers and not shown.
+         */
+        static const char *const fl[3] = {"Provisional", "Relay enable", "Control"};
+        static const char *const ifn[5] = {"NONE", "CAN", "RS485", "UART", "SVC"};
         for (int i = 0; i < 3; ++i) {
             const int yy = 7 + 16 + (i + 1) * g2 + i * 18;
-            const bool on = rd && ((m->build_flags >> i) & 1u);
             text_in(c2, fl[i], 13, yy, 120, 18, F12, LABEL, LV_TEXT_ALIGN_LEFT);
-            if (!rd) text_in(c2, "\xE2\x80\x94", 13, yy, 174, 18, F12B, DIM, LV_TEXT_ALIGN_RIGHT);
-            else chip(c2, 187, yy, on ? "ON" : "OFF", on ? WARN_COL : LABEL, on ? WARN_BG : SURFACE2);
+            const bool known = (i < 2) ? rd : (rd && m->status_valid);
+            if (!known) {
+                text_in(c2, "\xE2\x80\x94", 13, yy, 174, 18, F12B, DIM, LV_TEXT_ALIGN_RIGHT);
+            } else if (i == 2) {
+                const char *who = m->is_control ? "THIS HMI"
+                                  : (m->control_interface < 5u ? ifn[m->control_interface] : "?");
+                chip(c2, 187, yy, who, m->is_control ? OK_COL : LABEL, SURFACE2);
+            } else {
+                const bool on = (m->build_flags >> i) & 1u;
+                chip(c2, 187, yy, on ? "ON" : "OFF", on ? WARN_COL : LABEL, on ? WARN_BG : SURFACE2);
+            }
         }
         static const char *const ln[4] = {"CAN", "RS485", "UART", "SVC"};
         int lw[4], tot = 0;

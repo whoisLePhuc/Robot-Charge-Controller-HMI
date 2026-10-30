@@ -6,10 +6,10 @@ process (ICD/FDD). The HMI must **not** assume any of them has been done.
 
 | ID | Title | Effect on the HMI | Related |
 |---|---|---|---|
-| CR-01 | Tell a peer which interface is the active control interface | The HMI cannot know whether it may START/STOP until it is rejected | ICD §10, §11.1 |
+| CR-01 | Tell a peer which interface is the active control interface | **Done on controller branch `feat/single-image` (2026-10-30):** GET_STATUS byte 19 `control_interface`, flags bit5 `requester_is_control`; the HMI shows it on Device > Control | ICD §10, §11.1 |
 | CR-02 | Freeze fault and inhibit bit positions in the ICD | The HMI decodes `active_fault_mask` / `inhibit_mask` by bit positions that exist only in firmware source | ICD §11.1.1, FDD-004 |
 | CR-03 | `UART.md` §7 says the operational UART may send unsolicited EVENTs; the firmware sends none | Two documents disagree; the HMI polls | `UART.md` §7, ICD §14.2, `ICD-OPEN-011` |
-| CR-04 | Production authorization of the operational node | Without it the HMI can control only a bench image | `FDD10-OPEN-005`, `ICD-OPEN-006` |
+| CR-04 | Production authorization of the operational node | **Done on controller branch `feat/single-image` (2026-10-30):** authority is CONFIG data; commit a CONFIG with `operational_interface = 3`, node 0 over the service UART. Bench-verified: START from the HMI reached Control (`CHARGER_REQUEST_ABSENT`), START from the service UART got `UNAUTHORIZED_SOURCE` | `FDD10-OPEN-005`, `ICD-OPEN-006` |
 | CR-05 | Bind ledger retention and timeouts | The HMI needs a known safe retry window | `ICD-OPEN-005` |
 
 ## CR-01: Report the active control interface
