@@ -1,4 +1,4 @@
-/* Elecrow environment, LCD and touch bring-up; no controller commands. */
+/* Elecrow S3 entry point: memory check, watchdog, settings, Wi-Fi/OTA, then LCD, touch, HMI and RCC UART link. */
 #include <inttypes.h>
 
 #include "esp_err.h"
@@ -67,6 +67,7 @@ void app_main(void)
 
     /* Initialize NVS and load persistent configuration */
     ESP_ERROR_CHECK(hmi_settings_init());
+    ESP_ERROR_CHECK(hmi_ota_init());
     if (!hmi_wifi_init()) ESP_LOGW(TAG, "Wi-Fi unavailable; the Wi-Fi screens will say so");
 
     ESP_ERROR_CHECK(elecrow_s3_display_start());
