@@ -36,9 +36,8 @@ Use 3.3 V UART logic. For the PC simulator, replace the controller with a
 separate USB-to-UART adapter: adapter TX to HMI RX, adapter RX to HMI TX and
 common GND. Native USB is the console, not this link.
 
-Device → COMM LINK still displays legacy `UART0` / `GPIO1 / 3` labels in
-`hmi_ui.c`. The active transport is UART1 / GPIO43 / GPIO44 as defined in
-`rcc_link.c`; correcting the screen labels requires a separate firmware change.
+Device → COMM LINK shows the same binding (`UART1`, `GPIO43 / 44`) as
+`rcc_link.c`.
 
 ## Build and USB upload
 
