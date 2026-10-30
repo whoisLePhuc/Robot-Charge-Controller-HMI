@@ -1,318 +1,146 @@
-# HMI pages and information
+# HMI pages and implemented behavior
 
-This document specifies the content, behaviour and data of every HMI screen. It
-is a UI contract, not LVGL code. Every field, code and state comes from
-[controller-interface.md](controller-interface.md); where the two differ, the interface
-document is right.
+This describes `firmware/src/hmi_ui.c` and `rcc_link.c` at revision `28d2253`,
+checked on 2026-10-30. It replaces the earlier pre-implementation UI contract.
+The HTML mockup and preview images are design references and may differ from
+the current firmware. Hardware layout/navigation acceptance remains pending.
+Controller wire semantics are documented in
+[controller-interface.md](controller-interface.md).
 
-The HMI is intended to monitor the charger and request controller actions. The
-current firmware link is offline, so those actions are disabled.
-While it holds control, the robot can no longer START/STOP over RS485/CAN: a session can
-be stopped only from the HMI or the hardware E-stop, so STOP on the HMI must always be
-available. §3.4 still applies when the controller is not configured for the HMI.
+## Layout and refresh
 
-On-screen language is English; the labels below are the strings shown on the
-display, kept in one string table.
+The display is landscape 480 × 320. A left rail selects Overview, Measure,
+Faults, Session and Device. The header shows controller identity, UART status,
+fault state and Wi-Fi access. Content occupies a 408 px-wide area starting at
+x = 64. Banners reduce available content height; the bottom action bar changes
+with the page, controller state and latest command result.
 
-## 1. Display principles
+A 1 s LVGL timer refreshes the UI. Rebuilding is deferred while a touch is
+held or a START/Wi-Fi modal is open. The OTA overlay is updated before this
+modal check. Main labels are English literals; selecting Vietnamese stores a
+preference but does not translate the interface.
 
-1. **Device state matters more than the open page.** Link state, serious faults and
-   whether data is confirmed are always visible.
-2. **Missing data is never shown as 0.** Missing or invalid data shows `—` with
-   `No data`, `Stale` or `Invalid`.
-3. **Command state is separate from charging state.** `ACCEPTED` means the controller
-   took the request, not that it is charging or that the relay closed.
-4. **Never claim contact state.** The current controller board has no contact feedback:
-   `relay_feedback` is always `UNKNOWN`. Show the relay *command* separately and label
-   it as a command, not a confirmation.
-5. **A lost link does not mean stopped.** The controller continues a session when
-   communication is lost (ICD §19). When the link is lost during charging, say
-   "charging may still be in progress".
-6. **No service changes from the HMI.** No control-interface, node, calibration or
-   clear-fault operations.
-7. **Warnings use an icon or text as well as colour,** never colour alone.
-8. **Large touch targets:** at least about 44 × 44 px; START/STOP larger and far enough
-   from other targets to avoid mis-taps. The capacitive panel reports touch
-   coordinates directly; keep important actions tap-based and clearly separated.
+## Pages
 
-## 2. Frame layout (landscape 480 × 320)
-
-Orientation: landscape, 480 × 320. Grid taken from `mockups/hmi-ui-landscape.html`:
-
-| Region | Position (px) | Content |
-|---|---|---|
-| Navigation rail | x 0–52, full height | five tabs of 64 px: `Overview`, `Measure`, `Faults`, `Session`, `Device`; icon plus short label; current tab marked; fault badge on `Faults` |
-| Header | x 60–472, y 0–34 | device name, link chip (state + age), fault icon (tap opens Device / Faults) |
-| Banner | x 52–480, y 34–52 | global banner (§9.3), hidden when none |
-| Content | x 60–472, y 36–262 | page content; may scroll except on Overview |
-| Action bar | x 60–472, y 268–312 | START or STOP, full width, 44 px high |
-
-- On every page except Overview, a compact STOP button stays in the action bar whenever
-  a session may be active or the state is unknown.
-- No modal, keyboard or banner may cover the action bar. The START confirmation has an
-  easy-to-hit cancel button and never opens by itself at boot or reconnect.
-
-## 3. Page 1 — Overview
-
-### 3.1 Information
-
-- Link: `Connected` / `Link lost` / `Reconnecting`, with the age of the last valid reply
-  (`Updated 0.4 s ago`).
-- The controller's two-level state (§3.2), never renamed in a way that changes its
-  meaning.
-- VOUT (V) and IOUT (A) only when all six validity bits are set; VOUT below the floor is
-  shown as `≤ 3.4 V` (bit6 below-floor), never as 0.
-- The primary fault or the inhibit that blocks START.
-- Latest command state: sending, accepted, completed, rejected, failed, unconfirmed.
-- `Relay command: CLOSED/OPEN` and `Contact feedback: none on this board`.
-
-### 3.2 State → label → controls
-
-`top_state` / `operational_state` per
-[controller-interface.md §8.3](controller-interface.md#83-two-level-state-firmware-rcc_statesh-confirmed).
-"START allowed" is a UI hint only; the controller always decides. The compact STOP is
-available in every state; the last column says when STOP is the primary action on
-Overview.
-
-| top / op | Label | START allowed | STOP primary |
-|---|---|---|---|
-| BOOT_SAFE, SELF_TEST | `Starting up` | no | no |
-| SERVICE_LOCK | `Service lock — configuration or calibration needed` | no | no |
-| CONFIG_MODE | `Being configured (service)` | no | no |
-| OPERATIONAL / IDLE | `Ready` | yes, if the link is fresh, no fault, no other command pending | no |
-| OPERATIONAL / VREQ_VALIDATE | `Validating charge request` | yes | yes |
-| OPERATIONAL / PRECHECK | `Pre-checking` | yes (if not armed) | yes |
-| OPERATIONAL / RELAY_CLOSING | `Closing relay` | no | yes |
-| OPERATIONAL / CHARGE_VERIFY | `Verifying charge current` | no | yes |
-| OPERATIONAL / CHARGING | `Charging` (only with flag `charging_established` = 1) | no | yes |
-| OPERATIONAL / COMPLETE | `Charge complete` | no | no (relay commanded open) |
-| OPERATIONAL / WAIT_REARM | `Waiting for charger removal` | no | no |
-| INHIBITED | `Inhibited` + inhibit name (REMOTE / RESET / RECOVERY) | yes: START may clear an eligible inhibit; the controller decides | no |
-| LATCHED_FAULT | `Latched fault — service needed` + fault name | no | no |
-| unknown (link lost, not yet read) | `Not confirmed` | no | yes |
-
-Example from the bench without INA240: `INHIBITED`, inhibit `RECOVERY`, primary fault
-`ADC_STALE`. The UI must show this case without misreading it.
-
-### 3.3 START/STOP
-
-- **START:** opens a confirmation summarizing state, fault/inhibit and data age. After
-  sending, per the command-state contract in this document:
-  show `Request accepted — checking` on `ACCEPTED`, and show `Charging` only when the
-  terminal result is `COMPLETED` **and** GET_STATUS reports `CHARGING` with
-  `charging_established = 1`.
-- START is disabled when: the link is lost or stale, another START is pending, the state
-  does not allow it (§3.2), or the protocol is incompatible. Give the reason in text.
-- **STOP:** sent at once, no confirmation. The button reads `STOPPING…` until the
-  terminal result.
-  - `COMPLETED`: `Stopped by command — relay commanded open`. Never "contacts open".
-  - `REJECTED/QUEUE_FULL`: `Stop took effect but could not be tracked — send again`.
-    For STOP this `REJECTED` does **not** mean "nothing was done".
-  - `FAILED/PERSISTENCE_FAILED`: `Relay commanded open, but saving the state failed`.
-  - `REJECTED/UNAUTHORIZED_SOURCE`: `HMI has no authority to stop — use the E-stop`,
-    shown as an error.
-  - Timeout: `NOT CONFIRMED — check the controller`; never `Stopped`.
-
-### 3.4 When the HMI has no control authority
-
-Applies on `UNAUTHORIZED_SOURCE`, i.e. the controller has not selected the operational
-UART as the control interface, or its image does not trust the operational node
-Controller authority remains with the controller:
-
-- Replace the START/STOP area with `Controller has not granted control to this HMI —
-  monitoring only` and a short hint: the operational UART must be configured on the
-  controller (service).
-- Do not show a STOP button as if it worked. Point to the hardware E-stop.
-- Before the first control command, authority is "unknown" (the controller does not
-  report it; [controller-change-requests.md](controller-change-requests.md) CR-01).
-
-### 3.5 Overview layout (landscape)
-
-```text
-┌────┬─────────────────────────────────────────────────────┐
-│ OV │ RCC-01        ● CONNECTED · 0.4 s              [⚠] │  header 34 px
-│ ME ├─────────────────────────────────────────────────────┤
-│ FL │                    CHARGING                         │  hero
-│ SE │             OPERATIONAL · CHARGING                  │
-│ DE │   IDLE   PRE   RELAY   VERIFY   [CHG]               │  stage strip
-│    │ ┌─────────────────┐   48.2 V    8.0 A    386 W     │
-│    │ │ UART  ·  0.4 s  │    (ring)   (ring)   (ring)    │  card + rings
-│    │ │ No active fault │                                 │
-│    │ │ Relay cmd CLOSED│                                 │
-│    │ │ Feedback  NONE  │                                 │
-│    │ ├─────────────────────────────────────────────────┤ │
-│    │ │                     STOP                         │ │  action bar 44 px
-└────┴─────────────────────────────────────────────────────┘
-```
-
-The sketch shows structure only. Example readings are inside the project's operating
-envelope (≤ 60 V, ≤ 10 A continuous). The stage strip groups `VREQ_VALIDATE` and
-`PRECHECK` under `PRE` and has no `COMPLETE`/`WAIT_REARM`; the hero label carries the
-exact state. Power (W) is shown only when both V and I are valid.
-
-## 4. Page 2 — Measure
-
-| Field | Display | Rule |
-|---|---|---|
-| VOUT | V, 2 decimals | from `vout_mv`; valid only with all six bits; bit6 → `≤ x V` |
-| IOUT | A, **signed** | from `iout_ma` (i32); never drop the sign or clamp negatives to 0 |
-| Filtered VOUT / IOUT | V / A, labelled `Filtered` | `vout_filtered_mv`, `iout_filtered_ma` |
-| Measurement sequence | number | not advancing between reads = the controller is not updating |
-| Age | ms | `age_ms` plus the time the HMI has held it; over the threshold → `Stale` |
-| Calibration | `Calibrated` / `Not calibrated` | bit2 of each channel; there is no separate field |
-| Validity | present, fresh, calibrated, in-range, not-saturated, plausible, below-floor | summarized as `Valid`; tap to see every bit |
-
-- Invalid or stale data shows `—`. The last value may stay in a secondary area, dimmed
-  and labelled `Last value, stale`.
-- A negative IOUT while charging may mean a calibration with the opposite sign (see the
-  controller's demo 1 runbook, decision D4). Never flip the sign; show what the
-  controller reports.
-- No charts until the HMI sampling rate and RAM budget are known.
-
-## 5. Page 3 — Faults and operating conditions
-
-- Summary: `No fault`, `Fault active`, `Inhibited`, or `Fault state unreadable`.
-- `primary_fault` with its name from
-  [controller-interface.md §8.6](controller-interface.md#86-faults-rcc_fault_registryh-ids-confirmed-by-fdd-004-bit-positions-not-frozen)
-  and its hex code.
-- `active_fault_mask` and `inhibit_mask` as lists of named bits. Unknown bits:
-  `Unrecognized (bit n)`; never dropped.
-- Distinguish: an active fault, an inhibit that is not a fault, and unreadable data.
-- Hints for common faults (for example `ADC_SATURATED` / `IOUT_INVALID`: "check the
-  current-sense circuit") are hints, not diagnoses.
-
-No `CLEAR_FAULT`, calibration, CONFIG or interface change. Bit positions are not frozen
-by the ICD (CR-02): when the controller's `firmware_revision` differs from the one this
-table was checked against, show `Fault table may not match this controller` with the
-raw codes.
-
-## 6. Page 4 — Session and event log
-
-### 6.1 Session
-
-- `session_id` from GET_STATUS.
-- Current charging state.
-- Duration: only from `duration_ms` of SESSION_COMPLETED/SESSION_ABORTED once the session
-  has ended; never an HMI-side stopwatch presented as session duration.
-- Latest START/STOP result: result, reason, time the HMI received it.
-- Session end reason from `terminal_reason` (COMPLETE, REMOTE_STOP, CHARGE_LOST, …).
-
-### 6.2 Event log
-
-- Read with GET_EVENT_LOG by cursor; loaded when the page opens and on `Load newer`.
-- The log lives in controller RAM, keeps the last 32 events and is **lost when the
-  controller restarts**. Show `missed` when > 0: `n events overwritten`.
-- Time column: the HMI does not send `SET_TIME`, so controller time stays
-  unsynchronized.
-  Show time relative to now or to the controller boot, from `monotonic_us`; show UTC only
-  if an event carries `time_synchronized` = 1.
-- `STATE_CHANGED`, `INHIBIT_CHANGED` and `FAULT_CHANGED` are coalesced; the log is not a
-  complete record of every change.
-- Distinguish `log empty` from `log unavailable`. Never use the log instead of current
-  state; current state comes from GET_STATUS.
-
-## 7. Page 5 — Device and link
-
-### 7.1 From GET_DEVICE_INFO
-
-- `product_id`, `protocol_version`, `hardware_revision`, `firmware_revision`, 8-byte image
-  hash.
-- Build flags: `provisional`, `relay_enable`, `operational_node` (read-only, with a short
-  explanation).
-- When `provisional` = 1 or `operational_node` = 1: a permanent notice `Controller runs a
-  bench image — not a product build.
-  When `relay_enable` = 0: add `Relay is locked in this build — START will not close the
-  relay`.
-- Links running on the controller: CAN, RS485, operational UART, service UART.
-- `boot_id`, and when the HMI saw it change.
-- Compatibility: `Compatible` when `product_id = 0x0001` and `protocol_version = 1`;
-  otherwise `Unsupported version`.
-
-GET_DEVICE_INFO does **not** report the active control interface; never present it as
-known.
-
-### 7.2 Link diagnostics
-
-- Online/offline, age of the last valid reply.
-- HMI-side counters: timeouts, CRC-16 errors, CRC-32 errors, malformed frames, reconnects.
-- HMI transport state and diagnostics, kept apart from controller information.
-- `Reconnect`: restarts communication and queries only; never resets the controller and
-  never sends START/STOP.
-
-## 8. Time
-
-The HMI does not send `SET_TIME` and has no clock setting
-There is no time page.
-
-## 9. Modals, toasts and banners
-
-### 9.1 START confirmation
-
-`Request charge start?`, current state, data age, fault/inhibit. `CANCEL` and
-`SEND START` clearly distinct; when conditions are not met, sending is disabled and the
-reason is given.
-
-### 9.2 Command results
-
-| Result | Text |
+| Page | Implemented information |
 |---|---|
-| sending | `Waiting for the controller…` |
-| `ACCEPTED` | `Controller accepted the request; not yet complete` |
-| `COMPLETED` | START: `Charge current established` (once state confirms); STOP: §3.3 |
-| `REJECTED` | `Rejected` + reason; STOP/QUEUE_FULL per §3.3 |
-| `FAILED` | `Failed` + reason + state |
-| timeout | `No confirmation received`; actual state unknown until the next query |
+| Overview | State hero, stage strip, link/fault/relay-command summary, voltage/current/power and START/STOP action |
+| Measure | Raw and filtered signed values, sequence, controller sample age, HMI-held age and channel-quality matrix |
+| Faults | Summary, primary fault/code, action hint, named fault/inhibit masks and raw registers |
+| Session | Session ID/state, completed-session duration, last command, end reason and scrollable event list with SYNC |
+| Device / CONTROLLER | Product/protocol, HW/FW revisions, abbreviated image/boot IDs, build flags and running links |
+| Device / COMM LINK | Online state, reply/data ages, timeout/bad-frame/missed-event counters and port labels |
+| Device / SETTINGS | Backlight, inactivity dimming, language preference and Wi-Fi entry |
 
-Reasons are shown with a readable name and the code (`CHARGER_REQUEST_ABSENT` →
-`No charge request from the charger`, `INVALID_STATE` → `Not allowed in the current
-state`, …).
+Missing or invalid measurements use a dash or a stale/invalid indication.
+Current remains signed. Power is derived only when both voltage and current
+are valid. VOUT below the measurement floor is shown as an upper bound.
+The Measure quality matrix exposes bits 0–5 plus the floor bit; bit positions
+for controller fault/inhibit names remain an open controller interface issue.
 
-### 9.3 Global banners
+Session duration comes from terminal session events; an active session shows
+`In progress`. Event times are relative to controller boot. The HMI does not
+send SET_TIME. SYNC requests event-log data, not clock synchronization.
 
-| Condition | Banner |
+## Link freshness and polling
+
+- UART1 TX GPIO43 / RX GPIO44, 115200 8N1, is started during display startup.
+  A startup error produces `UART FAILED` / `UART INIT FAILED` indications.
+- The link is marked offline after more than 2 s without a matching reply.
+  The banner warns `LINK LOST · CHARGING MAY CONTINUE`.
+- UI status is fresh when online, valid and held for at most 1500 ms.
+  Voltage/current additionally need valid measurement data held for at most
+  1500 ms and all six channel-status bits set (`0x3F`). Controller sample age
+  is displayed separately; these UI predicates do not add it to held age.
+- One query transaction runs at a time. Query starts are at least 170 ms
+  apart and cycle through PING, STATUS, MEASUREMENTS, STATUS, FAULTS, EVENTS,
+  STATUS, MEASUREMENTS, DEVICE_INFO. Event queries request up to four records.
+  Actual rates depend on response time/retries, not the open page.
+
+## START and STOP
+
+START is offered on Overview when status is fresh, no command is SENDING or
+ACCEPTED, and state is either INHIBITED or OPERATIONAL/IDLE. It opens
+`Confirm Charge Start`, showing controller state, link age, ADC validity and
+fault/inhibit information. SEND START queues the request. The link layer
+rechecks online/status age and pending transactions before accepting it.
+Controller authorization, precheck and relay decisions remain controller-owned.
+
+STOP queues immediately without confirmation when no START modal blocks the
+click handler. The link layer allows a STOP request without requiring online
+status and dispatches it before a newly queued START. This is a request, not
+proof that the controller received it. Compact STOP/status bars appear on
+other pages when appropriate; a recent authorization rejection replaces the
+bar with the no-authority indication.
+
+Initial transmissions allow two identical retries at 50 ms intervals,
+retaining the request ID and bytes. ACCEPTED changes to waiting up to 15 s for a
+terminal result; a timeout is UNCONFIRMED. START/STOP results are displayed separately
+from charging state. `CHARGING` without `charging_established` is shown as
+`NOT_CONFIRMED` / `CHARGING NOT ESTABLISHED`.
+
+Current STOP wording is implemented as follows:
+
+| Command result | Action-bar feedback |
 |---|---|
-| Link lost or stale | `LINK LOST — charging may still be in progress`; START disabled; never covers STOP |
-| New fault | high priority; tap to open Faults |
-| `boot_id` changed | `Controller restarted`; cancel every pending command, query everything again |
-| Incompatible protocol | control disabled; diagnostics only |
-| `UNAUTHORIZED_SOURCE` | `HMI has no control authority` (§3.4) |
+| SENDING | Waiting for controller; STOP sent, not yet confirmed |
+| COMPLETED | Stopped by command; relay commanded open |
+| REJECTED | STOP rejected plus reason, except the separate no-authority bar |
+| FAILED | Stop took effect, not tracked; Send STOP again |
+| Other nonterminal/unconfirmed state | NOT CONFIRMED; check controller |
 
-## 10. Data sources
+These are current UI strings, not independent evidence of contact movement.
+The board has no contact feedback. Controller reason semantics, including
+QUEUE_FULL and PERSISTENCE_FAILED, must be interpreted using the interface
+document; see the remaining differences below.
 
-| Data | Source | Suggested refresh | Used for control? |
-|---|---|---|---|
-| State, relay, session, flags, `boot_id` | GET_STATUS | ~2 Hz in foreground | START hint; the controller decides |
-| V/I and validity | GET_MEASUREMENTS | 2–5 Hz | display only |
-| Faults, inhibits | GET_FAULTS (also in every result header) | ~1 Hz and on page open | explanation, START hint |
-| Identity, build flags | GET_DEVICE_INFO | on connect and when `boot_id` changes | compatibility |
-| Event log | GET_EVENT_LOG | on demand | no |
-| START/STOP results | COMMAND_RESULT by `request_id` | when they arrive, possibly seconds later | command life cycle |
+## Local settings, networking and updates
 
-Rates are starting points to be measured on hardware.
+Device → SETTINGS and the Wi-Fi screens configure the HMI only. Brightness,
+dimming and language selection are persisted in NVS. Wi-Fi provides scanning,
+connection, network information, disconnect/forget and automatic reconnection.
+Web OTA runs after the station obtains an IP address and displays update
+progress. See [settings, Wi-Fi and OTA](settings-wifi-and-ota.md) for operating
+steps, defaults, rollback behavior and current limitations.
 
-## 11. Colour and wording
+## Known differences and acceptance work
 
-- **Normal:** neutral; green/blue only for states the controller has confirmed.
-- **In progress:** accent colour plus spinner or text, never the success colour.
-- **Warning/inhibit:** yellow/orange plus the cause.
-- **Fault:** red plus icon plus description.
-- **Link lost / stale / unknown:** grey, always with text.
+- COMM LINK still says `UART0` / `GPIO1 / 3`; the actual transport uses UART1 /
+  GPIO43 / GPIO44. Use the transport source for wiring.
+- English/Vietnamese selection is saved but main labels are not translated.
+- The earlier design required STOP accessibility through every modal. The
+  current START modal covers the action-bar area and `action_click()` returns
+  while it is open. Wi-Fi and OTA overlays also need STOP-access acceptance.
+- START gating is narrower than the earlier design: VREQ_VALIDATE/PRECHECK do
+  not offer START. The UI predicate does not explicitly check product/protocol
+  compatibility, relay authorization or active-interface authority.
+- A no-authority indication follows a rejected command; the controller does
+  not report active control-interface selection in advance. This is not a
+  permanent locally enforced monitoring-only mode.
+- STOP rejection/failure wording is generic. Reason-specific QUEUE_FULL and
+  PERSISTENCE_FAILED behavior from the earlier UI contract is not fully
+  represented by the current strings.
+- Port labels, generic command wording, build/version labels and fault-table
+  compatibility require review before release. A `PRODUCT BUILD` label is
+  derived from the provisional flag alone, not production certification.
+- There is no reconnect button, separate CRC16/CRC32 counter UI, or guaranteed
+  clock synchronization. Controller restart detection clears cached records;
+  it is not a full controller or HMI reset.
+- Test navigation, touch/modal behavior, reconnect/reboot, command outcomes,
+  settings persistence, Wi-Fi/OTA, rollback and long-duration operation on the
+  physical target. Protocol simulator tests do not establish these results.
 
-Consistent wording: *request* is a command; *state* is controller data; *contact
-feedback* is an independent sensor (absent on this board); *not confirmed* means no
-evidence from the controller yet.
+## Simulated ADC demonstration
 
-## 12. UI review checklist (before coding)
+GET_STATUS flags bit3 identifies simulated measurements; bit4 reports source
+readiness. Legacy controllers leave both zero. Both UI and link START admission
+require simulated_ready when simulated_measurements is set. The shared banner
+keeps SIMULATED V/I visible on all five pages, identifies the real relay command
+and retains link/fault/authority warnings. START confirmation and session data
+are annotated as simulated. UART pins, baud, touch and normal peers retain the
+existing workflow. A fresh status is held for strictly less than 1500 ms.
 
-- Does every field have a source, unit, freshness and validity rule from
-  `controller-interface.md`?
-- Is command state separate from controller state?
-- Do link loss, controller reboot, late replies, duplicate replies and protocol mismatch
-  each have a defined display?
-- Does a lost link during charging say that charging may continue?
-- Is STOP reachable without closing a modal or navigating? Is "no authority" shown?
-- Is STOP `REJECTED/QUEUE_FULL` never shown as "nothing done"?
-- Does any page accidentally allow changing controller authority or configuration?
-- Do labels fit 480 × 320 at the chosen font size; are touch targets large enough?
-- Are relay command and contact feedback shown separately, feedback always "none"?
-- Does the UI work with unsynchronized time and with an empty or overwritten log?
+The controller demo uses real persistence and relay actuation, with a 60 s
+effective in-memory session cap. Simulated current does not establish actual
+charging. See the controller repository's
+[demo runbook](../../robot_charge_controller/docs/firmware/verification/sim-adc-demo-runbook.md).

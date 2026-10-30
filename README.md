@@ -79,10 +79,17 @@ powershell -ExecutionPolicy Bypass -File firmware/tools/export_readme_previews.p
 
 Robot Charge Controller HMI targets the **Elecrow DLE06235B / ES3C35P ESP32-S3**
 in **480 × 320 landscape** orientation, using **PlatformIO, ESP-IDF and LVGL**.
-The five-page UI is integrated; the current firmware uses an offline controller
-backend until the new board's UART pins are confirmed.
+The five-page UI is integrated with the RCC protocol transport on **UART1,
+TX GPIO43 / RX GPIO44, 115200 8N1**. The firmware attempts to start this link
+during display initialization. Physical wiring and end-to-end controller
+operation still require verification.
 
 Charging decisions, interlocks and relay control remain owned by the controller.
+
+Documentation was reconciled with source revision `28d2253` on 2026-10-30.
+Source implementation and earlier bring-up observations are distinguished from
+hardware acceptance; this documentation update does not establish a new target
+build or physical test result.
 
 ## UI Pages
 
@@ -92,7 +99,7 @@ Charging decisions, interlocks and relay control remain owned by the controller.
 | Measure | Raw and filtered measurements, validity bits and sample age |
 | Faults | Primary fault, active fault mask and inhibit reasons |
 | Session | Session information, last command result and recent events |
-| Device | Controller identity, build flags and link diagnostics |
+| Device | Controller identity, build flags, link diagnostics, display settings and Wi-Fi |
 
 <details>
 <summary>View the five-page design comparison</summary>
@@ -121,7 +128,9 @@ Charging decisions, interlocks and relay control remain owned by the controller.
 | Platform | Espressif32 7.1.3 |
 | Framework | ESP-IDF 6.1.0 |
 | UI | LVGL 9.6.0 |
-| Controller link | Disabled pending confirmation of Elecrow UART pins |
+| Controller link | UART1, TX GPIO43 / RX GPIO44, 115200 8N1, 3.3 V logic |
+| Local settings | NVS-backed brightness, inactivity dimming and language selection |
+| Networking / update | Wi-Fi station and HTTP Web OTA; two 3.5 MiB app slots |
 
 ## Key Features
 
@@ -132,16 +141,24 @@ Charging decisions, interlocks and relay control remain owned by the controller.
 - Device identity, build flags and UART diagnostics.
 - START confirmation, STOP requests and command-result feedback.
 - Lost-link and unconfirmed-command indications.
-- Python controller simulator for use after the HMI transport is enabled.
+- Python controller simulator through a separate USB-to-UART adapter.
+- Display settings and inactivity dimming, persisted in NVS.
+- Wi-Fi scan/connect/forget screens and saved credentials.
+- Web OTA update service with dual app slots and boot rollback configured.
+
+The language setting is stored, but the main UI labels remain English. See
+[local settings, Wi-Fi and OTA](docs/settings-wifi-and-ota.md) for current behavior
+and implementation limits.
 
 ## Project Status
 
 | Area | Current state |
 |---|---|
-| Firmware build | Successful |
-| Display and touch | LCD and touch tested; five-page HMI flashed, visual acceptance pending |
-| UART simulator host tests | 33 tests passed |
-| Controller simulator link | Pending transport integration for Elecrow |
+| Firmware build | Previously reported successful; current source includes UART, settings, Wi-Fi and OTA |
+| Display and touch | Earlier bring-up reports LCD/touch operation and a flashed five-page image; current-image acceptance pending |
+| UART simulator host tests | 2026-10-30: 33 discovered; 31 passed, 2 skipped (optional codec comparison and missing pyserial) |
+| Controller simulator link | Transport compiled into target; physical adapter-to-HMI test pending |
+| Settings, Wi-Fi and Web OTA | Implemented; hardware acceptance and rollback tests pending |
 | Touch-driven START/STOP workflows | Hardware verification pending |
 | Real controller integration | Pending |
 | Long-duration operation | Pending |
@@ -149,8 +166,8 @@ Charging decisions, interlocks and relay control remain owned by the controller.
 ## Build and Upload
 
 The `elecrow_s3` image runs the shared five-page HMI on the ST77922 QSPI LCD with
-integrated capacitive touch. Controller UART remains disabled until its board
-pins are confirmed. Bare `pio run` uses the Elecrow environment.
+integrated capacitive touch and RCC UART1 transport. Bare `pio run` uses the
+Elecrow environment.
 See the [bring-up guide](docs/elecrow-s3-bringup.md) for hardware details.
 
 Install PlatformIO, then run from the repository root:
@@ -164,16 +181,18 @@ pio run --target upload --upload-port COM15
 Replace COM15 with the board's current USB serial port.
 
 USB Serial/JTAG carries application logs. Close Serial Monitor before uploading.
-The controller link backend is offline, so the displayed START/STOP controls do
-not send commands.
+The application attempts to start UART1 and polls the connected peer. START/STOP
+can send protocol commands; acceptance and relay operation depend on controller
+configuration, authorization and state. A disconnected peer is shown as offline.
 
 See the [Elecrow bring-up guide](docs/elecrow-s3-bringup.md) for board wiring.
 
 ## Controller Simulator
 
-The simulator requires an enabled HMI controller transport. That transport is
-not yet enabled on the Elecrow board; USB Serial/JTAG is the log console, not the
-controller UART.
+Connect a separate 3.3 V USB-to-UART adapter to the HMI: adapter TX to GPIO44,
+adapter RX to GPIO43, and common GND. Use that adapter's port for the simulator.
+USB Serial/JTAG remains the log console. Confirm the board connector mapping
+before wiring, and disconnect the real controller while using the simulator.
 
 From the firmware directory:
 
@@ -242,7 +261,7 @@ Robot-Charge-Controller-HMI/
 ├── firmware/
 │   ├── platformio.ini       # Elecrow S3 is the default and only board target
 │   ├── config/              # ESP-IDF defaults for the Elecrow S3
-│   ├── src/                 # Elecrow LCD/touch, LVGL UI and offline link binding
+│   ├── src/                 # LCD/touch, LVGL UI, RCC UART, settings, Wi-Fi and OTA
 │   │   └── hmi_fonts/       # Generated UI fonts
 │   ├── test/host/           # Host-side tests
 │   └── tools/               # UART controller simulator and UI tooling
@@ -254,6 +273,7 @@ Robot-Charge-Controller-HMI/
 |---|---|
 | [Documentation Index](docs/README.md) | Reading order and implementation status |
 | [Elecrow Bring-up](docs/elecrow-s3-bringup.md) | Elecrow S3 build, display, touch and HMI status |
+| [Settings, Wi-Fi and OTA](docs/settings-wifi-and-ota.md) | Local configuration, network access, update procedure and limits |
 | [Controller Interface](docs/controller-interface.md) | Framing, command payloads and control semantics |
 | [UI Pages and Information](docs/ui-pages-and-information.md) | Page contents, states and operator feedback |
 | [Landscape UI Mockup](docs/mockups/hmi-ui-landscape.html) | Interactive design reference; open locally in a browser |

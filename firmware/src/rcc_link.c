@@ -190,6 +190,8 @@ static void parse_reply_data(uint16_t command, const uint8_t *data,
         const uint64_t boot = u64(&data[20]);
         if (s_model.device_valid && s_model.boot_id != boot) {
             s_model.status_valid = false;
+            s_model.simulated_measurements = false;
+            s_model.simulated_ready = false;
             s_model.measurement_valid = false;
             s_model.faults_valid = false;
             s_model.event_count = 0u;
@@ -228,6 +230,8 @@ static void parse_reply_data(uint16_t command, const uint8_t *data,
         s_model.relay_command = data[16];
         s_model.relay_feedback = data[17];
         s_model.charging_established = (data[18] & 1u) != 0u;
+        s_model.simulated_measurements = (data[18] & 0x08u) != 0u;
+        s_model.simulated_ready = (data[18] & 0x10u) != 0u;
         s_model.session_id = u32(&data[20]);
         s_model.status_valid = true;
         s_last_status_us = now;
@@ -422,6 +426,7 @@ bool rcc_link_request_start(void)
         return false;
     const bool allowed = s_model.online && s_model.status_valid &&
                          elapsed_ms(s_last_status_us, esp_timer_get_time()) < 1500u &&
+                         (!s_model.simulated_measurements || s_model.simulated_ready) &&
                          !s_start.active && !s_stop.active && !s_start_requested &&
                          !s_stop_requested;
     if (allowed) s_start_requested = true;

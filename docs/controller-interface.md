@@ -44,8 +44,12 @@ Consequences:
 | Character format | 115 200 bit/s, 8N1, no flow control | `UART.md` §3.1 |
 | Topology | point-to-point, full duplex | `UART.md` §3.1 |
 
-HMI side: the Elecrow board's controller UART pins remain unassigned pending
-hardware confirmation; see [the Elecrow bring-up guide](elecrow-s3-bringup.md).
+HMI side: `firmware/src/rcc_link.c` selects UART1, TX GPIO43 and RX GPIO44,
+115200 8N1 without flow control. Wire HMI TX to controller RX (GPIO21), HMI RX
+to controller TX (GPIO19), and common GND, using 3.3 V logic. These are source
+bindings; the Elecrow connector mapping and physical integration remain to be
+verified. USB Serial/JTAG is the HMI log console. See
+[the Elecrow bring-up guide](elecrow-s3-bringup.md).
 
 ## 3. Framing
 
@@ -140,7 +144,7 @@ primary fault and inhibit mask; the HMI may use them to refresh the UI between p
 | 12 | `active_fault_mask` | u32, §8.6 |
 | 16 | `relay_command` | u8, §8.4 |
 | 17 | `relay_feedback` | u8, §8.4 |
-| 18 | flags: bit0 `charging_established`, bit1 `time_synchronized`, bit2 `cal_lease_active` | u8 |
+| 18 | flags: bit0 `charging_established`, bit1 `time_synchronized`, bit2 `cal_lease_active`, bit3 `simulated_measurements`, bit4 `simulated_ready` | u8 |
 | 19 | reserved | u8 |
 | 20 | `session_id` | u32 |
 | 24 | `config_revision` | u32 |
@@ -400,6 +404,14 @@ RECOVERY (after a recoverable fault). Any other bit: show raw, never drop it.
 | Ledger result retention (`router_retention_us`) | 2 s, `provisional` | `ICD-OPEN-005`; firmware profile |
 | Normal / STOP ledger depth | 8 / 4, `provisional` | firmware `rcc_build_profile.h` |
 | Duplicate key | `(interface, node, request_id)` | ICD-DUP-001 |
+
+Current HMI implementation (`rcc_link.c`, revision `28d2253`): a transaction
+starts with a 50 ms deadline and permits two identical retransmissions before
+it becomes unconfirmed. Once ACCEPTED is received, retries stop and the terminal
+result deadline is 15 s. This is an HMI wait limit, not a controller execution
+guarantee. Query starts are at least 170 ms apart; the round-robin sequence and
+UI freshness rules are described in
+[implemented UI behavior](ui-pages-and-information.md#link-freshness-and-polling).
 
 - Same key, same content → the cached result, no repeated action. Same key, different
   content → `REJECTED/DUPLICATE_ID_CONFLICT`.

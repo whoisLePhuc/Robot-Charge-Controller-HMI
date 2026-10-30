@@ -31,6 +31,8 @@ typedef struct {
     uint8_t relay_command;
     uint8_t relay_feedback;
     bool charging_established;
+    bool simulated_measurements; /* GET_STATUS flags bit 3: V/I are synthetic. */
+    bool simulated_ready;        /* GET_STATUS flags bit 4: demo precheck ready. */
     uint32_t session_id;
     uint32_t active_fault_mask;
     uint32_t inhibit_mask;

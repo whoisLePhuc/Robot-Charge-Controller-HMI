@@ -143,7 +143,7 @@ static void mask_text(char *out, size_t cap, uint32_t mask, const char *const *n
 
 /* ------------------------------------------------------------------ derived state */
 static bool fresh(const rcc_snapshot_t *m) {
-    return m->online && m->status_valid && m->status_age_ms <= 1500;
+    return m->online && m->status_valid && m->status_age_ms < 1500;
 }
 static bool v_valid(const rcc_snapshot_t *m) {
     return m->online && m->measurement_valid && m->measurement_age_ms <= 1500 &&
@@ -163,7 +163,8 @@ static fault_state_t fault_state(const rcc_snapshot_t *m)
 }
 static bool start_allowed(const rcc_snapshot_t *m)
 {
-    return fresh(m) && m->command_state != RCC_COMMAND_SENDING &&
+    return fresh(m) && (!m->simulated_measurements || m->simulated_ready) &&
+           m->command_state != RCC_COMMAND_SENDING &&
            m->command_state != RCC_COMMAND_ACCEPTED &&
            (m->top_state == 5 || (m->top_state == 4 && m->operational_state == 1));
 }
@@ -528,6 +529,7 @@ static void page_overview(lv_obj_t *p, const rcc_snapshot_t *m, int H, int reaso
     row[2].vc = WHITE;
     row[3].ic = &hmi_icon_clock_13; row[3].ic_col = LABEL; row[3].k = "Sess";
     session_line(row[3].v, sizeof(row[3].v), m); row[3].vc = TXT2;
+    if (m->simulated_measurements) row[3].k = "Session (SIM V/I)";
     (void)b; (void)t;
     for (int i = 0; i < 4; ++i) {
         const int ry = 7 + i * (22 + gap);
@@ -861,7 +863,7 @@ static void page_session(lv_obj_t *p, const rcc_snapshot_t *m, int H)
 
     static const char *const k[4] = {"SESSION", "DURATION", "LAST CMD", "END REASON"};
     char v[4][40];
-    if (fresh(m) && m->session_id) snprintf(v[0], sizeof(v[0]), "#%" PRIu32 " \xC2\xB7 %s", m->session_id, s.name);
+    if (fresh(m) && m->session_id) snprintf(v[0], sizeof(v[0]), "#%" PRIu32 " \xC2\xB7 %s", m->session_id, m->simulated_measurements ? "SIMULATED V/I" : s.name);
     else snprintf(v[0], sizeof(v[0]), "%s", s.name);
     if (m->end_valid && !in_session && (!m->session_id || m->end_session_id == m->session_id)) fmt_duration(v[1], sizeof(v[1]), m->end_duration_ms);
     else if (in_session) snprintf(v[1], sizeof(v[1]), "In progress");
@@ -1259,7 +1261,7 @@ static void open_modal(const rcc_snapshot_t *m)
 
     lv_obj_t *card = card_box(modal, 36, 14, 352, 208, CARD, 12, NAV_CUR);
     lv_obj_set_clickable(card, true);                       /* taps inside the card must not cancel */
-    text_in(card, "Confirm Charge Start", 17, 12, 318, 19, F16B, WHITE, LV_TEXT_ALIGN_LEFT);
+    text_in(card, m->simulated_measurements ? "Start with SIMULATED V/I" : "Confirm Charge Start", 17, 12, 318, 19, F16B, WHITE, LV_TEXT_ALIGN_LEFT);
 
     if (fresh(m) && m->top_state == 4 && m->operational_state == 1) snprintf(b, sizeof(b), "IDLE \xC2\xB7 Ready");
     else snprintf(b, sizeof(b), "%s", s.name);
@@ -1270,7 +1272,7 @@ static void open_modal(const rcc_snapshot_t *m)
 
     if (v_valid(m) && i_valid(m)) snprintf(b, sizeof(b), "Fresh \xC2\xB7 %" PRIu32 " ms", m->measurement_sample_age_ms);
     else snprintf(b, sizeof(b), "Not valid");
-    kv(card, 17, 80, 318, 21, "ADC telemetry", b, WHITE);
+    kv(card, 17, 80, 318, 21, m->simulated_measurements ? "SIMULATED V/I" : "ADC telemetry", b, WHITE);
 
     const fault_state_t fs = fault_state(m);
     if (fs == FS_FAULT) snprintf(b, sizeof(b), "%s", fault_name(m->primary_fault));
@@ -1278,7 +1280,7 @@ static void open_modal(const rcc_snapshot_t *m)
     else snprintf(b, sizeof(b), "0x00000000 (Clear)");
     kv(card, 17, 101, 318, 21, "Fault / Inhibit", b, fs == FS_OK ? WHITE : fs == FS_FAULT ? FAULT_COL : WARN_COL);
 
-    text_in(card, "Controller validates VREQ & precheck before closing relay.", 17, 128, 318, 13, F10, LABEL, LV_TEXT_ALIGN_LEFT);
+    text_in(card, m->simulated_measurements ? "REAL relay command; contacts are not measured." : "Controller validates VREQ & precheck before closing relay.", 17, 128, 318, 13, F10, LABEL, LV_TEXT_ALIGN_LEFT);
 
     lv_obj_t *c1 = button(card, 17, 157, 154, 38, SURFACE2, 10, cancel_click, NULL);
     lv_obj_t *l1 = text_in(c1, "CANCEL", 0, 0, 154, 38, F12B, WHITE, LV_TEXT_ALIGN_CENTER); spacing(l1, 1);
@@ -2018,7 +2020,8 @@ static void rebuild(void)
     const char *banner = NULL;
     kind_t bk = K_NORMAL;
     int target = -1;
-    char btext[56];
+    char btext[128];
+    bool two_line_banner = false;
     if (!link_started) { banner = "UART INIT FAILED \xC2\xB7 NO CONTROLLER LINK"; bk = K_FAULT; }
     else if (!m.online) { banner = "LINK LOST \xC2\xB7 CHARGING MAY CONTINUE"; bk = K_OFF; target = DEVICE; }
     else if (no_authority(&m) && m.command_age_ms < 15000u) { banner = "HMI HAS NO CONTROL AUTHORITY"; bk = K_WARN; }
@@ -2026,6 +2029,27 @@ static void rebuild(void)
         snprintf(btext, sizeof(btext), "NEW FAULT: %s \xC2\xB7 TAP TO VIEW", fault_name(m.primary_fault));
         banner = btext; bk = K_FAULT; target = FAULTS;
     }
+    /* Shared chrome keeps source identity on all five pages, including stale data.
+     * Retain safety/link warnings as a second line in the existing banner. */
+    if (m.simulated_measurements) {
+        const bool active_demo = fresh(&m) && m.top_state == 4 &&
+                                 m.operational_state >= 2 && m.operational_state <= 6;
+        const char *source = !fresh(&m) ? "SIMULATED V/I (STALE) | REAL relay cmd, not contacts" :
+                             (!m.simulated_ready && !active_demo) ? "SIMULATED V/I (WAIT) | REAL relay cmd, not contacts" :
+                                                  "SIMULATED V/I | REAL relay cmd, not contacts";
+        if (banner) {
+            char warning[sizeof(btext)];
+            snprintf(warning, sizeof(warning), "%s", banner);
+            snprintf(btext, sizeof(btext), "%s\n%.70s", source, warning);
+            banner = btext;
+            two_line_banner = true;
+        } else {
+            banner = source;
+            bk = K_WARN;
+            target = DEVICE;
+        }
+    }
+    lv_obj_set_height(banner_box, two_line_banner ? 34 : 20);
     update_chrome(&m, banner, bk, target);
 
     bar_spec_t spec; bar_spec(&m, &spec);
@@ -2034,7 +2058,7 @@ static void rebuild(void)
     if (strcmp(sig, bar_signature) != 0) { memcpy(bar_signature, sig, sizeof(sig)); build_bar(&spec); }
 
     lv_obj_clean(content);
-    const int top = banner ? 56 : 34;
+    const int top = banner ? (two_line_banner ? 70 : 56) : 34;
     const int bottom = (spec.kind == BAR_NONE) ? 312 : 264;
     lv_obj_t *p = obj(content, 64, top, 408, bottom - top);
     switch (page) {
