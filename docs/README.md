@@ -22,8 +22,7 @@ they do not establish hardware acceptance.
 
 - The target compiles `src/rcc_link.c` and `src/rcc_codec.c`. Display startup
   calls `rcc_link_start()`; UART1 is bound to TX GPIO43 / RX GPIO44 at
-  115200 8N1. `src/bringup/rcc_link_offline.c` remains in the tree but is not
-  listed in the target's `src/CMakeLists.txt`.
+  115200 8N1. The former offline stub backend has been removed.
 - Earlier bring-up records report LCD/touch operation and flashing of a
   five-page image. They do not verify all features of the current source.
   Current visual and navigation acceptance remains pending.
