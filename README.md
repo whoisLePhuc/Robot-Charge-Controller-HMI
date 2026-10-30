@@ -20,60 +20,94 @@
 
 ## Interface Preview
 
-Five pages cover live monitoring, charging controls and controller diagnostics.
-Select any preview to view the full-size image.
+Five pages cover live monitoring, charging controls and controller diagnostics;
+Device also holds the local settings and Wi-Fi screens. Select any preview to view
+the full-size image.
 
 <table align="center">
   <tr>
     <td align="center" width="50%">
-      <a href="assets/ui/overview.png"><img src="assets/ui/overview.png" alt="Overview: charging state, voltage, current, power and STOP control" width="100%"></a><br>
+      <a href="assets/ui/overview.png"><img src="assets/ui/overview.png" alt="Overview: charging state, stage strip, link age, fault and relay command, voltage, current, power and STOP" width="100%"></a><br>
       <strong>Overview</strong><br>
       <sub>Charging state and controls</sub>
     </td>
     <td align="center" width="50%">
-      <a href="assets/ui/measure.png"><img src="assets/ui/measure.png" alt="Measure: raw and filtered measurements, validity and sample age" width="100%"></a><br>
+      <a href="assets/ui/measure.png"><img src="assets/ui/measure.png" alt="Measure: raw and filtered measurements, ADC quality matrix and sample age" width="100%"></a><br>
       <strong>Measure</strong><br>
       <sub>Measurements and data quality</sub>
     </td>
   </tr>
   <tr>
     <td align="center" width="50%">
-      <a href="assets/ui/faults.png"><img src="assets/ui/faults.png" alt="Faults: primary fault, active mask and recovery inhibit reasons" width="100%"></a><br>
+      <a href="assets/ui/faults.png"><img src="assets/ui/faults.png" alt="Faults: primary fault, active fault bits and RECOVERY inhibit" width="100%"></a><br>
       <strong>Faults</strong><br>
       <sub>Faults and safety interlocks</sub>
     </td>
     <td align="center" width="50%">
-      <a href="assets/ui/session.png"><img src="assets/ui/session.png" alt="Session: charging session information and recent controller events" width="100%"></a><br>
+      <a href="assets/ui/session.png"><img src="assets/ui/session.png" alt="Session: session, duration, last command, end reason and controller event log" width="100%"></a><br>
       <strong>Session</strong><br>
       <sub>Session details and event history</sub>
     </td>
   </tr>
   <tr>
-    <td align="center" colspan="2">
-      <a href="assets/ui/device.png"><img src="assets/ui/device.png" alt="Device: controller identity, build flags and link diagnostics" width="480"></a><br>
+    <td align="center" width="50%">
+      <a href="assets/ui/device.png"><img src="assets/ui/device.png" alt="Device, Controller tab: firmware identity, build flags and running buses" width="100%"></a><br>
       <strong>Device</strong><br>
       <sub>Controller identity and diagnostics</sub>
+    </td>
+    <td align="center" width="50%">
+      <a href="assets/ui/settings.png"><img src="assets/ui/settings.png" alt="Device, Settings tab: backlight, sleep timeout, language, firmware version and Wi-Fi entry" width="100%"></a><br>
+      <strong>Settings</strong><br>
+      <sub>Display, language and system information</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <a href="assets/ui/wifi.png"><img src="assets/ui/wifi.png" alt="Wi-Fi: network list with the connected network and signal levels" width="480"></a><br>
+      <strong>Wi-Fi</strong><br>
+      <sub>Network selection; the connected view enables Web OTA</sub>
     </td>
   </tr>
 </table>
 
 <p align="center">
-  <em>Revised (v2) UI design previews with illustrative data.<br>
-  Not photographs of the display or verified charging sessions; rendered firmware may differ.</em>
+  <em>High-resolution captures of the <a href="docs/mockups/hmi-ui-landscape.html">interactive UI reference</a>,
+  a browser port of <code>firmware/src/hmi_ui.c</code>,<br>with illustrative data. Not photographs of the display
+  or recorded charging sessions.</em>
 </p>
 
 <details>
-<summary>Regenerate the page previews</summary>
+<summary>Regenerate the previews</summary>
 
-The five 960 × 640 PNGs in `assets/ui/` are exported from the revised (right-hand)
-column of [the original comparison](assets/hmi-ui-v1-vs-v2.png), without changing
-the source image. From the repository root, run:
+The 1440 × 960 PNGs in `assets/ui/` are 3× captures of the
+[interactive UI reference](docs/mockups/hmi-ui-landscape.html), which mirrors
+`hmi_ui.c`. From the repository root (needs Microsoft Edge, or pass
+`--browser chrome`):
 
-~~~powershell
-powershell -ExecutionPolicy Bypass -File firmware/tools/export_readme_previews.ps1 -Force
+~~~sh
+python -m pip install playwright
+python tools/snapshot/export_mockup_previews.py --scale 3
 ~~~
 
+To check the reference against the firmware itself, `tools/snapshot/` also builds
+a PC renderer of `hmi_ui.c` with LVGL (480 × 320, pixel-exact). Build the firmware
+once so `firmware/managed_components/` contains LVGL, then:
+
+~~~sh
+cmake -S tools/snapshot -B build-snapshot -G Ninja -DCMAKE_C_COMPILER=gcc
+cmake --build build-snapshot
+mkdir -p build-snapshot/bmp
+build-snapshot/hmi_render build-snapshot/bmp
+~~~
+
+`python tools/snapshot/export_previews.py build-snapshot/bmp` writes these renders
+to `assets/ui/` at 2× instead (needs Pillow).
+
 </details>
+
+For every page and state, including commands, simulated V/I and the Wi-Fi and OTA
+screens, open the [interactive UI reference](docs/mockups/hmi-ui-landscape.html)
+in a browser.
 
 ## Overview
 
@@ -100,21 +134,6 @@ build or physical test result.
 | Faults | Primary fault, active fault mask and inhibit reasons |
 | Session | Session information, last command result and recent events |
 | Device | Controller identity, build flags, link diagnostics, display settings and Wi-Fi |
-
-<details>
-<summary>View the five-page design comparison</summary>
-
-<p align="center">
-  <img src="assets/hmi-ui-v1-vs-v2.png" alt="Earlier and revised designs for Overview, Measure, Faults, Session and Device" width="900">
-</p>
-
-<p align="center">
-  <strong>Five-Page Design Comparison</strong><br>
-  <em>Left: earlier design. Right: revised design reference. Both use illustrative data;<br>
-  the rendered firmware can differ as implementation evolves.</em>
-</p>
-
-</details>
 
 ## Technical Specifications
 
@@ -254,10 +273,10 @@ emergency stop.
 ~~~text
 Robot-Charge-Controller-HMI/
 ├── README.md
-├── assets/                  # Original design images
-│   └── ui/                  # Five individual v2 page previews
+├── assets/
+│   └── ui/                  # README previews (captures of the UI reference)
 ├── docs/                    # Elecrow, protocol and test guides
-│   └── mockups/             # HTML interface references
+│   └── mockups/             # Interactive UI reference (port of hmi_ui.c)
 ├── firmware/
 │   ├── platformio.ini       # Elecrow S3 is the default and only board target
 │   ├── config/              # ESP-IDF defaults for the Elecrow S3
@@ -265,6 +284,7 @@ Robot-Charge-Controller-HMI/
 │   │   └── hmi_fonts/       # Generated UI fonts
 │   ├── test/host/           # Host-side tests
 │   └── tools/               # UART controller simulator and UI tooling
+└── tools/snapshot/          # README preview export and PC renderer of hmi_ui.c
 ~~~
 
 ## Documentation
@@ -276,7 +296,7 @@ Robot-Charge-Controller-HMI/
 | [Settings, Wi-Fi and OTA](docs/settings-wifi-and-ota.md) | Local configuration, network access, update procedure and limits |
 | [Controller Interface](docs/controller-interface.md) | Framing, command payloads and control semantics |
 | [UI Pages and Information](docs/ui-pages-and-information.md) | Page contents, states and operator feedback |
-| [Landscape UI Mockup](docs/mockups/hmi-ui-landscape.html) | Interactive design reference; open locally in a browser |
+| [Interactive UI Reference](docs/mockups/hmi-ui-landscape.html) | Browser replica of the firmware UI: every page, command state and overlay |
 | [Desktop UI Simulator](firmware/tools/sim/README.md) | Render and inspect the LVGL interface on a PC |
 | [Controller Simulator](docs/controller-simulator.md) | Interactive scenarios, fault injection and host tests |
 | [Controller Change Requests](docs/controller-change-requests.md) | Interface dependencies and proposed controller changes |
