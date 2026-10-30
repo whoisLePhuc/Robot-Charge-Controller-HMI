@@ -49,8 +49,9 @@ appear.
 ## CR-04: Production authorization of the operational node
 
 **Problem.** `operational_node_authorized` is enabled only by a bench knob. An HMI that
-controls the charger cannot run with an ordinary image. The current HMI firmware keeps
-the transport offline; bench-image requirements apply when transport is brought back.
+controls the charger cannot run with an ordinary image. The current HMI firmware starts
+the UART1 transport, but this does not grant control authority: controller CONFIG and
+bench-image requirements still apply. Physical integration remains unverified.
 
 **Proposal.** Covered by `FDD10-OPEN-005` (controlled bench-enable mechanism and artifact
 allowlists) and `ICD-OPEN-006` (peer identity). To be decided in the controller
