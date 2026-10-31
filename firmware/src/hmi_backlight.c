@@ -80,6 +80,12 @@ void hmi_backlight_set_duty(uint8_t pct, bool fade)
     }
 }
 
+void hmi_backlight_set_brightness(uint8_t pct)
+{
+    (void)hmi_settings_set_brightness(pct);
+    hmi_backlight_set_duty(pct, true);
+}
+
 void hmi_backlight_notify_activity(void)
 {
     s_last_activity_us = esp_timer_get_time();
