@@ -13,10 +13,10 @@
 #include "freertos/task.h"
 #include "rcc_codec.h"
 
-#define LINK_UART UART_NUM_1
-#define LINK_TX_PIN GPIO_NUM_43
-#define LINK_RX_PIN GPIO_NUM_44
-#define LINK_BAUD 115200
+#define LINK_UART ((uart_port_t)RCC_LINK_UART_PORT)
+#define LINK_TX_PIN ((gpio_num_t)RCC_LINK_TX_GPIO)
+#define LINK_RX_PIN ((gpio_num_t)RCC_LINK_RX_GPIO)
+#define LINK_BAUD RCC_LINK_BAUD
 #define CMD_PING 0x0001u
 #define CMD_DEVICE 0x0002u
 #define CMD_STATUS 0x0010u

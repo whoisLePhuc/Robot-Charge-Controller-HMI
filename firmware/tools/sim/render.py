@@ -14,6 +14,10 @@ PAGES = ["overview", "measure", "faults", "session", "device"]
 OVL = [("IDLE", "confirm", ["click=confirm"]), ("CHARGING", "stopping", ["cmd=stopping"]),
        ("REMOTE", "stopped", ["cmd=stopped"]), ("CHARGING", "queuefull", ["cmd=queuefull"]), ("IDLE", "noauth", ["cmd=noauth"]),
        ("CHARGING", "timeout", ["cmd=timeout"]), ("PRECHECK", "accepted", ["cmd=accepted"])]
+# Wi-Fi flow (views and keyboard) and the OTA progress overlay
+OVL += [("IDLE", "wifi-" + w, ["click=wifi=" + w]) for w in
+        ["list", "scroll", "taps", "info", "open", "pass", "sym", "show", "shift", "busy", "done", "fail", "noap", "noip"]]
+OVL += [("IDLE", "ota-" + o, ["ota=" + o]) for o in ["receiving", "verifying", "success"]]
 
 def render(name, scen, page, extra):
     ppm = os.path.join(OUT, name + ".ppm")

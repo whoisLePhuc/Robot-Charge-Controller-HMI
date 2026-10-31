@@ -19,6 +19,9 @@ void hmi_backlight_set_duty(uint8_t pct, bool fade);
 /* Notify user interaction (touch) to reset sleep timer and wake screen if dimmed */
 void hmi_backlight_notify_activity(void);
 
+/* User-chosen brightness: persist it in the settings and apply it now. */
+void hmi_backlight_set_brightness(uint8_t pct);
+
 /* Check if screen is currently dimmed due to inactivity */
 bool hmi_backlight_is_dimmed(void);
 
