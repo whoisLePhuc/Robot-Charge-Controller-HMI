@@ -10,3 +10,4 @@ firmware/sdkconfig.*
 # Components downloaded by the ESP-IDF component manager; pinned by firmware/dependencies.lock
 firmware/managed_components/
 firmware/tools/sim/out/
+.clangd

@@ -11,6 +11,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "elecrow_s3_display.h"
+#include "hmi_config.h"
 #include "hmi_settings.h"
 #include "hmi_wifi.h"
 #include "hmi_ota.h"
@@ -49,9 +50,9 @@ void app_main(void)
         return;
     }
 
-    /* Initialize Task Watchdog Timer (TWDT): 5000 ms timeout */
+    /* Initialize Task Watchdog Timer (TWDT): HMI_TWDT_TIMEOUT_MS */
     const esp_task_wdt_config_t twdt_config = {
-        .timeout_ms = 5000,
+        .timeout_ms = HMI_TWDT_TIMEOUT_MS,
         .idle_core_mask = 0,
         .trigger_panic = true,
     };
@@ -62,7 +63,7 @@ void app_main(void)
     if (twdt_err != ESP_OK) {
         ESP_LOGW(TAG, "TWDT init: %s", esp_err_to_name(twdt_err));
     } else {
-        ESP_LOGI(TAG, "TWDT initialized (5000 ms timeout, panic enabled)");
+        ESP_LOGI(TAG, "TWDT initialized (%d ms timeout, panic enabled)", HMI_TWDT_TIMEOUT_MS);
     }
 
     /* Initialize NVS and load persistent configuration */

@@ -1,4 +1,4 @@
-/* PC renderer: hmi_sim <scenario> <page 0-4> <out.ppm> [tab=link] [cmd=<state>] [click=confirm] [px=<n>] */
+/* PC renderer: hmi_sim <scenario> <page 0-4> <out.ppm> [tab=link] [cmd=<state>] [ota=<state>] [click=confirm|wifi=<view>] [px=<n>] */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +9,7 @@
 #define H 320
 int sim_scenario(const char *);
 void sim_command_state(const char *);
+void sim_ota_state(const char *);
 
 static uint16_t fb[W * H] __attribute__((aligned(4)));
 static uint32_t now_ms;
@@ -32,6 +33,7 @@ int main(int argc, char **argv)
     for (int i = 4; i < argc; ++i) {
         if (!strncmp(argv[i], "tab=", 4)) tab = argv[i] + 4;
         else if (!strncmp(argv[i], "cmd=", 4)) sim_command_state(argv[i] + 4);
+        else if (!strncmp(argv[i], "ota=", 4)) sim_ota_state(argv[i] + 4);
         else if (!strncmp(argv[i], "click=", 6)) click_what = argv[i] + 6;
     }
     lv_init(); lv_tick_set_cb(tick_cb);
