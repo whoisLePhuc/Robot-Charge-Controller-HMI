@@ -7,6 +7,12 @@
 
 #define RCC_EVENT_SLOTS 8
 
+/* The HMI side of the controller UART; the Device page shows these. */
+#define RCC_LINK_UART_PORT 1
+#define RCC_LINK_TX_GPIO 43
+#define RCC_LINK_RX_GPIO 44
+#define RCC_LINK_BAUD 115200
+
 typedef enum {
     RCC_COMMAND_NONE,
     RCC_COMMAND_SENDING,
