@@ -256,9 +256,107 @@ static void test_page_helpers(void)
     offline(&m); hp_gauge(&m, &g); CHECK(g.v_pm == 0 && g.a_pm == 0 && g.w_pm == 0 && !g.power_valid);
 }
 
+static void test_views(void)
+{
+    rcc_snapshot_t m;
+    hp_chan_view_t v, w;
+    hp_adc_view_t a;
+    hp_chan_view(&v, true, false, false, 48200, 48100, "V");
+    CHECK(v.st == HP_CH_VALID && v.valid); CHECK_STR(v.value, "48.2"); CHECK_STR(v.filtered, "Filtered 48.1 V");
+    hp_chan_view(&v, true, true, false, 2000, 2000, "V");
+    CHECK(v.st == HP_CH_FLOOR); CHECK_STR(v.value, "\xE2\x89\xA4 2.0"); CHECK_STR(hp_chan_state_text(v.st), "BELOW FLOOR");
+    hp_chan_view(&v, true, false, true, 1000, 1000, "A");
+    CHECK(v.st == HP_CH_STALE && v.valid); CHECK_STR(hp_chan_state_text(v.st), "STALE");   /* stale wins, value still shown */
+    hp_chan_view(&v, false, false, true, 0, 0, "A");
+    CHECK(v.st == HP_CH_STALE && !v.valid); CHECK_STR(v.value, "\xE2\x80\x94"); CHECK_STR(v.filtered, "Last value is stale");
+    hp_chan_view(&v, false, false, false, 0, 0, "A");
+    CHECK(v.st == HP_CH_INVALID); CHECK_STR(v.filtered, "Not valid"); CHECK_STR(hp_chan_state_text(v.st), "INVALID");
+    hp_chan_view(&w, false, false, false, 5, 5, "A");
+    CHECK(!memcmp(&v, &w, sizeof(v)));                      /* equal data is equal bytes (the model memcmp gate) */
+    hp_chan_view(&w, true, false, false, 5, 5, "A");
+    CHECK(memcmp(&v, &w, sizeof(v)));
+
+    charging(&m); m.measurement_sequence = 48213; m.measurement_sample_age_ms = 12;
+    hp_adc_view(&a, &m);
+    CHECK(a.have && a.vbits == 0x3f && a.ibits == 0x3f); CHECK_STR(a.seq, "Seq #48213 \xC2\xB7 Age 12 ms \xC2\xB7 Held 0.4 s");
+    offline(&m); m.measurement_sequence = 7; hp_adc_view(&a, &m);
+    CHECK(!a.have); CHECK(!strncmp(a.seq, "Seq #7 \xC2\xB7 Stale (", 12));
+}
+
+static void test_views2(void)
+{
+    rcc_snapshot_t m;
+    hp_hero_view_t h; hp_sys_view_t sy; hp_tel_view_t t[HP_TEL_COUNT], t2[HP_TEL_COUNT];
+    hp_fault_sum_view_t fs; hp_fault_pri_view_t pv; hp_sess_view_t se;
+    char nm[40], bl[8];
+
+    charging(&m); m.vout_mv = 48200; m.iout_ma = 8000;
+    hp_hero_view(&h, &m); CHECK(h.stage == 4 && h.kind == HP_K_NORMAL); CHECK(h.name[0] && h.sub[0]);
+    idle(&m); hp_hero_view(&h, &m); CHECK(h.stage <= 0);
+    fault(&m); hp_hero_view(&h, &m); CHECK(h.stage == -1 && h.kind == HP_K_FAULT);   /* the hero is 72 px without a stage strip */
+
+    charging(&m); hp_sys_view(&sy, &m);
+    CHECK(sy.online && !sy.sim && sy.fs == HP_FS_OK); CHECK_STR(sy.fault, "No faults"); CHECK_STR(sy.relay, "CLOSED"); CHECK_STR(sy.uart, "0.4 s");
+    m.simulated_measurements = true; hp_sys_view(&sy, &m); CHECK(sy.sim);
+    fault(&m); hp_sys_view(&sy, &m); CHECK(sy.fs == HP_FS_FAULT); CHECK_STR(sy.fault, hp_fault_short(0x0402));
+    inhibited(&m); hp_sys_view(&sy, &m); CHECK_STR(sy.fault, "Inhibited");
+    offline(&m); hp_sys_view(&sy, &m); CHECK(!sy.online && sy.fs == HP_FS_UNKNOWN); CHECK_STR(sy.fault, "Unreadable"); CHECK_STR(sy.relay, "\xE2\x80\x94");
+
+    charging(&m); hp_tel_views(t, &m);
+    CHECK_STR(t[HP_TEL_V].val, "48.2"); CHECK_STR(t[HP_TEL_A].val, "8.0"); CHECK_STR(t[HP_TEL_W].val, "386");
+    CHECK(t[HP_TEL_V].permille == 803 && !t[HP_TEL_V].stale && !t[HP_TEL_V].dash); CHECK_STR(t[HP_TEL_V].sub, "80%/" HP_V_FULL_TXT);
+    m.vout_status |= 0x40; hp_tel_views(t, &m);      /* below the floor: "<=" glued to the number, no power */
+    CHECK(!strncmp(t[HP_TEL_V].val, "\xE2\x89\xA4", 3) && t[HP_TEL_V].val[3] != ' '); CHECK(t[HP_TEL_W].dash);
+    offline(&m); hp_tel_views(t, &m);
+    CHECK(t[0].stale && t[0].dash && t[1].dash && t[2].dash); CHECK_STR(t[0].sub, "STALE DATA");
+    charging(&m); hp_tel_views(t, &m); hp_tel_views(t2, &m); CHECK(!memcmp(t, t2, sizeof(t)));   /* equal data is equal bytes */
+
+    charging(&m); hp_fault_sum_view(&fs, &m); CHECK(fs.fs == HP_FS_OK); CHECK_STR(fs.read, "Read 0.8 s ago");
+    offline(&m); hp_fault_sum_view(&fs, &m); CHECK(fs.fs == HP_FS_UNKNOWN); CHECK_STR(fs.read, "Not read");
+
+    charging(&m); CHECK(hp_fault_body(&m) == HP_FB_OK);
+    offline(&m); CHECK(hp_fault_body(&m) == HP_FB_UNKNOWN);
+    inhibited(&m); CHECK(hp_fault_body(&m) == HP_FB_PRIMARY_LISTS);   /* an inhibit shows the card too */
+    fault(&m); CHECK(hp_fault_body(&m) == HP_FB_PRIMARY_LISTS);
+    fault(&m); m.primary_fault = 0; m.inhibit_mask = 0; CHECK(hp_fault_body(&m) == HP_FB_LISTS);   /* fault state without a primary or inhibit */
+    fault(&m); hp_fault_pri_view(&pv, &m);
+    CHECK(pv.fault); CHECK(!strncmp(pv.nm, "PRIMARY \xC2\xB7 ", 10)); CHECK_STR(pv.id, "0x0402"); CHECK(!strncmp(pv.act, "Action: ", 8));
+    inhibited(&m); hp_fault_pri_view(&pv, &m);
+    CHECK(!pv.fault); CHECK(!strncmp(pv.nm, "INHIBIT \xC2\xB7 ", 10)); CHECK_STR(pv.id, ""); CHECK(strstr(pv.act, "START may clear"));
+
+    hp_mask_row(nm, sizeof(nm), bl, sizeof(bl), 0, hp_inhibit_names, HP_INHIBIT_COUNT); CHECK_STR(nm, hp_inhibit_names[0]); CHECK_STR(bl, "b0");
+    hp_mask_row(nm, sizeof(nm), bl, sizeof(bl), 3, hp_inhibit_names, HP_INHIBIT_COUNT); CHECK_STR(nm, "Unrecognized (bit 3)"); CHECK_STR(bl, "b3");
+    CHECK(hp_mask_bits(0) == 0 && hp_mask_bits(0x0007F9A5u) == 13 && hp_mask_bits(0xFFFFFFFFu) == 32);
+
+    charging(&m); m.event_missed = 3; m.event_count = 2; hp_sess_view(&se, &m);
+    CHECK(!strncmp(se.v[0], "#17 \xC2\xB7 ", 6)); CHECK_STR(se.v[1], "In progress"); CHECK_STR(se.head, "EVENT RING BUFFER (2 held \xC2\xB7 3 rotated)");
+    offline(&m); hp_sess_view(&se, &m); CHECK_STR(se.head, "EVENT RING BUFFER (offline)"); CHECK_STR(se.v[3], "\xE2\x80\x94");
+    idle(&m); m.end_valid = true; m.end_reason = 1; m.end_duration_ms = 4320000; hp_sess_view(&se, &m);
+    CHECK_STR(se.v[3], hp_end_names[1]); CHECK_STR(se.v[1], "1h 12m");
+
+    /* The event signature changes with everything the list draws and nothing else. */
+    charging(&m); m.event_count = 2; m.event_codes[0] = 0x14; m.event_codes[1] = 0x10; m.event_us[1] = 5000000; m.event_args[1][2] = 7;
+    const uint64_t s0 = hp_events_sig(&m);
+    rcc_snapshot_t k = m; CHECK(hp_events_sig(&k) == s0);
+    k = m; k.reply_age_ms += 800; k.event_missed = 9; k.vout_mv = 1; CHECK(hp_events_sig(&k) == s0);   /* not drawn by the rows */
+    k = m; k.event_codes[0] = 0x15; CHECK(hp_events_sig(&k) != s0);
+    k = m; k.event_us[1] += 1000000; CHECK(hp_events_sig(&k) != s0);
+    k = m; k.event_args[1][2] = 8; CHECK(hp_events_sig(&k) != s0);
+    k = m; k.event_args[0][3] = 1; CHECK(hp_events_sig(&k) != s0);
+    k = m; k.event_count = 3; CHECK(hp_events_sig(&k) != s0);
+    k = m; k.online = false; CHECK(hp_events_sig(&k) != s0);
+    k = m; k.online = true; k.event_count = 2; CHECK(hp_events_region(&k) == HP_EVR_LIST);
+    k.event_count = 0; CHECK(hp_events_region(&k) == HP_EVR_EMPTY);
+    k.online = false; CHECK(hp_events_region(&k) == HP_EVR_OFFLINE);
+    k.event_count = 3; CHECK(hp_events_region(&k) == HP_EVR_OFFLINE);
+    { char c[16]; hp_mask_caption(c, sizeof(c), 0x2A0); CHECK(!strcmp(c, "0x02A0")); hp_mask_caption(c, sizeof(c), 0); CHECK(!strcmp(c, "0x0000"));
+      hp_mask_caption(c, sizeof(c), 0x7F9A5u); CHECK(!strcmp(c, "0x7F9A5")); }
+    k = m; k.event_codes[5] = 3; CHECK(hp_events_sig(&k) == s0);       /* beyond event_count: not shown */
+}
+
 int main(void)
 {
-    test_names(); test_events(); test_fmt(); test_derived(); test_state_info(); test_bar(); test_banner_session(); test_page_helpers();
+    test_names(); test_events(); test_fmt(); test_derived(); test_state_info(); test_bar(); test_banner_session(); test_page_helpers(); test_views(); test_views2();
     printf("test_hmi_present: %d checks, %d failed\n", checks, fails);
     return fails ? 1 : 0;
 }

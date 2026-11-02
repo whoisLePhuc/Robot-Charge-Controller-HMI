@@ -17,6 +17,13 @@ Refactor check: `sh check.sh` (Git Bash on Windows too) rebuilds the simulator, 
 The baseline must come from the original (pre-change) commit: check it out and run `sh check.sh baseline`
 (`/tmp` is volatile, so repeat after a reboot; only re-record after an intended visual change). Without a baseline,
 `check.sh` stops with a message saying so. Render and build failures print the tail of their log.
+`seq=B,C` after the normal arguments switches the snapshot live and writes `out.ppm.1`, `.2`... (update-vs-fresh proof, `check_morph.py`).
+A scenario name may carry a suffix: `NAME+aged` (all ages 0.8 s older, still fresh: only age texts change) and `NAME+evt` (one more
+event, the ring drops its oldest when full). Extra scenario MANYFAULT (long fault lists, 8 events) is not in the 80-image baseline;
+`check_morph.py` renders its fresh reference itself. `click=drag=x,y0,y1` scrolls a list before the frame is taken.
+`check_morph.py` (run by `check.sh`) covers all four retained pages (Overview, Measure, Faults, Session): every ordered scenario
+pair, every scenario -> `+aged` / `+evt`, and a scroll-survival check on Faults and Session (scroll, age live, compare with a fresh
+render of the aged snapshot scrolled the same way). It prints `MORPH DIFF: none (...)` when the in-place update equals a fresh build.
 Layering and how to add a page: `src/ui/README.md`.
 
 Scenarios: CHARGING IDLE PRECHECK INHIBITED FAULT OFFLINE REMOTE. Pages 0-4 = Overview,

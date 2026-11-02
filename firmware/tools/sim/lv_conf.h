@@ -8,6 +8,7 @@
 #define LV_USE_STDLIB_SPRINTF LV_STDLIB_BUILTIN
 #define LV_MEM_SIZE (64 * 1024)
 #define LV_USE_OS LV_OS_NONE
+#define LV_USE_OBSERVER 1   /* subjects: the retained-mode model (ui/hmi_model.c); firmware has CONFIG_LV_USE_OBSERVER=y */
 #define LV_USE_LOG 0
 #define LV_USE_ASSERT_NULL 1
 #define LV_FONT_MONTSERRAT_12 1

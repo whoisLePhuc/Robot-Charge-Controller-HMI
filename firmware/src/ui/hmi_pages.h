@@ -24,13 +24,25 @@ typedef struct {
 
 typedef void (*hmi_page_build_fn)(lv_obj_t *parent, const rcc_snapshot_t *m, const hmi_page_ctx_t *ctx);
 
+/* Optional retained-mode lifecycle (see ui/README.md). A page without ops is rebuilt every refresh via build. */
+typedef struct {
+    /* Create the widgets once in `root` (408 x ctx->height) and bind them to model subjects with
+     * lv_subject_add_observer_obj(.., root, ..): the observers die with root and draw the current view on add. */
+    void (*enter)(lv_obj_t *root, const rcc_snapshot_t *m, const hmi_page_ctx_t *ctx);
+    /* Optional, after hmi_model_update() on every refresh: for regions no subject drives (variable-length lists). */
+    void (*update)(const rcc_snapshot_t *m, const hmi_page_ctx_t *ctx);
+    /* Optional, before root is deleted: drop file-static widget pointers. */
+    void (*leave)(void);
+} hmi_page_ops_t;
+
 typedef struct {
     const char *name;               /* rail label */
     const lv_image_dsc_t *icon;     /* rail icon */
     bool fault_badge;               /* rail shows the fault/inhibit dot on this tab */
     bool main_bar;                  /* the action bar is the full-width START/STOP button (else a status strip) */
-    hmi_page_build_fn build;
+    hmi_page_build_fn build;        /* legacy: NULL for a page with ops */
     void (*set_sub)(int sub);       /* optional: select the page's sub-state (tab) when navigated to with sub >= 0 */
+    const hmi_page_ops_t *ops;      /* optional: retained mode */
 } hmi_page_def_t;
 
 extern const hmi_page_def_t hmi_pages[];

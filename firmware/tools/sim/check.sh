@@ -2,6 +2,7 @@
 # Build the simulator, render every scenario/page/overlay and compare pixel-for-pixel with a baseline.
 #   tools/sim/check.sh baseline   # record /tmp/hmi-baseline from the CURRENT code (run it on the pre-change commit)
 #   tools/sim/check.sh            # render /tmp/hmi-after and diff against the baseline
+# After the diff it also runs check_morph.py: retained pages updated in place must equal a fresh build.
 # /tmp is volatile: after a reboot, check out the pre-change commit and record the baseline again.
 # Works on Linux and on Windows Git Bash + WinLibs (mingw32-make, gcc).
 set -e
@@ -15,7 +16,7 @@ fi
 MAKE=$(command -v make || command -v mingw32-make)
 FIND=/usr/bin/find
 L=../../managed_components/lvgl__lvgl
-LVSRC=$($FIND $L/src -name '*.c' -not -path '*/drivers/*' -not -path '*/libs/*' -not -path '*/others/vg_lite_tvg/*' | tr '\n' ' ')
+LVSRC=$($FIND $L/src -name '*.c' -not -path '*/drivers/*' -not -path '*/libs/*' -not -path '*/draw/nxp/*' -not -path '*/others/vg_lite_tvg/*' | tr '\n' ' ')
 "$MAKE" -j8 CC="${CC:-gcc}" OUT=/tmp/hmi-sim LVSRC="$LVSRC" >/tmp/hmi-sim-build.log 2>&1 || { echo "check.sh: simulator build failed:" >&2; tail -30 /tmp/hmi-sim-build.log >&2; exit 1; }
 BIN=/tmp/hmi-sim/hmi_sim; [ -f $BIN.exe ] && BIN=$BIN.exe
 PY=python; "$PY" -c "import PIL" 2>/dev/null || PY=python3
@@ -43,3 +44,4 @@ print("PIXEL DIFF:", ", ".join(bad) if bad else "none (%d images identical)" % l
 if extra: print("note: %d rendered images have no baseline and were not compared (e.g. %s); re-record the baseline from the original commit to cover them" % (len(extra), extra[0]))
 sys.exit(1 if bad else 0)
 EOF
+HMI_SIM=$BIN "$PY" check_morph.py $T/hmi-after

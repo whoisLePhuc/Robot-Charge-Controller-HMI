@@ -432,3 +432,163 @@ void hp_gauge(const rcc_snapshot_t *m, hp_gauge_t *g)
     if (g->a_pm > 1000) g->a_pm = 1000;
     if (g->w_pm > 1000) g->w_pm = 1000;
 }
+
+/* ------------------------------------------------------------------ Measure page views */
+void hp_chan_view(hp_chan_view_t *v, bool valid, bool floor_bit, bool stale, int32_t value, int32_t filtered, const char *unit)
+{
+    memset(v, 0, sizeof(*v));
+    v->st = stale ? HP_CH_STALE : valid ? (floor_bit ? HP_CH_FLOOR : HP_CH_VALID) : HP_CH_INVALID;
+    v->valid = valid;
+    if (valid) hp_fmt_milli(v->value, sizeof(v->value), value, floor_bit);
+    else snprintf(v->value, sizeof(v->value), "\xE2\x80\x94");
+    if (valid) {
+        char t[24]; hp_fmt_milli(t, sizeof(t), filtered, floor_bit);
+        snprintf(v->filtered, sizeof(v->filtered), "Filtered %s %s", t, unit);
+    } else {
+        snprintf(v->filtered, sizeof(v->filtered), "%s", stale ? "Last value is stale" : "Not valid");
+    }
+}
+const char *hp_chan_state_text(hp_chan_state_t st)
+{
+    return st == HP_CH_STALE ? "STALE" : st == HP_CH_VALID ? "VALID" : st == HP_CH_FLOOR ? "BELOW FLOOR" : "INVALID";
+}
+void hp_adc_view(hp_adc_view_t *v, const rcc_snapshot_t *m)
+{
+    char age[24];
+    memset(v, 0, sizeof(*v));
+    v->have = m->online && m->measurement_valid;
+    v->vbits = m->vout_status; v->ibits = m->iout_status;
+    hp_fmt_age(age, sizeof(age), m->measurement_age_ms);
+    if (v->have) snprintf(v->seq, sizeof(v->seq), "Seq #%" PRIu32 " \xC2\xB7 Age %" PRIu32 " ms \xC2\xB7 Held %s",
+                          m->measurement_sequence, m->measurement_sample_age_ms, age);
+    else snprintf(v->seq, sizeof(v->seq), "Seq #%" PRIu32 " \xC2\xB7 Stale (%s)", m->measurement_sequence, age);
+}
+
+/* ------------------------------------------------------------------ Overview / Faults / Session page views */
+void hp_hero_view(hp_hero_view_t *v, const rcc_snapshot_t *m)
+{
+    hp_state_info_t s; hp_state_info(m, &s);
+    memset(v, 0, sizeof(*v));
+    snprintf(v->name, sizeof(v->name), "%s", s.name);
+    snprintf(v->sub, sizeof(v->sub), "%s", s.sub);
+    v->kind = s.kind; v->stage = s.stage;
+}
+void hp_sys_view(hp_sys_view_t *v, const rcc_snapshot_t *m)
+{
+    memset(v, 0, sizeof(*v));
+    v->online = m->online; v->sim = m->simulated_measurements; v->fs = hp_fault_state(m);
+    hp_fmt_age(v->uart, sizeof(v->uart), m->reply_age_ms);
+    if (v->fs == HP_FS_FAULT) snprintf(v->fault, sizeof(v->fault), "%s", hp_fault_short(m->primary_fault));
+    else if (v->fs == HP_FS_INHIBIT) snprintf(v->fault, sizeof(v->fault), "Inhibited");
+    else if (v->fs == HP_FS_UNKNOWN) snprintf(v->fault, sizeof(v->fault), "Unreadable");
+    else snprintf(v->fault, sizeof(v->fault), "No faults");
+    snprintf(v->relay, sizeof(v->relay), "%s", hp_fresh(m) ? (m->relay_command ? "CLOSED" : "OPEN") : "\xE2\x80\x94");
+    hp_session_line(v->sess, sizeof(v->sess), m);
+}
+void hp_tel_views(hp_tel_view_t v[HP_TEL_COUNT], const rcc_snapshot_t *m)
+{
+    static const char *const maxs[HP_TEL_COUNT] = {HP_V_FULL_TXT, HP_I_FULL_TXT, HP_P_FULL_TXT};
+    const bool stale = hp_meas_stale(m);
+    char s[HP_TEL_COUNT][16] = {"\xE2\x80\x94", "\xE2\x80\x94", "\xE2\x80\x94"};
+    hp_gauge_t g; hp_gauge(m, &g);
+    if (hp_v_valid(m)) {
+        hp_fmt_milli(s[HP_TEL_V], sizeof(s[0]), (int32_t)m->vout_mv, hp_v_floor(m));
+        if (hp_v_floor(m)) memmove(s[HP_TEL_V] + 3, s[HP_TEL_V] + 4, strlen(s[HP_TEL_V] + 4) + 1);   /* "<= 3.4" -> "<=3.4" */
+    }
+    if (hp_i_valid(m)) hp_fmt_milli(s[HP_TEL_A], sizeof(s[0]), m->iout_ma, false);
+    if (g.power_valid) snprintf(s[HP_TEL_W], sizeof(s[0]), "%d", g.power_w);
+    const int pm[HP_TEL_COUNT] = {g.v_pm, g.a_pm, g.w_pm};
+    for (int i = 0; i < HP_TEL_COUNT; ++i) {
+        memset(&v[i], 0, sizeof(v[i]));
+        memcpy(v[i].val, s[i], sizeof(v[i].val));
+        v[i].permille = pm[i]; v[i].stale = stale;
+        v[i].dash = (unsigned char)s[i][0] == 0xE2 && (unsigned char)s[i][1] == 0x80;
+        if (stale) snprintf(v[i].sub, sizeof(v[i].sub), "STALE DATA");
+        else snprintf(v[i].sub, sizeof(v[i].sub), "%d%%/%s", (pm[i] + 5) / 10, maxs[i]);
+    }
+}
+
+void hp_fault_sum_view(hp_fault_sum_view_t *v, const rcc_snapshot_t *m)
+{
+    memset(v, 0, sizeof(*v));
+    v->fs = hp_fault_state(m);
+    if (m->online && m->faults_valid) {
+        char at[24]; hp_fmt_age(at, sizeof(at), m->faults_age_ms);
+        snprintf(v->read, sizeof(v->read), "Read %s ago", at);
+    } else {
+        snprintf(v->read, sizeof(v->read), "Not read");
+    }
+}
+hp_fault_body_t hp_fault_body(const rcc_snapshot_t *m)
+{
+    const hp_fault_state_t fs = hp_fault_state(m);
+    if (fs == HP_FS_OK) return HP_FB_OK;
+    if (fs == HP_FS_UNKNOWN) return HP_FB_UNKNOWN;
+    return (m->primary_fault || m->inhibit_mask) ? HP_FB_PRIMARY_LISTS : HP_FB_LISTS;
+}
+void hp_fault_pri_view(hp_fault_pri_view_t *v, const rcc_snapshot_t *m)
+{
+    memset(v, 0, sizeof(*v));
+    v->fault = m->primary_fault != 0;
+    if (m->primary_fault) {
+        snprintf(v->nm, sizeof(v->nm), "PRIMARY \xC2\xB7 %s", hp_fault_name(m->primary_fault));
+        snprintf(v->id, sizeof(v->id), "0x%04X", (unsigned)m->primary_fault);
+        snprintf(v->act, sizeof(v->act), "Action: %s", hp_fault_hint(m->primary_fault));
+    } else {
+        char im[40];
+        hp_mask_text(im, sizeof(im), m->inhibit_mask, hp_inhibit_names, 3);
+        snprintf(v->nm, sizeof(v->nm), "INHIBIT \xC2\xB7 %s", im);
+        snprintf(v->act, sizeof(v->act), "START may clear it; the controller decides");
+    }
+}
+void hp_mask_row(char *nm, size_t nn, char *bl, size_t bn, int bit, const char *const *names, int count)
+{
+    if (bit < count) snprintf(nm, nn, "%s", names[bit]); else snprintf(nm, nn, "Unrecognized (bit %d)", bit);
+    snprintf(bl, bn, "b%d", bit);
+}
+int hp_mask_bits(uint32_t mask)
+{
+    int n = 0;
+    for (int b = 0; b < 32; ++b) if (mask & (1u << b)) ++n;
+    return n;
+}
+
+void hp_sess_view(hp_sess_view_t *v, const rcc_snapshot_t *m)
+{
+    hp_state_info_t s; hp_state_info(m, &s);
+    const bool in_session = hp_in_session(m);
+    memset(v, 0, sizeof(*v));
+    if (hp_fresh(m) && m->session_id) snprintf(v->v[0], sizeof(v->v[0]), "#%" PRIu32 " \xC2\xB7 %s", m->session_id, m->simulated_measurements ? "SIMULATED V/I" : s.name);
+    else snprintf(v->v[0], sizeof(v->v[0]), "%s", s.name);
+    if (m->end_valid && !in_session && (!m->session_id || m->end_session_id == m->session_id)) hp_fmt_duration(v->v[1], sizeof(v->v[1]), m->end_duration_ms);
+    else if (in_session) snprintf(v->v[1], sizeof(v->v[1]), "In progress");
+    else snprintf(v->v[1], sizeof(v->v[1]), "\xE2\x80\x94");
+    hp_command_text(v->v[2], sizeof(v->v[2]), m);
+    snprintf(v->v[3], sizeof(v->v[3]), "%s", m->end_valid ? (m->end_reason < 10 ? hp_end_names[m->end_reason] : "?") : "\xE2\x80\x94");
+    if (m->online && m->device_valid) {
+        if (m->event_missed) snprintf(v->head, sizeof(v->head), "EVENT RING BUFFER (%u held \xC2\xB7 %" PRIu32 " rotated)", (unsigned)m->event_count, m->event_missed);
+        else snprintf(v->head, sizeof(v->head), "EVENT RING BUFFER (%u held)", (unsigned)m->event_count);
+    } else {
+        snprintf(v->head, sizeof(v->head), "EVENT RING BUFFER (offline)");
+    }
+}
+static uint64_t fnv(uint64_t h, uint64_t x)
+{
+    for (int i = 0; i < 8; ++i) { h ^= (x >> (8 * i)) & 0xff; h *= 1099511628211ull; }
+    return h;
+}
+uint64_t hp_events_sig(const rcc_snapshot_t *m)
+{
+    uint64_t h = fnv(1469598103934665603ull, (uint64_t)(m->online ? 1 : 0) | ((uint64_t)m->event_count << 8));
+    if (!m->online) return h;                                       /* the offline message hides the rows */
+    for (int i = 0; i < m->event_count && i < RCC_EVENT_SLOTS; ++i) {
+        h = fnv(h, m->event_codes[i]); h = fnv(h, m->event_us[i]);
+        for (int k = 0; k < 4; ++k) h = fnv(h, m->event_args[i][k]);
+    }
+    return h;
+}
+hp_ev_region_t hp_events_region(const rcc_snapshot_t *m)
+{
+    return !m->online ? HP_EVR_OFFLINE : m->event_count ? HP_EVR_LIST : HP_EVR_EMPTY;
+}
+void hp_mask_caption(char *b, size_t n, uint32_t mask) { snprintf(b, n, "0x%04" PRIX32, mask); }
