@@ -31,13 +31,22 @@ void hw_spin_anim(void *o, int32_t v);                                          
 
 int hw_chip_at(lv_obj_t *p, int x, int y, bool right_anchor, const char *s, uint32_t fg, uint32_t bg);
 void hw_chip(lv_obj_t *p, int right_x, int y, const char *s, uint32_t fg, uint32_t bg);
+/* Retained chip: box + label, created once; hw_chip_set() re-measures and re-places it (same pixels as hw_chip). */
+typedef struct { lv_obj_t *box, *label; int y; } hw_chip_t;
+void hw_chip_create(hw_chip_t *c, lv_obj_t *p, int y);
+void hw_chip_set(hw_chip_t *c, int right_x, const char *s, uint32_t fg, uint32_t bg);
+void hw_label_set(lv_obj_t *label, const char *s);                                /* set_text only when it differs */
 void hw_kv(lv_obj_t *p, int x, int y, int w, int h, const char *k, const char *v, uint32_t vc);
-void hw_section(lv_obj_t *p, int x, int y, int w, const char *left, const char *right, uint32_t rc);
+/* Returns the right-hand label (NULL without `right`) so a retained page can update it. */
+lv_obj_t *hw_section(lv_obj_t *p, int x, int y, int w, const char *left, const char *right, uint32_t rc);
 
 /* Vertical scroll areas keep their offset per slot across the 1 s rebuild. Call hw_scroll_restore() after
  * filling the area. A slot is a small index (< HW_SCR_SLOTS) the caller picks; the offsets are cleared on every
  * page change (hmi_nav_goto), so pages can number their slots from 0 independently. */
 #define HW_SCR_SLOTS 4
+/* Retained pages own their scroll box (the offset lives in the object; refill rows with hw_scroll_to(a, saved y)). */
+lv_obj_t *hw_scroll_box(lv_obj_t *p, int x, int y, int w, int h);
+void hw_scroll_to(lv_obj_t *a, int y);
 lv_obj_t *hw_scroll_area(lv_obj_t *p, int x, int y, int w, int h, int slot);
 void hw_scroll_restore(lv_obj_t *a, int slot);
 void hw_scroll_reset(int slot);

@@ -18,3 +18,7 @@ uint32_t ht_fault_bg(hp_fault_state_t fs)
 {
     return fs == HP_FS_FAULT ? HC_FAULT_BG : fs == HP_FS_INHIBIT ? HC_WARN_BG : fs == HP_FS_UNKNOWN ? HC_OFF_BG : HC_CARD;
 }
+uint32_t ht_chan_color(hp_chan_state_t st)
+{
+    return st == HP_CH_STALE ? HC_OFF_COL : st == HP_CH_VALID ? HC_OK_COL : st == HP_CH_FLOOR ? HC_WARN_COL : HC_FAULT_COL;
+}

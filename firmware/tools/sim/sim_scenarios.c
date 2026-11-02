@@ -1,4 +1,5 @@
 /* Simulated controller snapshots (stand-in for rcc_link.c) for the PC renderer. */
+#include <stdio.h>
 #include <string.h>
 #include "rcc_link.h"
 
@@ -28,7 +29,39 @@ static void ev(rcc_snapshot_t *m, uint16_t code, uint32_t seq, uint32_t t_s,
 }
 #define ST(ot, oo, nt, no) ((ot) | ((oo) << 8) | ((nt) << 16) | ((uint32_t)(no) << 24))
 
+static int scenario(const char *name);
+/* NAME, NAME+aged (every age 0.8 s older, still fresh: only age texts change) NAME+evt (one more event: the list changes shape), NAME+sim / +simrdy (simulated measurements) NAME+stale, NAME+nopri or NAME+quiet. */
 int sim_scenario(const char *name)
+{
+    char base_name[32]; const char *plus = strchr(name, '+');
+    snprintf(base_name, sizeof(base_name), "%.*s", plus ? (int)(plus - name) : 31, name);
+    if (!scenario(base_name)) return 0;
+    rcc_snapshot_t *m = &s_snap;
+    if (!plus) return 1;
+    if (!strcmp(plus, "+aged")) {
+        m->reply_age_ms += 800; m->status_age_ms += 800; m->measurement_age_ms += 800; m->faults_age_ms += 800;
+        if (m->command_age_ms != UINT32_MAX) m->command_age_ms += 800;
+    } else if (!strcmp(plus, "+sim") || !strcmp(plus, "+simrdy")) {   /* simulated V/I (not ready / ready) */
+        m->simulated_measurements = true; m->simulated_ready = plus[4] == 'r';
+    } else if (!strcmp(plus, "+nopri")) {             /* primary fault cleared, bits stay: banner and Faults body class change */
+        m->primary_fault = 0;
+    } else if (!strcmp(plus, "+quiet")) {             /* all faults cleared: no banner, same events */
+        m->primary_fault = 0; m->active_fault_mask = 0; m->inhibit_mask = 0; m->top_state = 4; m->operational_state = 1;
+    } else if (!strcmp(plus, "+stale")) {             /* online but the status is older than 1.5 s: start blocked, values stale */
+        m->status_age_ms = 2000; m->measurement_age_ms = 2000;
+    } else if (!strcmp(plus, "+evt")) {
+        if (m->event_count == RCC_EVENT_SLOTS) {      /* ring full: drop the oldest */
+            memmove(&m->event_codes[0], &m->event_codes[1], sizeof(m->event_codes) - sizeof(m->event_codes[0]));
+            memmove(&m->event_sequences[0], &m->event_sequences[1], sizeof(m->event_sequences) - sizeof(m->event_sequences[0]));
+            memmove(&m->event_us[0], &m->event_us[1], sizeof(m->event_us) - sizeof(m->event_us[0]));
+            memmove(&m->event_args[0], &m->event_args[1], sizeof(m->event_args) - sizeof(m->event_args[0]));
+            --m->event_count; ++m->event_missed;
+        }
+        ev(m, 0x0014, 900, 9000, 17, 47000, 5000, 0);
+    } else return 0;
+    return 1;
+}
+static int scenario(const char *name)
 {
     rcc_snapshot_t *m = &s_snap; base(m);
     if (!strcmp(name, "CHARGING")) {

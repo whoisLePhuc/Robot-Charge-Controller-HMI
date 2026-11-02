@@ -114,3 +114,67 @@ typedef struct {
     bool two_line;
 } hp_banner_t;
 void hp_banner(const rcc_snapshot_t *m, bool link_started, hp_banner_t *b);
+
+/* Measure page views: plain data the model compares (memcmp) and the page draws. Zero-padded, so equal data is equal bytes. */
+typedef enum { HP_CH_STALE, HP_CH_VALID, HP_CH_FLOOR, HP_CH_INVALID } hp_chan_state_t;
+typedef struct {
+    hp_chan_state_t st;     /* chip: stale wins over everything */
+    bool valid;             /* value and unit are shown */
+    char value[24];         /* "48.2" or an em dash */
+    char filtered[56];      /* "Filtered 48.1 V" or the stale / invalid note */
+} hp_chan_view_t;
+void hp_chan_view(hp_chan_view_t *v, bool valid, bool floor_bit, bool stale, int32_t value, int32_t filtered, const char *unit);
+const char *hp_chan_state_text(hp_chan_state_t st);
+typedef struct {
+    bool have;              /* the matrix shows bits (else dashes) */
+    uint16_t vbits, ibits;  /* status bits, 0..6 (6 = below floor) */
+    char seq[64];           /* section caption: sequence, age, held / stale */
+} hp_adc_view_t;
+void hp_adc_view(hp_adc_view_t *v, const rcc_snapshot_t *m);
+
+/* Overview page views (same rules: plain data, zero-padded). */
+typedef struct {
+    char name[32];          /* state name */
+    char sub[64];
+    hp_kind_t kind;
+    int stage;              /* 0..4 highlighted on the stage strip, -1 none (the hero is then 2 px lower) */
+} hp_hero_view_t;
+void hp_hero_view(hp_hero_view_t *v, const rcc_snapshot_t *m);
+typedef struct {
+    bool online, sim;       /* sim: row 3 reads "Session (SIM V/I)" */
+    hp_fault_state_t fs;
+    char uart[40], fault[40], relay[16], sess[40];   /* value text of the four rows */
+} hp_sys_view_t;
+void hp_sys_view(hp_sys_view_t *v, const rcc_snapshot_t *m);
+typedef struct {
+    char val[16];           /* "48.2" or an em dash */
+    char sub[24];           /* "80%/60V" or "STALE DATA" */
+    int permille;           /* gauge fill, 0..1000 */
+    bool stale, dash;       /* dash: no value (the unit is hidden) */
+} hp_tel_view_t;
+enum { HP_TEL_V, HP_TEL_A, HP_TEL_W, HP_TEL_COUNT };
+void hp_tel_views(hp_tel_view_t v[HP_TEL_COUNT], const rcc_snapshot_t *m);
+
+/* Faults page views. read: "Read 1.2 s ago" or "Not read". */
+typedef struct { hp_fault_state_t fs; char read[40]; } hp_fault_sum_view_t;
+void hp_fault_sum_view(hp_fault_sum_view_t *v, const rcc_snapshot_t *m);
+/* Body layout class: what is built under the summary card (a change rebuilds the body, nothing else does). */
+typedef enum { HP_FB_OK, HP_FB_UNKNOWN, HP_FB_LISTS, HP_FB_PRIMARY_LISTS } hp_fault_body_t;
+hp_fault_body_t hp_fault_body(const rcc_snapshot_t *m);
+/* Primary / inhibit card text (id is empty for an inhibit). Equal data = same card. */
+typedef struct { bool fault; char nm[64], id[12], act[80]; } hp_fault_pri_view_t;
+void hp_fault_pri_view(hp_fault_pri_view_t *v, const rcc_snapshot_t *m);
+/* One row of a fault / inhibit bit list: name ("Unrecognized (bit N)" past count) and "bN". */
+void hp_mask_row(char *nm, size_t nn, char *bl, size_t bn, int bit, const char *const *names, int count);
+int hp_mask_bits(uint32_t mask);
+
+/* Session page views: the four summary values and the event ring-buffer caption. */
+typedef struct { char v[4][40]; char head[64]; } hp_sess_view_t;
+void hp_sess_view(hp_sess_view_t *v, const rcc_snapshot_t *m);
+/* Signature of everything the event list draws (online, the held events); equal signature = same rows. */
+uint64_t hp_events_sig(const rcc_snapshot_t *m);
+/* Which part of the event region is shown: the link-lost message, "no events", or the row list. */
+typedef enum { HP_EVR_OFFLINE, HP_EVR_EMPTY, HP_EVR_LIST } hp_ev_region_t;
+hp_ev_region_t hp_events_region(const rcc_snapshot_t *m);
+/* Hex caption of a fault / inhibit mask list: "0x%04X". */
+void hp_mask_caption(char *b, size_t n, uint32_t mask);

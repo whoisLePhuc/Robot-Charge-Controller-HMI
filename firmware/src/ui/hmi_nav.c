@@ -9,11 +9,13 @@
 #include "hmi_widgets.h"
 
 static int cur_page;
+static unsigned epoch;
 static lv_async_cb_t redraw_cb;
 static void (*leave_cb)(void);
 
 void hmi_nav_bind(lv_async_cb_t redraw, void (*on_leave)(void)) { redraw_cb = redraw; leave_cb = on_leave; }
 int hmi_nav_page(void) { return cur_page; }
+unsigned hmi_nav_epoch(void) { return epoch; }
 void hmi_nav_request_redraw(void) { if (redraw_cb) (void)lv_async_call(redraw_cb, NULL); }
 
 void hmi_nav_goto(int page, int sub)
@@ -23,6 +25,7 @@ void hmi_nav_goto(int page, int sub)
     hw_scroll_reset_all();
     if (sub >= 0 && hmi_pages[page].set_sub) hmi_pages[page].set_sub(sub);
     cur_page = page;
+    ++epoch;
     hmi_nav_request_redraw();
 }
 

@@ -16,6 +16,7 @@
 #include "hmi_backlight.h"
 #include "hmi_config.h"
 #include "hmi_icons.h"
+#include "hmi_model.h"
 #include "hmi_nav.h"
 #include "hmi_ota.h"
 #include "hmi_pages.h"
@@ -37,6 +38,14 @@ static int hdr_dev_w = 99;
 static int banner_target = -1;
 
 static void redraw_cb(void *unused);
+
+/* The retained page on screen (ops != NULL), identified by what forces a re-enter: page, geometry, nav epoch. */
+static struct { int page, h, top; unsigned epoch; } live = {.page = -1};
+static void drop_live(void)   /* before content is cleaned: let the page forget its widgets */
+{
+    if (live.page >= 0 && hmi_pages[live.page].ops && hmi_pages[live.page].ops->leave) hmi_pages[live.page].ops->leave();
+    live.page = -1;
+}
 
 /* ------------------------------------------------------------------ Action bar */
 
@@ -149,6 +158,7 @@ lv_obj_t *hmi_shell_overlay_open(void)
 {
     if (overlay) return NULL;
     close_modal();
+    drop_live();
     lv_obj_clean(content);
     overlay = hw_box(screen, 0, 0, 480, 320, HC_BG, 0);
     lv_obj_set_clickable(overlay, true);
@@ -310,12 +320,23 @@ static void rebuild(void)
     snprintf(sig, sizeof(sig), "%d|%d|%d|%s|%s|%u", (int)spec.kind, (int)spec.button, (int)page, spec.title, spec.sub, (unsigned)ht_kind_color(spec.title_kind));
     if (strcmp(sig, bar_signature) != 0) { memcpy(bar_signature, sig, sizeof(sig)); build_bar(&spec); }
 
-    lv_obj_clean(content);
     const int top = banner ? (two_line_banner ? 70 : 56) : 34;
     const int bottom = (spec.kind == HP_BAR_NONE) ? 312 : 264;
-    lv_obj_t *p = hw_obj(content, 64, top, 408, bottom - top);
+    const hmi_page_def_t *pd = &hmi_pages[page];
     const hmi_page_ctx_t ctx = {.height = bottom - top, .link_started = link_started, .bar = &spec};
-    hmi_pages[page].build(p, &m, &ctx);
+    if (pd->ops) hmi_model_update(&m);                    /* only retained pages observe it; observers run before any leave() */
+    if (!pd->ops) {                                       /* legacy page: rebuilt from the snapshot every refresh */
+        drop_live();
+        lv_obj_clean(content);
+        pd->build(hw_obj(content, 64, top, 408, bottom - top), &m, &ctx);
+    } else if (live.page != page || live.h != ctx.height || live.top != top || live.epoch != hmi_nav_epoch()) {
+        drop_live();                                      /* entered, moved or resized: create the widgets once */
+        lv_obj_clean(content);
+        live.page = page; live.h = ctx.height; live.top = top; live.epoch = hmi_nav_epoch();
+        pd->ops->enter(hw_obj(content, 64, top, 408, bottom - top), &m, &ctx);
+    } else {
+        if (pd->ops->update) pd->ops->update(&m, &ctx);   /* observers already redrew what changed */
+    }
 }
 static void redraw_cb(void *unused) { (void)unused; rebuild(); }
 
@@ -403,6 +424,7 @@ void hmi_shell_start(bool started)
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
     lv_obj_set_scrollable(screen, false);
 
+    hmi_model_init();
     build_chrome();
     bar_box = hw_obj(screen, 64, 270, 408, 42);
     content = hw_obj(screen, 0, 0, 480, 320);

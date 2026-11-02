@@ -10,6 +10,8 @@
 void hmi_nav_bind(lv_async_cb_t redraw, void (*on_leave)(void));
 /* Registry index of the visible page. */
 int hmi_nav_page(void);
+/* Incremented by every hmi_nav_goto (even to the same page): the shell re-enters a retained page when it changes. */
+unsigned hmi_nav_epoch(void);
 /* Switch to registry page `page`: clears scroll offsets, rebuilds on the next LVGL tick. `sub` >= 0 is passed to the
  * page's set_sub hook (e.g. Device tab), -1 leaves the page's own state alone. Out-of-range pages are ignored. */
 void hmi_nav_goto(int page, int sub);

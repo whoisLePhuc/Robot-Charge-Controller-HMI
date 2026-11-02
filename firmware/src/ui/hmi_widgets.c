@@ -45,9 +45,8 @@ static void scroll_save_cb(lv_event_t *e)
     const int slot = (int)(uintptr_t)lv_event_get_user_data(e);
     scroll_pos[slot] = (int)lv_obj_get_scroll_y(lv_event_get_target_obj(e));
 }
-lv_obj_t *hw_scroll_area(lv_obj_t *p, int x, int y, int w, int h, int slot)
+lv_obj_t *hw_scroll_box(lv_obj_t *p, int x, int y, int w, int h)
 {
-    LV_ASSERT(slot >= 0 && slot < HW_SCR_SLOTS);
     lv_obj_t *a = hw_obj(p, x, y, w, h);
     lv_obj_set_scrollable(a, true);
     lv_obj_set_clickable(a, true);
@@ -58,6 +57,17 @@ lv_obj_t *hw_scroll_area(lv_obj_t *p, int x, int y, int w, int h, int slot)
     lv_obj_set_style_width(a, 3, LV_PART_SCROLLBAR);
     lv_obj_set_style_radius(a, 2, LV_PART_SCROLLBAR);
     lv_obj_set_style_pad_right(a, 1, LV_PART_SCROLLBAR);
+    return a;
+}
+void hw_scroll_to(lv_obj_t *a, int y)
+{
+    lv_obj_update_layout(a);
+    lv_obj_scroll_to_y(a, y, LV_ANIM_OFF);
+}
+lv_obj_t *hw_scroll_area(lv_obj_t *p, int x, int y, int w, int h, int slot)
+{
+    LV_ASSERT(slot >= 0 && slot < HW_SCR_SLOTS);
+    lv_obj_t *a = hw_scroll_box(p, x, y, w, h);
     lv_obj_add_event_cb(a, scroll_save_cb, LV_EVENT_SCROLL, (void *)(uintptr_t)slot);
     return a;
 }
@@ -148,6 +158,26 @@ void hw_chip(lv_obj_t *p, int right_x, int y, const char *s, uint32_t fg, uint32
 {
     (void)hw_chip_at(p, right_x, y, true, s, fg, bg);
 }
+void hw_chip_create(hw_chip_t *c, lv_obj_t *p, int y)
+{
+    c->y = y;
+    c->box = hw_box(p, 0, y, 14, 17, HC_SURFACE2, 6);
+    c->label = hw_text(p, "", 0, 0, HF_10, HC_DIM);
+}
+void hw_chip_set(hw_chip_t *c, int right_x, const char *s, uint32_t fg, uint32_t bg)
+{
+    hw_label_set(c->label, s);
+    lv_obj_set_style_text_color(c->label, HC(fg), 0);
+    const int w = hw_width_of(c->label) + 14, x0 = right_x - w;
+    lv_obj_set_pos(c->box, x0, c->y);
+    lv_obj_set_size(c->box, w, 17);
+    lv_obj_set_style_bg_color(c->box, HC(bg), 0);
+    lv_obj_set_pos(c->label, x0 + 7, c->y + (17 - hw_lh(HF_10)) / 2);
+}
+void hw_label_set(lv_obj_t *label, const char *s)
+{
+    if (strcmp(lv_label_get_text(label), s) != 0) lv_label_set_text(label, s);
+}
 /* "label ............ value" row of height h. */
 void hw_kv(lv_obj_t *p, int x, int y, int w, int h, const char *k, const char *v, uint32_t vc)
 {
@@ -160,12 +190,13 @@ void hw_kv(lv_obj_t *p, int x, int y, int w, int h, const char *k, const char *v
     hw_text_in(p, v, x + w - vw - 1, y, vw + 2, h, HF_12B, vc, LV_TEXT_ALIGN_RIGHT);
 }
 /* Section title row (16 px) with an optional right-aligned value. */
-void hw_section(lv_obj_t *p, int x, int y, int w, const char *left, const char *right, uint32_t rc)
+lv_obj_t *hw_section(lv_obj_t *p, int x, int y, int w, const char *left, const char *right, uint32_t rc)
 {
     lv_obj_t *l = hw_text(p, left, x, y + (16 - hw_lh(HF_10)) / 2, HF_10, HC_LABEL);
     hw_spacing(l, 1);
     if (right) {
         const int lw = hw_width_of(l) + 8;
-        hw_text_in(p, right, x + lw, y, w - lw, 16, HF_10, rc, LV_TEXT_ALIGN_RIGHT);
+        return hw_text_in(p, right, x + lw, y, w - lw, 16, HF_10, rc, LV_TEXT_ALIGN_RIGHT);
     }
+    return NULL;
 }

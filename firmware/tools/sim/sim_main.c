@@ -24,6 +24,18 @@ static void run(uint32_t ms) { for (uint32_t t = 0; t < ms; t += 20) { now_ms +=
 static void click(int x, int y)
 { pt.x = x; pt.y = y; down = true; run(60); down = false; run(60); }
 
+static void dump_ppm(const char *path)
+{
+    FILE *f = fopen(path, "wb");
+    fprintf(f, "P6\n%d %d\n255\n", W, H);
+    for (int i = 0; i < W * H; ++i) {
+        uint16_t c = fb[i];
+        uint8_t r = (c >> 11) & 31, g = (c >> 5) & 63, b = c & 31;
+        fputc((r << 3) | (r >> 2), f); fputc((g << 2) | (g >> 4), f); fputc((b << 3) | (b >> 2), f);
+    }
+    fclose(f);
+}
+
 int main(int argc, char **argv)
 {
     if (argc < 4) { fprintf(stderr, "usage: hmi_sim SCENARIO PAGE OUT.ppm [tab=link] [cmd=x] [click=confirm]\n"); return 2; }
@@ -83,16 +95,21 @@ int main(int argc, char **argv)
         }
     }
     run(1100);                                    /* let the 1 s refresh timer settle */
+    dump_ppm(argv[3]);
+    for (int i = 4; i < argc; ++i) {              /* seq=B,C: switch snapshot live, let the refresh update the page, dump <out>.N.ppm */
+        if (strncmp(argv[i], "seq=", 4)) continue;
+        char names[256], path[512]; snprintf(names, sizeof(names), "%s", argv[i] + 4);
+        int n = 1;
+        for (char *s2 = strtok(names, ","); s2; s2 = strtok(NULL, ","), ++n) {
+            if (!sim_scenario(s2)) { fprintf(stderr, "unknown scenario %s\n", s2); return 2; }
+            run(2100);
+            snprintf(path, sizeof(path), "%s.%d", argv[3], n);
+            dump_ppm(path);
+        }
+    }
     { lv_mem_monitor_t mon; lv_mem_monitor(&mon);
       fprintf(stderr, "lvgl heap: total %u, free %u, biggest %u, used %u%%, frag %u%%\n",
               (unsigned)mon.total_size, (unsigned)mon.free_size, (unsigned)mon.free_biggest_size,
               (unsigned)mon.used_pct, (unsigned)mon.frag_pct); }
-    FILE *f = fopen(argv[3], "wb");
-    fprintf(f, "P6\n%d %d\n255\n", W, H);
-    for (int i = 0; i < W * H; ++i) {
-        uint16_t c = fb[i];
-        uint8_t r = (c >> 11) & 31, g = (c >> 5) & 63, b = c & 31;
-        fputc((r << 3) | (r >> 2), f); fputc((g << 2) | (g >> 4), f); fputc((b << 3) | (b >> 2), f);
-    }
-    fclose(f); return 0;
+    return 0;
 }
