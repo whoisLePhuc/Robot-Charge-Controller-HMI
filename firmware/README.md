@@ -3,15 +3,15 @@
 Firmware for the Elecrow DLE06235B / ES3C35P ESP32-S3 display (480x320 LVGL HMI for the Robot Charge Controller).
 Built with **ESP-IDF 6.1.0** and `idf.py`; PlatformIO is not used.
 
-Status: phases 1 and 2 of `../docs/firmware-restructure-design.md` are done; not yet run on a board. Behaviour
-and UI are those of `../firmware/` (PlatformIO), which this project replaces.
+Status: the restructure in `../docs/firmware-restructure-design.md` is done; not yet run on a board. Behaviour
+and UI are those of the former PlatformIO project (`firmware/src`, removed; see git history before the rename).
 
 ## Layout
 
 ```
 main/          main.c -> app.c: the composition root (start order, wiring between modules)
 components/    common / bsp / protocol / services / ui, one ESP-IDF component per module
-test/host/     host unit tests (rcc_codec, hmi_present, controller_sim.py)
+test/host/     host unit tests (rcc_codec, hmi_present, rcc_link, controller_sim.py)
 tools/         sim/ (PC simulator, pixel + morph regression), controller_sim.py, gen_icons.py
 ```
 
@@ -39,7 +39,7 @@ Configuration:
 ## Checks
 
 ```
-CC=gcc sh test/host/run.sh        # host unit tests: rcc_codec, hmi_present
+CC=gcc sh test/host/run.sh        # host unit tests: rcc_codec, hmi_present, rcc_link (Windows: run.ps1)
 sh tools/sim/check.sh baseline    # once, on the reference code
 sh tools/sim/check.sh             # PC simulator: 80 images pixel diff + retained-mode morph check
 python -m unittest discover -s test/host -p test_controller_sim.py -v

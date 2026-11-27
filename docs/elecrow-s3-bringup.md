@@ -41,18 +41,17 @@ Device → COMM LINK shows the same binding (`UART1`, `GPIO43 / 44`) as
 
 ## Build and USB upload
 
-PlatformIO pins Espressif32 `7.1.3`; the documented baseline is ESP-IDF `6.1.0`
-and LVGL `9.6.0`. From `firmware/`:
+The firmware is an ESP-IDF `6.1.0` project built with `idf.py`; LVGL is `9.6.0`.
+From an ESP-IDF PowerShell in `firmware/`:
 
 ~~~powershell
-pio run
-pio run -t upload --upload-port COM15
-pio device monitor --port COM15 --baud 115200
+idf.py build
+idf.py -p COM15 flash monitor
 ~~~
 
-Use the actual board port in place of `COM15`. Close the monitor before upload.
-Dependencies are pinned in `dependencies.lock`; defaults are in
-`config/elecrow_s3.defaults` and partitions in `partitions/elecrow_s3.csv`.
+Use the actual board port in place of `COM15`. Close any other monitor before
+flashing. Dependencies are pinned in `dependencies.lock`; board configuration is
+in `sdkconfig.defaults` and partitions in `partitions.csv`.
 USB flashing establishes the current bootloader and partition layout. The older
 factory-only layout is obsolete; Web OTA transfers an application and does not
 migrate an old partition table.

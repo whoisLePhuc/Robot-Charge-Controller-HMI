@@ -44,7 +44,8 @@ Consequences:
 | Character format | 115 200 bit/s, 8N1, no flow control | `UART.md` §3.1 |
 | Topology | point-to-point, full duplex | `UART.md` §3.1 |
 
-HMI side: `firmware/src/rcc_link.c` selects UART1, TX GPIO43 and RX GPIO44,
+HMI side: `firmware/components/protocol/rcc_link` selects UART1, TX GPIO43 and RX GPIO44
+(constants in `firmware/components/common/hmi_common/include/hmi_config.h`),
 115200 8N1 without flow control. Wire HMI TX to controller RX (GPIO21), HMI RX
 to controller TX (GPIO19), and common GND, using 3.3 V logic. These are source
 bindings; the Elecrow connector mapping and physical integration remain to be

@@ -3,7 +3,7 @@
 #include <string.h>
 #include "esp_compat.h"
 #include "lvgl.h"
-#include "../../firmware/src/hmi_ui.h"
+#include "hmi_ui.h"
 
 #define SCREEN_W 480
 #define SCREEN_H 320

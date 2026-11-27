@@ -4,7 +4,7 @@
   <p>
     <img alt="Status: development prototype" src="https://img.shields.io/badge/status-development_prototype-d29922">
     <img alt="Board: Elecrow ESP32-S3" src="https://img.shields.io/badge/board-Elecrow_ESP32--S3-E7352C?logo=espressif&amp;logoColor=white">
-    <img alt="PlatformIO" src="https://img.shields.io/badge/build-PlatformIO-F5822A?logo=platformio&amp;logoColor=white">
+    <img alt="Build: idf.py" src="https://img.shields.io/badge/build-idf.py-E7352C?logo=espressif&amp;logoColor=white">
     <img alt="ESP-IDF 6.1.0" src="https://img.shields.io/badge/ESP--IDF-6.1.0-314CB0">
     <img alt="LVGL 9.6.0" src="https://img.shields.io/badge/LVGL-9.6.0-2ea44f">
   </p>
@@ -72,7 +72,7 @@ the full-size image.
 
 <p align="center">
   <em>High-resolution captures of the <a href="docs/mockups/hmi-ui-landscape.html">interactive UI reference</a>,
-  a browser port of <code>firmware/src/hmi_ui.c</code>,<br>with illustrative data. Not photographs of the display
+  a browser port of the firmware UI (<code>firmware/components/ui</code>),<br>with illustrative data. Not photographs of the display
   or recorded charging sessions.</em>
 </p>
 
@@ -90,7 +90,7 @@ python tools/snapshot/export_mockup_previews.py --scale 3
 ~~~
 
 To check the reference against the firmware itself, `tools/snapshot/` also builds
-a PC renderer of `hmi_ui.c` with LVGL (480 × 320, pixel-exact). Build the firmware
+a PC renderer of the UI components with LVGL (480 × 320, pixel-exact). Build the firmware
 once so `firmware/managed_components/` contains LVGL, then:
 
 ~~~sh
@@ -112,10 +112,10 @@ in a browser.
 ## Overview
 
 Robot Charge Controller HMI targets the **Elecrow DLE06235B / ES3C35P ESP32-S3**
-in **480 × 320 landscape** orientation, using **PlatformIO, ESP-IDF and LVGL**.
+in **480 × 320 landscape** orientation, using **ESP-IDF (`idf.py`) and LVGL**.
 The five-page UI is integrated with the RCC protocol transport on **UART1,
 TX GPIO43 / RX GPIO44, 115200 8N1**. The firmware attempts to start this link
-during display initialization. Physical wiring and end-to-end controller
+once the display is initialized. Physical wiring and end-to-end controller
 operation still require verification.
 
 Charging decisions, interlocks and relay control remain owned by the controller.
@@ -143,8 +143,7 @@ build or physical test result.
 | Display | ST77922 QSPI, native 320 × 480; LVGL landscape 480 × 320 |
 | Touch | Integrated capacitive touch, ST77922 I²C at 0x55 |
 | Flash / PSRAM | 16 MB / 8 MB |
-| Build system | PlatformIO |
-| Platform | Espressif32 7.1.3 |
+| Build system | ESP-IDF `idf.py` (CMake, component manager) |
 | Framework | ESP-IDF 6.1.0 |
 | UI | LVGL 9.6.0 |
 | Controller link | UART1, TX GPIO43 / RX GPIO44, 115200 8N1, 3.3 V logic |
@@ -184,20 +183,21 @@ and implementation limits.
 
 ## Build and Upload
 
-The `elecrow_s3` image runs the shared five-page HMI on the ST77922 QSPI LCD with
-integrated capacitive touch and RCC UART1 transport. Bare `pio run` uses the
-Elecrow environment.
+The image runs the five-page HMI on the ST77922 QSPI LCD with integrated
+capacitive touch and RCC UART1 transport.
 See the [bring-up guide](docs/elecrow-s3-bringup.md) for hardware details.
 
-Install PlatformIO, then run from the repository root:
+Install ESP-IDF 6.1.0, then run from an ESP-IDF PowerShell/cmd or shell:
 
 ~~~sh
 cd firmware
-pio run
-pio run --target upload --upload-port COM15
+idf.py build
+idf.py -p COM15 flash monitor
 ~~~
 
-Replace COM15 with the board's current USB serial port.
+Replace COM15 with the board's current USB serial port. On a busy workstation,
+`ninja -C build -j 4` after the first `idf.py build` limits the parallel compile
+jobs. See [firmware/README.md](firmware/README.md) for configuration files and checks.
 
 USB Serial/JTAG carries application logs. Close Serial Monitor before uploading.
 The application attempts to start UART1 and polls the connected peer. START/STOP
@@ -239,17 +239,19 @@ Simulator values and relay states are synthetic; the simulator does not operate
 physical charging hardware.
 
 See the [simulator guide](docs/controller-simulator.md) for failure injection and
-expected results, including the Windows command using PlatformIO's Python.
+expected results.
 
 ## Automated Tests
 
 From the firmware directory:
 
 ~~~sh
+CC=gcc sh test/host/run.sh      # rcc_codec, hmi_present, rcc_link (Windows: test/host/run.ps1)
 python -B -m unittest discover -s test/host -p test_controller_sim.py -v
 ~~~
 
-Tests cover framing, checksums, fragmentation, response schemas, START/STOP,
+The C tests cover the frame codec, the presentation logic and the link's START
+gating. The simulator tests cover framing, checksums, fragmentation, response schemas, START/STOP,
 duplicate requests, authorization, event pagination and reboot. The optional
 independent controller-codec comparison is described in the simulator guide.
 
@@ -277,14 +279,18 @@ Robot-Charge-Controller-HMI/
 │   └── ui/                  # README previews (captures of the UI reference)
 ├── docs/                    # Elecrow, protocol and test guides
 │   └── mockups/             # Interactive UI reference (port of hmi_ui.c)
-├── firmware/
-│   ├── platformio.ini       # Elecrow S3 is the default and only board target
-│   ├── config/              # ESP-IDF defaults for the Elecrow S3
-│   ├── src/                 # LCD/touch, LVGL UI, RCC UART, settings, Wi-Fi and OTA
-│   │   └── hmi_fonts/       # Generated UI fonts
+├── firmware/                # ESP-IDF project (idf.py)
+│   ├── main/                # app.c: start order and wiring between modules
+│   ├── components/          # one component per module, by layer (see components/README.md)
+│   │   ├── common/          # rcc_snapshot_t data contract, board constants
+│   │   ├── bsp/             # ST77922 LCD + LVGL port, touch, backlight
+│   │   ├── protocol/        # RCC frame codec and UART1 link
+│   │   ├── services/        # settings, Wi-Fi, Web OTA, display power
+│   │   └── ui/              # LVGL UI: assets, presentation logic, theme/widgets, pages
+│   ├── sdkconfig.defaults   # Elecrow S3 configuration; partitions.csv: dual OTA
 │   ├── test/host/           # Host-side tests
 │   └── tools/               # UART controller simulator and UI tooling
-└── tools/snapshot/          # README preview export and PC renderer of hmi_ui.c
+└── tools/snapshot/          # README preview export and PC renderer of the UI components
 ~~~
 
 ## Documentation
@@ -297,6 +303,7 @@ Robot-Charge-Controller-HMI/
 | [Controller Interface](docs/controller-interface.md) | Framing, command payloads and control semantics |
 | [UI Pages and Information](docs/ui-pages-and-information.md) | Page contents, states and operator feedback |
 | [Interactive UI Reference](docs/mockups/hmi-ui-landscape.html) | Browser replica of the firmware UI: every page, command state and overlay |
+| [Firmware Components](firmware/components/README.md) | Layers, dependency rules, where to change what |
 | [Desktop UI Simulator](firmware/tools/sim/README.md) | Render and inspect the LVGL interface on a PC |
 | [Controller Simulator](docs/controller-simulator.md) | Interactive scenarios, fault injection and host tests |
 | [Controller Change Requests](docs/controller-change-requests.md) | Interface dependencies and proposed controller changes |

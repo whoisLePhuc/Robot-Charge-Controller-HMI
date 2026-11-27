@@ -1,6 +1,6 @@
 # Thiết kế tái cấu trúc firmware HMI và chuyển sang ESP-IDF (idf.py)
 
-Trạng thái: **giai đoạn 1 và 2 đã xong, chưa nạp board** (2026-11-27). Bản đồ kiến trúc nằm ngay trong code: `new_firmware/components/README.md`.
+Trạng thái: **giai đoạn 1 và 2 đã xong, chưa nạp board** (2026-11-27). `new_firmware/` đã đổi tên thành `firmware/`, dự án PlatformIO cũ đã bị xoá (vẫn còn trong lịch sử git). Các đường dẫn `new_firmware/...` bên dưới là ghi chép lịch sử; hiện chúng là `firmware/...`. Bản đồ kiến trúc nằm ngay trong code: `firmware/components/README.md`.
 
 Kết quả giai đoạn 1 (kiểm tra trên máy dev):
 - `new_firmware/main/` giống hệt `firmware/src/` (`diff -r --strip-trailing-cr` không có khác biệt).
@@ -461,6 +461,6 @@ sequenceDiagram
 
 ## 9. Câu hỏi còn mở
 
-- Có đổi tên `new_firmware/` thành `firmware/` và xoá dự án PlatformIO cũ không? Nên làm sau khi đã chạy thử trên board.
-- Các công cụ ở gốc repo (`tools/snapshot/*`, `tools/tests/rcc_link_host_test.c`) và một số tài liệu trong `docs/` vẫn trỏ vào `firmware/src`. Chúng vẫn chạy được chừng nào `firmware/` còn. Khi bỏ `firmware/` thì phải chuyển chúng sang các đường dẫn component mới.
+- (Đã làm) Đổi tên `new_firmware/` thành `firmware/` và xoá dự án PlatformIO cũ. Người dùng quyết định làm trước khi có board để chạy thử.
+- (Đã làm) Test `rcc_link` chuyển vào `firmware/test/host/test_rcc_link.c` và chạy trong `run.sh`. Test này đã hỏng từ trước vì stub thiếu `uart_port_t` / `gpio_num_t`. `tools/snapshot` build từ các component UI; trước đó nó cũng đã hỏng, vì từ đợt refactor UI nó không còn biên dịch `ui/*.c`. README và `docs/` đã chuyển sang `idf.py` và đường dẫn component.
 - (Đã giải quyết) Thư mục trùng `firmware/new_firmware/` không còn tồn tại.

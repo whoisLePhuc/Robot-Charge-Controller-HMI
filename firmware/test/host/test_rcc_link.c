@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
-#include "../../firmware/src/rcc_link.c"
+/* Host test for components/protocol/rcc_link: includes the source to reach its static state. Run: run.sh */
+#include "../../components/protocol/rcc_link/src/rcc_link.c"
 static void reset(void) {
  memset(&s_model,0,sizeof(s_model)); memset(&s_start,0,sizeof(s_start)); memset(&s_stop,0,sizeof(s_stop));
  s_model_lock=(void*)1; s_start_requested=false; s_stop_requested=false;

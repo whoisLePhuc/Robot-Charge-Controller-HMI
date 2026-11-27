@@ -1,7 +1,8 @@
 # HMI pages and implemented behavior
 
-This describes `firmware/src/hmi_ui.c` and `rcc_link.c` at revision `28d2253`,
-checked on 2026-10-30. It replaces the earlier pre-implementation UI contract.
+This describes the HMI UI and link at revision `28d2253`, checked on 2026-10-30
+(then `firmware/src/hmi_ui.c` and `rcc_link.c`; now `firmware/components/ui` and
+`firmware/components/protocol/rcc_link`). It replaces the earlier pre-implementation UI contract.
 The HTML mockup and preview images are design references and may differ from
 the current firmware. Hardware layout/navigation acceptance remains pending.
 Controller wire semantics are documented in

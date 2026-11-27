@@ -1,11 +1,11 @@
 #include <string.h>
 #include <stdio.h>
 #include "esp_compat.h"
-#include "../../firmware/src/rcc_link.h"
-#include "../../firmware/src/hmi_settings.h"
-#include "../../firmware/src/hmi_backlight.h"
-#include "../../firmware/src/hmi_wifi.h"
-#include "../../firmware/src/hmi_ota.h"
+#include "rcc_link.h"
+#include "hmi_settings.h"
+#include "hmi_power.h"
+#include "hmi_wifi.h"
+#include "hmi_ota.h"
 
 static hmi_settings_t s_settings = {
     .brightness_pct = 100,
@@ -21,10 +21,10 @@ esp_err_t hmi_settings_set_sleep_timeout(uint16_t s) { s_settings.sleep_timeout_
 esp_err_t hmi_settings_set_dim_pct(uint8_t pct) { s_settings.dim_pct = pct; return ESP_OK; }
 esp_err_t hmi_settings_set_language(uint8_t lang) { s_settings.language = lang; return ESP_OK; }
 
-void hmi_backlight_set_duty(uint8_t pct, bool fade) { (void)pct; (void)fade; }
-void hmi_backlight_notify_activity(void) {}
-bool hmi_backlight_is_dimmed(void) { return false; }
-void hmi_backlight_tick(bool is_idle) { (void)is_idle; }
+void hmi_power_start(void) {}
+bool hmi_power_on_touch(void) { return false; }
+void hmi_power_set_brightness(uint8_t pct) { s_settings.brightness_pct = pct; }
+void hmi_power_tick(bool is_idle) { (void)is_idle; }
 
 esp_err_t rcc_link_start(void) { return ESP_OK; }
 bool rcc_link_request_start(void) { return true; }

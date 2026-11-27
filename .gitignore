@@ -1,13 +1,13 @@
 # Editor settings (machine-specific paths, ports and toolchains), at any level
 .vscode/
-# Build output and local generated config
+# Build output and local generated config (idf.py writes build/, sdkconfig and sdkconfig.old;
+# sdkconfig.defaults is tracked)
 firmware/build/
-firmware/.pio/
-# Local generated ESP-IDF configuration (PlatformIO writes sdkconfig.elecrow_s3;
-# the ESP-IDF VS Code extension / idf.py writes sdkconfig and build/)
 firmware/sdkconfig
-firmware/sdkconfig.*
+firmware/sdkconfig.old
 # Components downloaded by the ESP-IDF component manager; pinned by firmware/dependencies.lock
 firmware/managed_components/
 firmware/tools/sim/out/
 .clangd
+# Claude Code worktrees
+.claude/worktrees/

@@ -1,6 +1,6 @@
 """High-resolution README previews from docs/mockups/hmi-ui-landscape.html.
 
-The mockup is a browser port of firmware/src/hmi_ui.c (checked against the LVGL host renders of
+The mockup is a browser port of the firmware UI (firmware/components/ui) (checked against the LVGL host renders of
 tools/snapshot), so it can be captured at any pixel density with sharp text. Writes assets/ui/*.png.
 
 Usage (from the repository root):

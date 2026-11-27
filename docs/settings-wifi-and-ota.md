@@ -44,16 +44,18 @@ travel over UART1; Wi-Fi does not grant controller authority.
 
 1. Establish the current dual-OTA partition layout using the USB workflow in
    [the bring-up guide](elecrow-s3-bringup.md).
-2. Build the Elecrow application with `pio run` from `firmware/`.
+2. Build the application with `idf.py build` from `firmware/`.
 3. Connect the HMI to Wi-Fi and read its IP address on the Wi-Fi screen.
 4. On the HMI, open the connected network's Wi-Fi screen and tap
    **ENABLE OTA**. The WEB OTA cell shows a 6-digit PIN.
 5. From a computer on the same reachable network, open `http://<HMI-IP>/`.
-6. Enter the PIN, select `firmware/.pio/build/elecrow_s3/firmware.bin` and
+6. Enter the PIN, select `firmware/build/firmware.bin` and
    upload it. Use the application binary, not a bootloader, merged image or
    partition table. Keep power connected while writing and rebooting.
 
-`hmi_wifi.c` starts the HTTP server after the station obtains an IP address.
+`app.c` starts the HTTP server when `hmi_wifi` reports that the station obtained an
+IP address (`HMI_WIFI_EVENT_CONNECTED`) and stops it when an established
+connection drops (`HMI_WIFI_EVENT_LINK_LOST`).
 It uses port 80: GET `/` and GET `/update` serve the upload page, GET
 `/api/status` reports state (including `armed`), and POST `/update` receives
 the raw binary.
@@ -75,7 +77,7 @@ POST `/update` is refused unless OTA was enabled on the touchscreen:
 Command-line upload while enabled:
 
 ~~~sh
-curl -H "X-OTA-PIN: 123456" --data-binary @.pio/build/elecrow_s3/firmware.bin http://<HMI-IP>/update
+curl -H "X-OTA-PIN: 123456" --data-binary @build/firmware.bin http://<HMI-IP>/update
 ~~~
 
 The updater writes the next app slot with the ESP-IDF OTA API, checks the image
@@ -105,6 +107,6 @@ or every HMI feature. Rollback and power-loss acceptance tests remain pending.
 - Failure-state overlay recovery, network interruption, repeated uploads and
   recovery from a failed image need hardware acceptance checks.
 
-Sources: `firmware/src/hmi_settings.c`, `hmi_backlight.c`, `hmi_wifi.c`,
-`hmi_ota.c`, `hmi_ui.c`, `bringup/elecrow_s3_main.c`,
-`firmware/config/elecrow_s3.defaults` and `firmware/partitions/elecrow_s3.csv`.
+Sources: `firmware/components/services/` (`hmi_settings`, `hmi_power`, `hmi_wifi`,
+`hmi_ota`), `firmware/components/ui/ui_app/` (Device page, Wi-Fi flow),
+`firmware/main/app.c`, `firmware/sdkconfig.defaults` and `firmware/partitions.csv`.
