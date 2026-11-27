@@ -20,7 +20,8 @@ they do not establish hardware acceptance.
 
 ## Implementation and verification
 
-- The target compiles `src/rcc_link.c` and `src/rcc_codec.c`. Display startup
+- The target compiles `firmware/components/protocol/rcc_link` and `rcc_codec` (the
+  former `src/rcc_link.c` and `src/rcc_codec.c`). Display startup
   calls `rcc_link_start()`; UART1 is bound to TX GPIO43 / RX GPIO44 at
   115200 8N1. The former offline stub backend has been removed.
 - Earlier bring-up records report LCD/touch operation and flashing of a
@@ -30,7 +31,8 @@ they do not establish hardware acceptance.
   obtaining an IP address. There are two OTA app slots; rollback is enabled
   in the defaults.
 - On 2026-10-30 the Python simulator suite discovered 33 tests: 31 passed,
-  2 skipped. See the simulator guide for commands and dependencies.
+  2 skipped. On 2026-11-27 (WSL, pyserial absent) the same suite ran 33 tests, OK, 1 skipped.
+  See the simulator guide for commands and dependencies.
 - End-to-end controller communication, charging, relay operation, Wi-Fi/OTA
   acceptance, rollback injection and long-duration operation remain unverified
   by this documentation update. A current target build was not rerun for this

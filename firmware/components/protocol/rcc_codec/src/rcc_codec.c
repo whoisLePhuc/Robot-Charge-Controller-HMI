@@ -37,7 +37,7 @@ static uint16_t crc16(const uint8_t *data, size_t length)
     for (size_t i = 0; i < length; ++i) {
         crc ^= (uint16_t)data[i] << 8;
         for (unsigned bit = 0; bit < 8; ++bit) {
-            crc = (uint16_t)((crc & 0x8000u) ? (crc << 1) ^ 0x1021u : crc << 1);
+            crc = (uint16_t)((crc & 0x8000u) ? ((unsigned)crc << 1) ^ 0x1021u : (unsigned)crc << 1);
         }
     }
     return crc;
@@ -154,8 +154,8 @@ static bool accept_body(rcc_codec_t *codec, rcc_message_t *message)
         index >= (object_length + 127u) / 128u) return false;
     const uint16_t offset = (uint16_t)index * FRAGMENT_MAX;
     const uint16_t fragment_length = (uint16_t)(length - FRAME_HEADER - FRAME_CRC);
-    const uint16_t required = object_length - offset > FRAGMENT_MAX ?
-                              FRAGMENT_MAX : object_length - offset;
+    const unsigned remaining = (unsigned)object_length - offset;
+    const uint16_t required = (uint16_t)(remaining > FRAGMENT_MAX ? FRAGMENT_MAX : remaining);
     if (fragment_length != required) return false;
     if (type == 1u) {
         codec->object_length = 0u;

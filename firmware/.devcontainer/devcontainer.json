@@ -1,5 +1,5 @@
 {
-	"name": "ESP-IDF QEMU",
+	"name": "ESP-IDF 6.1 (HMI firmware)",
 	"build": {
 		"dockerfile": "Dockerfile"
 	},

@@ -10,7 +10,7 @@ try {
     )
     foreach ($t in $tests) {
         $exe = Join-Path $env:TEMP "$($t.name).exe"
-        gcc -std=c11 -Wall -Wextra @($t.args) -o $exe
+        gcc -std=c11 -Wall -Wextra -Werror @($t.args) -o $exe
         if ($LASTEXITCODE -ne 0) { throw "$($t.name): compilation failed" }
         & $exe
         if ($LASTEXITCODE -ne 0) { throw "$($t.name): failed" }
