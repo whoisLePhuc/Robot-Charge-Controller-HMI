@@ -1,40 +1,94 @@
 # HMI documentation
 
-The default Elecrow DLE06235B / ES3C35P ESP32-S3 target includes the five-page
-LVGL UI, LCD/touch, RCC UART1 transport, NVS settings, Wi-Fi station and Web OTA.
-These guides were reconciled with HMI source revision `28d2253` on
-2026-10-30 and have not all been revalidated against the LVGL Pro migration.
-See the [LVGL Pro HMI guide](../lvgl_ui/HMI.md) and [UI notes](../firmware/components/ui/README.md) for the current workflow.
-Implementation statements do not establish hardware acceptance.
+Documentation for the Robot Charge Controller HMI (Elecrow ESP32-S3 touchscreen, ESP-IDF 6.1 + LVGL 9.6).
 
-## Reading order
+The set is being reorganised into numbered sections. Pages marked **new** are in the final structure. Pages marked **legacy** are the previous documents, still valid as sources but stamped with an older revision and waiting to be split or re-checked. Pages marked *planned* do not exist yet.
 
-| Document | Content |
+> **Status warning:** implementation statements do not establish hardware acceptance. The restructured firmware has not been flashed to a board. See [verification-status](08-status/verification-status.md).
+
+## Start here
+
+| If you are... | Read |
 |---|---|
-| [elecrow-s3-bringup.md](elecrow-s3-bringup.md) | Build, pin bindings, flash layout and hardware verification status |
-| [controller-interface.md](controller-interface.md) | Controller protocol, commands and authority constraints |
-| [ui-pages-and-information.md](ui-pages-and-information.md) | Implemented pages, command handling and known UI differences |
-| [settings-wifi-and-ota.md](settings-wifi-and-ota.md) | Local settings, networking, update procedure and limits |
-| [controller-simulator.md](controller-simulator.md) | PC simulator through an external USB-to-UART adapter |
-| [controller-change-requests.md](controller-change-requests.md) | Open dependencies owned by the controller repository |
-| [mockups/](mockups/) | Interactive replica of the firmware UI (`hmi_ui.c`); the firmware is authoritative |
+| New to the project | [project-overview](01-overview/project-overview.md), then [repository-map](02-architecture/repository-map.md), then [glossary](01-overview/glossary.md) |
+| Changing how screens look | [lvgl-pro-workflow](05-ui/lvgl-pro-workflow.md) |
+| Changing firmware logic | [firmware-architecture](02-architecture/firmware-architecture.md), [data-flow](02-architecture/data-flow.md), [firmware/components/README.md](../firmware/components/README.md), [firmware/components/ui/README.md](../firmware/components/ui/README.md) |
+| Changing START/STOP, banner or action bar | [operator-safety-behavior](05-ui/operator-safety-behavior.md) first |
+| Working on the controller protocol | [framing-and-transport](04-controller-protocol/framing-and-transport.md), [commands-and-payloads](04-controller-protocol/commands-and-payloads.md), [code-tables](04-controller-protocol/code-tables.md) |
+| Wiring or flashing a board | [controller-wiring](03-hardware/controller-wiring.md), [build-and-flash](07-development/build-and-flash.md), [elecrow-s3-board](03-hardware/elecrow-s3-board.md) |
+| Checking what is proven | [verification-status](08-status/verification-status.md) |
+| Testing on the board | [hardware-test-plan](08-status/hardware-test-plan.md) |
 
-## Implementation and verification
+## Index
 
-- The target compiles `firmware/components/protocol/rcc_link` and `rcc_codec` (the
-  former `src/rcc_link.c` and `src/rcc_codec.c`). Display startup
-  calls `rcc_link_start()`; UART1 is bound to TX GPIO43 / RX GPIO44 at
-  115200 8N1. The former offline stub backend has been removed.
-- Earlier bring-up records report LCD/touch operation and flashing of a
-  five-page image. They do not verify all features of the current source.
-  Current visual and navigation acceptance remains pending.
-- Settings use NVS. Wi-Fi starts in station mode and starts HTTP OTA after
-  obtaining an IP address. There are two OTA app slots; rollback is enabled
-  in the defaults.
-- On 2026-10-30 the Python simulator suite discovered 33 tests: 31 passed,
-  2 skipped. On 2026-11-27 (WSL, pyserial absent) the same suite ran 33 tests, OK, 1 skipped.
-  See the simulator guide for commands and dependencies.
-- End-to-end controller communication, charging, relay operation, Wi-Fi/OTA
-  acceptance, rollback injection and long-duration operation remain unverified
-  by this documentation update. A current target build was not rerun for this
-  documentation-only change.
+### 01 Overview
+| Page | State |
+|---|---|
+| [project-overview](01-overview/project-overview.md) | new |
+| [getting-started](01-overview/getting-started.md) | new (steps 1–3 run on 2026-11-27; 4–7 not run) |
+| [glossary](01-overview/glossary.md) | new |
+
+### 02 Architecture
+| Page | State |
+|---|---|
+| [repository-map](02-architecture/repository-map.md) | new |
+| [firmware-architecture](02-architecture/firmware-architecture.md) | new (layers, start order, tasks, locks; built from source 2026-11-27) |
+| [data-flow](02-architecture/data-flow.md) | new (controller to screen and back) |
+
+### 03 Hardware
+| Page | State |
+|---|---|
+| [elecrow-s3-board](03-hardware/elecrow-s3-board.md) | new |
+| [controller-wiring](03-hardware/controller-wiring.md) | new |
+
+### 04 Controller protocol
+| Page | State |
+|---|---|
+| [framing-and-transport](04-controller-protocol/framing-and-transport.md) | new (split from `controller-interface.md`) |
+| [commands-and-payloads](04-controller-protocol/commands-and-payloads.md) | new (split; GET_STATUS byte 19 / bit5 corrected) |
+| [code-tables](04-controller-protocol/code-tables.md) | new (split; not re-checked against current controller headers) |
+| [controller-change-requests](04-controller-protocol/controller-change-requests.md) | moved, content unchanged |
+
+### 05 UI
+| Page | State |
+|---|---|
+| [lvgl-pro-workflow](05-ui/lvgl-pro-workflow.md) | new |
+| [ui-pages-and-states](05-ui/ui-pages-and-states.md) | new (replaces `ui-pages-and-information.md`, rebuilt from source) |
+| [operator-safety-behavior](05-ui/operator-safety-behavior.md) | new (includes known gaps G1–G6 for human review) |
+| [mockups/hmi-ui-landscape.html](mockups/hmi-ui-landscape.html) | reference only; the firmware is authoritative |
+
+### 06 Services
+| Page | State |
+|---|---|
+| [settings-wifi-ota](06-services/settings-wifi-ota.md) | moved; header re-stamped, partly spot-checked |
+
+### 07 Development
+| Page | State |
+|---|---|
+| [build-and-flash](07-development/build-and-flash.md) | new |
+| [testing-and-simulation](07-development/testing-and-simulation.md) | new (replaces `controller-simulator.md`; commands re-run 2026-11-27) |
+| [how-to-recipes](07-development/how-to-recipes.md) | new (not executed end to end) |
+| [troubleshooting](07-development/troubleshooting.md) | new (causes from source; nothing reproduced on a board) |
+| Tool references | [firmware/README](../firmware/README.md), [desktop UI simulator](../firmware/tools/sim/README.md) |
+
+### 08 Status
+| Page | State |
+|---|---|
+| [verification-status](08-status/verification-status.md) | new |
+| [hardware-test-plan](08-status/hardware-test-plan.md) | new (everything that needs the board; nothing run yet) |
+
+### 09 Decisions
+| Page | State |
+|---|---|
+| [ADR index](09-decisions/README.md), [0001 component layout](09-decisions/0001-esp-idf-component-layout.md) | new |
+| [0002 LVGL Pro UI source](09-decisions/0002-lvgl-pro-ui-source.md) | new (accepted; open questions remain) |
+| [archive/firmware-restructure-design](09-decisions/archive/firmware-restructure-design.md) | moved, translated to English, historical |
+
+## Conventions for this set
+
+- English only.
+- Diagrams are written in Mermaid (fenced ` ```mermaid ` blocks) so they render on GitHub and diff as text. Directory trees and byte layouts stay as plain text.
+- Each page states what revision it was checked against, or says it was not.
+- Status and test results live in [verification-status](08-status/verification-status.md); other pages link to it.
+- Protocol facts defer to the controller repository (`../Robot_Charge_Controller/docs/firmware/`, the ICD in particular). Where this set and the ICD differ, the ICD is right.
+- Use the confidence labels `confirmed`, `inferred`, `not-frozen` for protocol facts.

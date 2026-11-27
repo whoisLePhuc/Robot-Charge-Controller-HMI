@@ -1,8 +1,12 @@
 # Local settings, Wi-Fi and Web OTA
 
-This describes HMI revision `28d2253`, checked on 2026-10-30. These features
-are compiled into the Elecrow target; hardware acceptance is pending. They
-configure the HMI, not controller charging limits, calibration or authority.
+Moved from `docs/settings-wifi-and-ota.md`. Written for HMI revision `28d2253` (2026-10-30);
+spot-checked on 2026-11-27 against the current source: NVS namespace/key, the OTA PIN header
+and endpoints, `HMI_WIFI_MAX_AP` = 12, the `HMI_WIFI_EVENT_*` wiring in `app.c` and the rollback
+default. The PIN lifetime, the dimming-suppression rule and the on-screen option lists were
+**not** re-checked. These features are compiled into the Elecrow target; hardware acceptance is
+pending ([verification-status](../08-status/verification-status.md)). They configure the HMI,
+not controller charging limits, calibration or authority.
 
 ## Local display settings
 
@@ -43,7 +47,7 @@ travel over UART1; Wi-Fi does not grant controller authority.
 ## Web OTA procedure
 
 1. Establish the current dual-OTA partition layout using the USB workflow in
-   [the bring-up guide](elecrow-s3-bringup.md).
+   [build-and-flash](../07-development/build-and-flash.md).
 2. Build the application with `idf.py build` from `firmware/`.
 3. Connect the HMI to Wi-Fi and read its IP address on the Wi-Fi screen.
 4. On the HMI, open the connected network's Wi-Fi screen and tap
