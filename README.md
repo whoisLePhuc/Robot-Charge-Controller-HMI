@@ -11,6 +11,7 @@
 
   <p>
     <a href="#interface-preview">Interface</a> &middot;
+    <a href="#firmware-architecture">Architecture</a> &middot;
     <a href="#build-and-upload">Build &amp; Upload</a> &middot;
     <a href="#controller-simulator">Simulator</a> &middot;
     <a href="#automated-tests">Tests</a> &middot;
@@ -81,7 +82,7 @@ the full-size image.
 
 The 1440 × 960 PNGs in `assets/ui/` are 3× captures of the
 [interactive UI reference](docs/mockups/hmi-ui-landscape.html), which mirrors
-`hmi_ui.c`. From the repository root (needs Microsoft Edge, or pass
+the firmware UI. From the repository root (needs Microsoft Edge, or pass
 `--browser chrome`):
 
 ~~~sh
@@ -120,10 +121,12 @@ operation still require verification.
 
 Charging decisions, interlocks and relay control remain owned by the controller.
 
-Documentation was reconciled with source revision `28d2253` on 2026-10-30.
-Source implementation and earlier bring-up observations are distinguished from
-hardware acceptance; this documentation update does not establish a new target
-build or physical test result.
+On 2026-11-27 the firmware moved from PlatformIO to a plain ESP-IDF project and
+was split into layered components (see [Firmware Architecture](#firmware-architecture)).
+Behavior and UI are unchanged: the desktop simulator renders all 80 checked
+screens pixel-identical to the former PlatformIO source. The restructured image
+has not yet been flashed to a board. Source implementation and earlier bring-up
+observations are distinguished from hardware acceptance throughout.
 
 ## UI Pages
 
@@ -172,14 +175,49 @@ and implementation limits.
 
 | Area | Current state |
 |---|---|
-| Firmware build | Previously reported successful; current source includes UART, settings, Wi-Fi and OTA |
-| Display and touch | Earlier bring-up reports LCD/touch operation and a flashed five-page image; current-image acceptance pending |
-| UART simulator host tests | 2026-10-30: 33 discovered; 31 passed, 2 skipped (optional codec comparison and missing pyserial) |
+| Firmware build | 2026-11-27: `idf.py build` (ESP-IDF 6.1.0) from a clean tree, 0 warnings with `-Wall -Wextra -Werror` on project components |
+| Firmware structure | ESP-IDF components by layer; `sdkconfig` generated from `sdkconfig.defaults` matches the former PlatformIO configuration except the partition file name |
+| Display and touch | Earlier bring-up of the PlatformIO image reports LCD/touch operation; the restructured image is not yet flashed |
+| C host tests | 2026-11-27: `rcc_codec`, `hmi_present` (304 checks) and `rcc_link` pass |
+| Desktop UI simulator | 2026-11-27: 80 screens pixel-identical to the PlatformIO baseline; retained-mode updates identical to fresh builds |
+| UART simulator host tests | 2026-11-27: 33 discovered; 32 passed, 1 skipped (optional independent codec comparison) |
 | Controller simulator link | Transport compiled into target; physical adapter-to-HMI test pending |
 | Settings, Wi-Fi and Web OTA | Implemented; hardware acceptance and rollback tests pending |
 | Touch-driven START/STOP workflows | Hardware verification pending |
 | Real controller integration | Pending |
 | Long-duration operation | Pending |
+
+## Firmware Architecture
+
+The firmware is an ESP-IDF project. Each module is a component with a public
+`include/` and a private `src/`; `REQUIRES` / `PRIV_REQUIRES` in each
+`CMakeLists.txt` enforce the layering, so an include that crosses a layer the
+wrong way fails the build.
+
+~~~text
+main/app.c          start order and wiring between modules (the only code that sees all of them)
+   |
+ui                  ui_app (shell, pages, Wi-Fi flow) -> ui_core (theme, widgets) -> ui_assets (fonts, icons)
+   |                ui_present: text, tones and views from controller data (pure C, host-tested)
+services            hmi_settings (NVS), hmi_wifi, hmi_ota (Web OTA), hmi_power (brightness, dimming)
+   |
+protocol            rcc_link (UART1 task, snapshot, START/STOP) -> rcc_codec (framing, pure C, host-tested)
+   |
+bsp                 bsp_elecrow_s3: ST77922 LCD + LVGL port, touch, LEDC backlight
+   |
+common              hmi_common: rcc_snapshot_t (controller data contract), board constants
+~~~
+
+- Dependencies point down only. Services do not call each other; Wi-Fi reports
+  link changes as `esp_event`s and `app.c` starts or stops the OTA server.
+- The UI sees controller data only as one `rcc_snapshot_t` per refresh.
+- The BSP calls nothing above it; touch activity reaches the dimming policy
+  through a callback passed in by `app.c`.
+
+Rules, the dependency table and step-by-step recipes (adding a controller field,
+a module or a page): [firmware/components/README.md](firmware/components/README.md)
+and [firmware/components/ui/README.md](firmware/components/ui/README.md). Design
+record and rationale: [docs/firmware-restructure-design.md](docs/firmware-restructure-design.md).
 
 ## Build and Upload
 
@@ -199,7 +237,8 @@ Replace COM15 with the board's current USB serial port. On a busy workstation,
 `ninja -C build -j 4` after the first `idf.py build` limits the parallel compile
 jobs. See [firmware/README.md](firmware/README.md) for configuration files and checks.
 
-USB Serial/JTAG carries application logs. Close Serial Monitor before uploading.
+USB Serial/JTAG carries application logs (`idf.py monitor`). Close any other
+serial monitor on that port before flashing.
 The application attempts to start UART1 and polls the connected peer. START/STOP
 can send protocol commands; acceptance and relay operation depend on controller
 configuration, authorization and state. A disconnected peer is shown as offline.
@@ -255,8 +294,15 @@ gating. The simulator tests cover framing, checksums, fragmentation, response sc
 duplicate requests, authorization, event pagination and reboot. The optional
 independent controller-codec comparison is described in the simulator guide.
 
-The [desktop UI simulator](firmware/tools/sim/README.md) provides a separate
-workflow for rendering the LVGL interface on a PC.
+The [desktop UI simulator](firmware/tools/sim/README.md) renders the real UI
+components with LVGL on a PC. It is the regression check for UI and refactoring
+work: every scenario × page must stay pixel-identical to a recorded baseline,
+and retained pages updated in place must equal a fresh build.
+
+~~~sh
+sh tools/sim/check.sh baseline   # once, on the reference commit
+sh tools/sim/check.sh            # after the change: PIXEL DIFF none, MORPH DIFF none
+~~~
 
 ## Control Behavior
 
@@ -278,7 +324,7 @@ Robot-Charge-Controller-HMI/
 ├── assets/
 │   └── ui/                  # README previews (captures of the UI reference)
 ├── docs/                    # Elecrow, protocol and test guides
-│   └── mockups/             # Interactive UI reference (port of hmi_ui.c)
+│   └── mockups/             # Interactive UI reference (browser port of the firmware UI)
 ├── firmware/                # ESP-IDF project (idf.py)
 │   ├── main/                # app.c: start order and wiring between modules
 │   ├── components/          # one component per module, by layer (see components/README.md)
@@ -303,7 +349,9 @@ Robot-Charge-Controller-HMI/
 | [Controller Interface](docs/controller-interface.md) | Framing, command payloads and control semantics |
 | [UI Pages and Information](docs/ui-pages-and-information.md) | Page contents, states and operator feedback |
 | [Interactive UI Reference](docs/mockups/hmi-ui-landscape.html) | Browser replica of the firmware UI: every page, command state and overlay |
+| [Firmware README](firmware/README.md) | Build, configuration files and checks |
 | [Firmware Components](firmware/components/README.md) | Layers, dependency rules, where to change what |
+| [Firmware Restructure Design](docs/firmware-restructure-design.md) | Why the firmware is laid out this way; PlatformIO to ESP-IDF migration record |
 | [Desktop UI Simulator](firmware/tools/sim/README.md) | Render and inspect the LVGL interface on a PC |
 | [Controller Simulator](docs/controller-simulator.md) | Interactive scenarios, fault injection and host tests |
 | [Controller Change Requests](docs/controller-change-requests.md) | Interface dependencies and proposed controller changes |

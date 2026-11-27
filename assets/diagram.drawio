@@ -1,0 +1,849 @@
+<mxfile host="Electron" pages="5">
+  <diagram id="hmi-fw-layers" name="HMI FW 1 - Layer &amp; component">
+    <mxGraphModel dx="2146" dy="1038" grid="0" gridSize="5" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="hmi-fw-layers-1" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=20;" value="HMI firmware (new_firmware): layer và component" vertex="1">
+          <mxGeometry height="34" width="1200" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-2" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=light-dark(#333333,#EDEDED);fontSize=12;" value="Mỗi layer chỉ được phụ thuộc vào các layer bên dưới (có thể bỏ qua layer kề). Không bao giờ phụ thuộc ngược lên." vertex="1">
+          <mxGeometry height="24" width="1200" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#0178b9, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=12;" value="main/" vertex="1">
+          <mxGeometry height="96" width="170" x="40" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="96" width="1130" x="220" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#0178b9;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="main.c&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;app_main() gọi app_run()&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="236" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#0178b9;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="app.c&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;thứ tự init, nối esp_event, vòng alive&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="514" y="92" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-7" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" value="Composition root: khởi tạo và nối mọi component" vertex="1">
+          <mxGeometry height="96" width="290" x="1370" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#a8d25b, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=12;" value="components/ui/" vertex="1">
+          <mxGeometry height="96" width="170" x="40" y="188" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="96" width="1130" x="220" y="188" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="ui_app&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;hmi_ui, shell, nav, pages registry,&lt;br&gt;model, wifi_ui, pages/page_*.c&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="236" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="ui_core&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;hmi_theme, hmi_theme_present,&lt;br&gt;hmi_widgets&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="514" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="ui_present&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;hmi_present: thuần C, host test&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="792" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="ui_assets&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;fonts hmi_f*.c, icons&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="1070" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-14" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" value="Giao diện LVGL 9.6. Logic hiển thị nằm trong ui_present, có host test" vertex="1">
+          <mxGeometry height="96" width="290" x="1370" y="188" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#ffc414, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#000000, #ededed);fontFamily=Verdana;fontSize=12;" value="components/services/" vertex="1">
+          <mxGeometry height="96" width="170" x="40" y="296" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="96" width="1130" x="220" y="296" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-17" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#ffc414;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="hmi_settings&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;NVS&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="236" y="308" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-18" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#ffc414;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="hmi_wifi&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;scan, connect, forget&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="514" y="308" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-19" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#ffc414;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="hmi_ota&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;HTTP server, rollback&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="792" y="308" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-20" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#ffc414;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="hmi_power&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;dim, sleep, activity&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="1070" y="308" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-21" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" value="Dịch vụ dùng lại. Không gọi chéo nhau (ngoại lệ: hmi_power → hmi_settings)" vertex="1">
+          <mxGeometry height="96" width="290" x="1370" y="296" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-22" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#676767, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=12;" value="components/protocol/" vertex="1">
+          <mxGeometry height="96" width="170" x="40" y="404" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-23" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="96" width="1130" x="220" y="404" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-24" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#676767;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="rcc_link&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;task UART, snapshot, START/STOP&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="236" y="416" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-25" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#676767;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="rcc_codec&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;framing, CRC: thuần C, host test&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="514" y="416" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-26" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" value="Giao tiếp với Robot Charge Controller qua UART1" vertex="1">
+          <mxGeometry height="96" width="290" x="1370" y="404" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-27" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#414141, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=12;" value="components/bsp/" vertex="1">
+          <mxGeometry height="96" width="170" x="40" y="512" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-28" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="96" width="1130" x="220" y="512" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-29" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#414141;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="bsp_elecrow_s3&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;LCD ST77922 QSPI, touch, LVGL port,&lt;br&gt;LEDC backlight, bsp_pins.h&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="236" y="524" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-30" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" value="Toàn bộ phần cứng của board Elecrow ES3C35P" vertex="1">
+          <mxGeometry height="96" width="290" x="1370" y="512" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-31" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#b0e3e6, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#000000, #ededed);fontFamily=Verdana;fontSize=12;" value="components/common/" vertex="1">
+          <mxGeometry height="96" width="170" x="40" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-32" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="96" width="1130" x="220" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-33" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#0e8088;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="hmi_common&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;rcc_types.h (rcc_snapshot_t), hmi_config.h&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="236" y="632" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-34" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" value="Kiểu dữ liệu và hằng số dùng chung" vertex="1">
+          <mxGeometry height="96" width="290" x="1370" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-35" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#b80077, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=12;" value="ESP-IDF 6.1" vertex="1">
+          <mxGeometry height="96" width="170" x="40" y="728" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-36" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" value="" vertex="1">
+          <mxGeometry height="96" width="1130" x="220" y="728" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-37" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#b80077;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="managed components&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;lvgl 9.6, esp_lvgl_port 2.9.0, esp_lcd_st77922 2.1.1&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="236" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-38" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#b80077;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" value="ESP-IDF&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;FreeRTOS, esp_wifi, esp_http_server, nvs_flash,&lt;br&gt;app_update, esp_driver_*&lt;/span&gt;" vertex="1">
+          <mxGeometry height="72" width="262" x="514" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-39" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" value="Nền tảng: OS, driver và thư viện bên ngoài" vertex="1">
+          <mxGeometry height="96" width="290" x="1370" y="728" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-layers-40" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endSize=8;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="15" y="80" as="sourcePoint" />
+            <mxPoint x="15" y="824" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-layers-41" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=11;horizontal=0;align=center;" value="phụ thuộc chỉ đi xuống" vertex="1">
+          <mxGeometry height="360" width="40" x="-30" y="280" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="hmi-fw-deps-now" name="HMI FW 2a - Phụ thuộc hiện trạng">
+    <mxGraphModel grid="0" page="0" gridSize="5" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="hmi-fw-deps-now-1" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=20;" value="Phụ thuộc hiện trạng: firmware/src (PlatformIO)" vertex="1">
+          <mxGeometry height="34" width="1400" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-2" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=light-dark(#333333,#EDEDED);fontSize=12;" value="Mọi file nằm chung một component nên không có gì ngăn các cạnh màu hồng xuất hiện. Đó là những chỗ sẽ bị cắt hoặc chuyển đi." vertex="1">
+          <mxGeometry height="24" width="1400" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=none;strokeWidth=3;fontStyle=1;fontSize=15;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;" value="src/ : 1 IDF component, không có ranh giới" vertex="1">
+          <mxGeometry height="840" width="1740" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" value="Cạnh = #include / lời gọi hàm" vertex="1">
+          <mxGeometry height="780" width="1700" x="20" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;" value="elecrow_s3_main.c&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;bringup/&lt;/span&gt;" vertex="1">
+          <mxGeometry height="54" width="170" x="460" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;" value="elecrow_s3_display.c&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;bringup/&lt;/span&gt;" vertex="1">
+          <mxGeometry height="54" width="170" x="1240" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;" value="hmi_settings.c" vertex="1">
+          <mxGeometry height="54" width="170" x="60" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;" value="hmi_backlight.c&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;driver LEDC + dim/sleep&lt;/span&gt;" vertex="1">
+          <mxGeometry height="54" width="170" x="330" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;" value="hmi_ota.c" vertex="1">
+          <mxGeometry height="54" width="170" x="600" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;" value="hmi_wifi.c" vertex="1">
+          <mxGeometry height="54" width="170" x="870" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;" value="rcc_link.c / .h&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;chứa rcc_snapshot_t&lt;br&gt;+ chân UART&lt;/span&gt;" vertex="1">
+          <mxGeometry height="54" width="170" x="1140" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;" value="rcc_codec.c" vertex="1">
+          <mxGeometry height="54" width="170" x="1410" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;" value="page_device.c&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;ui/pages/&lt;/span&gt;" vertex="1">
+          <mxGeometry height="54" width="170" x="60" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-14" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;" value="hmi_wifi_ui.c&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;ui/&lt;/span&gt;" vertex="1">
+          <mxGeometry height="54" width="170" x="370" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;" value="hmi_shell.c&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;ui/&lt;/span&gt;" vertex="1">
+          <mxGeometry height="54" width="170" x="680" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;" value="hmi_present.c&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;ui/ (logic thuần)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="54" width="170" x="1140" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-17" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;" value="hmi_ui.c" vertex="1">
+          <mxGeometry height="54" width="170" x="1410" y="820" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-18" edge="1" parent="1" source="hmi-fw-deps-now-5" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-7" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-19" edge="1" parent="1" source="hmi-fw-deps-now-5" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-9" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-20" edge="1" parent="1" source="hmi-fw-deps-now-5" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-10" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-21" edge="1" parent="1" source="hmi-fw-deps-now-5" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-6" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-22" edge="1" parent="1" source="hmi-fw-deps-now-6" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-8" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-23" edge="1" parent="1" source="hmi-fw-deps-now-6" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#b80077;fontStyle=1;fontSize=11;labelBackgroundColor=default;fontColor=#b80077;strokeWidth=3;" target="hmi-fw-deps-now-11" value="driver khởi động app">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-24" edge="1" parent="1" source="hmi-fw-deps-now-6" style="endArrow=classic;edgeStyle=orthogonalEdgeStyle;html=1;rounded=1;strokeWidth=2;strokeColor=#b80077;fontStyle=1;fontSize=11;labelBackgroundColor=default;fontColor=#b80077;strokeWidth=3;curved=0;" target="hmi-fw-deps-now-17" value="driver khởi động UI">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1680" y="167" />
+              <mxPoint x="1680" y="847" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-25" edge="1" parent="1" source="hmi-fw-deps-now-8" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#b80077;fontStyle=1;fontSize=11;labelBackgroundColor=default;fontColor=#b80077;strokeWidth=3;" target="hmi-fw-deps-now-7" value="driver đọc&lt;br&gt;settings">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-26" edge="1" parent="1" source="hmi-fw-deps-now-10" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#b80077;fontStyle=1;fontSize=11;labelBackgroundColor=default;fontColor=#b80077;strokeWidth=3;" target="hmi-fw-deps-now-9" value="start/stop&lt;br&gt;server">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-27" edge="1" parent="1" source="hmi-fw-deps-now-11" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-12" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-28" edge="1" parent="1" source="hmi-fw-deps-now-17" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-15" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-29" edge="1" parent="1" source="hmi-fw-deps-now-17" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-14" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-30" edge="1" parent="1" source="hmi-fw-deps-now-15" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-11" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-31" edge="1" parent="1" source="hmi-fw-deps-now-15" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-8" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-32" edge="1" parent="1" source="hmi-fw-deps-now-15" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-9" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-33" edge="1" parent="1" source="hmi-fw-deps-now-14" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-10" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-34" edge="1" parent="1" source="hmi-fw-deps-now-14" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-9" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-35" edge="1" parent="1" source="hmi-fw-deps-now-13" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-7" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-36" edge="1" parent="1" source="hmi-fw-deps-now-13" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-8" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-37" edge="1" parent="1" source="hmi-fw-deps-now-13" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-10" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-38" edge="1" parent="1" source="hmi-fw-deps-now-13" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-9" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-39" edge="1" parent="1" source="hmi-fw-deps-now-13" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" target="hmi-fw-deps-now-14" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-40" edge="1" parent="1" source="hmi-fw-deps-now-16" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#b80077;fontStyle=1;fontSize=11;labelBackgroundColor=default;fontColor=#b80077;strokeWidth=3;" target="hmi-fw-deps-now-11" value="logic thuần phụ thuộc header UART">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-41" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="20" y="930" as="sourcePoint" />
+            <mxPoint x="90" y="930" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-42" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" value="phụ thuộc giữ lại (có thể đổi tên module)" vertex="1">
+          <mxGeometry height="24" width="300" x="100" y="918" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-43" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#b80077;fontStyle=1;fontSize=11;labelBackgroundColor=default;fontColor=#b80077;strokeWidth=3;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="430" y="930" as="sourcePoint" />
+            <mxPoint x="500" y="930" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-deps-now-44" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" value="phụ thuộc sẽ bị cắt hoặc chuyển trong cấu trúc mới" vertex="1">
+          <mxGeometry height="24" width="400" x="510" y="918" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="hmi-fw-deps-new" name="HMI FW 2b - Phụ thuộc đề xuất">
+    <mxGraphModel dx="1600" dy="1000" grid="0" gridSize="5" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="hmi-fw-deps-new-1" value="Phụ thuộc đề xuất: PRIV_REQUIRES giữa các component" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="0" y="0" width="1500" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-2" value="Cạnh liền = phụ thuộc lúc build. Cạnh vàng = ngoại lệ đã ghi nhận. Cạnh chấm = sự kiện esp_event lúc chạy, không phải phụ thuộc build. main phụ thuộc mọi component nên không vẽ." style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=light-dark(#333333,#EDEDED);fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="0" y="34" width="1500" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-3" value="ui" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#a8d25b, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="0" y="80" width="140" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-4" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="150" y="80" width="1800" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-5" value="services" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#ffc414, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#000000, #ededed);fontFamily=Verdana;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="0" y="350" width="140" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-6" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="150" y="350" width="1800" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-7" value="protocol" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#676767, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="0" y="480" width="140" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-8" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="150" y="480" width="1800" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-9" value="bsp" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#414141, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="0" y="610" width="140" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-10" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="150" y="610" width="1800" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-11" value="common" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#b0e3e6, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#000000, #ededed);fontFamily=Verdana;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="0" y="740" width="140" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-12" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="150" y="740" width="1800" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-13" value="ui_app" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="100" width="180" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-14" value="ui_assets" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="180" y="250" width="180" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-15" value="ui_core" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="400" y="250" width="180" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-16" value="ui_present" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="620" y="250" width="180" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-17" value="hmi_ota" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#ffc414;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="378" width="180" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-18" value="hmi_wifi" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#ffc414;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="378" width="180" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-19" value="hmi_settings" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#ffc414;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1460" y="378" width="180" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-20" value="hmi_power" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#ffc414;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="378" width="180" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-21" value="rcc_codec" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#676767;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="180" y="508" width="180" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-22" value="rcc_link" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#676767;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="400" y="508" width="180" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-23" value="bsp_elecrow_s3" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#414141;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1740" y="638" width="180" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-24" value="hmi_common" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#0e8088;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="768" width="180" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-25" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="hmi-fw-deps-new-13" target="hmi-fw-deps-new-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-26" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="hmi-fw-deps-new-13" target="hmi-fw-deps-new-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-27" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="hmi-fw-deps-new-13" target="hmi-fw-deps-new-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-28" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" edge="1" parent="1" source="hmi-fw-deps-new-13" target="hmi-fw-deps-new-22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-29" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" edge="1" parent="1" source="hmi-fw-deps-new-13" target="hmi-fw-deps-new-19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-30" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" edge="1" parent="1" source="hmi-fw-deps-new-13" target="hmi-fw-deps-new-18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-31" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" edge="1" parent="1" source="hmi-fw-deps-new-13" target="hmi-fw-deps-new-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-32" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" edge="1" parent="1" source="hmi-fw-deps-new-13" target="hmi-fw-deps-new-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-33" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" edge="1" parent="1" source="hmi-fw-deps-new-15" target="hmi-fw-deps-new-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-34" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" edge="1" parent="1" source="hmi-fw-deps-new-15" target="hmi-fw-deps-new-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-35" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" edge="1" parent="1" source="hmi-fw-deps-new-16" target="hmi-fw-deps-new-24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-36" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" edge="1" parent="1" source="hmi-fw-deps-new-20" target="hmi-fw-deps-new-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-37" value="ngoại lệ" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#e0a800;fontStyle=1;fontSize=11;labelBackgroundColor=default;fontColor=#e0a800;strokeWidth=3;" edge="1" parent="1" source="hmi-fw-deps-new-20" target="hmi-fw-deps-new-19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-38" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" edge="1" parent="1" source="hmi-fw-deps-new-22" target="hmi-fw-deps-new-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-39" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" edge="1" parent="1" source="hmi-fw-deps-new-22" target="hmi-fw-deps-new-24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-40" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;" edge="1" parent="1" source="hmi-fw-deps-new-23" target="hmi-fw-deps-new-24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-41" value="esp_event" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;dashed=1;fontSize=10;" edge="1" parent="1" source="hmi-fw-deps-new-18" target="hmi-fw-deps-new-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-deps-new-42" value="IP_EVENT_STA_GOT_IP / WIFI_EVENT_STA_DISCONNECTED" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=11;fontStyle=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="900" y="440" width="460" height="24" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="hmi-fw-boot" name="HMI FW 3 - Trình tự khởi động">
+    <mxGraphModel dx="1600" dy="1000" grid="0" gridSize="5" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="hmi-fw-boot-1" value="Trình tự khởi động trong app.c" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="0" y="0" width="1500" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-2" value="Giữ nguyên hành vi của elecrow_s3_main.c và elecrow_s3_display.c hiện tại. Điểm khác duy nhất là gom về một chỗ." style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=light-dark(#333333,#EDEDED);fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="0" y="34" width="1500" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-3" value="" style="endArrow=none;html=1;dashed=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100" y="130" as="sourcePoint" />
+            <mxPoint x="100" y="1120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-4" value="" style="endArrow=none;html=1;dashed=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="130" as="sourcePoint" />
+            <mxPoint x="278" y="1120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-5" value="" style="endArrow=none;html=1;dashed=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="456" y="130" as="sourcePoint" />
+            <mxPoint x="456" y="1120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-6" value="" style="endArrow=none;html=1;dashed=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="634" y="130" as="sourcePoint" />
+            <mxPoint x="634" y="1120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-7" value="" style="endArrow=none;html=1;dashed=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="812" y="130" as="sourcePoint" />
+            <mxPoint x="812" y="1120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-8" value="" style="endArrow=none;html=1;dashed=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="990" y="130" as="sourcePoint" />
+            <mxPoint x="990" y="1120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-9" value="" style="endArrow=none;html=1;dashed=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1168" y="130" as="sourcePoint" />
+            <mxPoint x="1168" y="1120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-10" value="" style="endArrow=none;html=1;dashed=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1346" y="130" as="sourcePoint" />
+            <mxPoint x="1346" y="1120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-11" value="" style="endArrow=none;html=1;dashed=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1524" y="130" as="sourcePoint" />
+            <mxPoint x="1524" y="1120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-12" value="app_run()" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100" y="160" as="sourcePoint" />
+            <mxPoint x="278" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-13" value="" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="182" as="sourcePoint" />
+            <mxPoint x="278" y="200" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="314" y="182" />
+              <mxPoint x="314" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-14" value="log lý do reset, kiểm tra Flash 16 MB + PSRAM 8 MB" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="322" y="176" width="420" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-15" value="alt" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=70;height=22;fontStyle=1;fontSize=11;strokeColor=#676767;fillColor=#676767;fontColor=#ffffff;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="30" y="210" width="350" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-16" value="[bộ nhớ sai cấu hình]" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=11;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="108" y="210" width="380" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-17" value="log lỗi, dừng (không dựng UI)" style="html=1;verticalAlign=bottom;endArrow=open;endFill=0;dashed=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="258" as="sourcePoint" />
+            <mxPoint x="100" y="258" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-18" value="" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="300" as="sourcePoint" />
+            <mxPoint x="278" y="318" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="314" y="300" />
+              <mxPoint x="314" y="318" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-19" value="TWDT init (HMI_TWDT_TIMEOUT_MS, panic)" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="322" y="294" width="420" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-20" value="hmi_settings_init()" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="355" as="sourcePoint" />
+            <mxPoint x="456" y="355" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-21" value="hmi_ota_init()" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="395" as="sourcePoint" />
+            <mxPoint x="634" y="395" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-22" value="đăng ký IP_EVENT / WIFI_EVENT trước khi Wi-Fi có thể có IP" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontSize=10;fontColor=#333333;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="642" y="405" width="160" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-23" value="hmi_wifi_init()" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="480" as="sourcePoint" />
+            <mxPoint x="812" y="480" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-24" value="alt" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=70;height=22;fontStyle=1;fontSize=11;strokeColor=#676767;fillColor=#676767;fontColor=#ffffff;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="248" y="495" width="604" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-25" value="[Wi-Fi lỗi]" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=11;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="326" y="495" width="380" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-26" value="false: log cảnh báo, tiếp tục" style="html=1;verticalAlign=bottom;endArrow=open;endFill=0;dashed=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="812" y="543" as="sourcePoint" />
+            <mxPoint x="278" y="543" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-27" value="bsp_display_start()" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="595" as="sourcePoint" />
+            <mxPoint x="990" y="595" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-28" value="backlight 0 %, LCD, touch, LVGL port" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontSize=10;fontColor=#333333;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="998" y="605" width="165" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-29" value="LVGL lock" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=70;height=22;fontStyle=1;fontSize=11;strokeColor=#0178b9;fillColor=#0178b9;fontColor=#ffffff;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="238" y="655" width="1168" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-30" value="" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=11;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="316" y="655" width="380" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-31" value="lvgl_port_lock()" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="700" as="sourcePoint" />
+            <mxPoint x="990" y="700" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-32" value="rcc_link_start(&amp;uart_cfg)" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="745" as="sourcePoint" />
+            <mxPoint x="1168" y="745" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-33" value="alt" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=70;height=22;fontStyle=1;fontSize=11;strokeColor=#676767;fillColor=#676767;fontColor=#ffffff;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="248" y="760" width="960" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-34" value="[link lỗi]" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=11;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="326" y="760" width="380" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-35" value="lỗi: UI chạy offline" style="html=1;verticalAlign=bottom;endArrow=open;endFill=0;dashed=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1168" y="808" as="sourcePoint" />
+            <mxPoint x="278" y="808" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-36" value="hmi_ui_start(link_ok)" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="850" as="sourcePoint" />
+            <mxPoint x="1346" y="850" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-37" value="lvgl_port_unlock()" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="885" as="sourcePoint" />
+            <mxPoint x="990" y="885" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-38" value="hmi_power_start()" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="940" as="sourcePoint" />
+            <mxPoint x="1524" y="940" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-39" value="fade độ sáng về giá trị trong settings" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontSize=10;fontColor=#333333;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="1352" y="950" width="165" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-40" value="hmi_ota_mark_valid()" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="1010" as="sourcePoint" />
+            <mxPoint x="634" y="1010" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-41" value="loop" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=70;height=22;fontStyle=1;fontSize=11;strokeColor=#676767;fillColor=#676767;fontColor=#ffffff;strokeWidth=1.5;" vertex="1" parent="1">
+          <mxGeometry x="248" y="1030" width="510" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-42" value="[mỗi 5 s]" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=11;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="326" y="1030" width="380" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-43" value="" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeWidth=1.5;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;fontFamily=Verdana;labelBackgroundColor=default;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="278" y="1062" as="sourcePoint" />
+            <mxPoint x="278" y="1080" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="314" y="1062" />
+              <mxPoint x="314" y="1080" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-boot-44" value="log heap internal, PSRAM, stack watermark" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="322" y="1056" width="420" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-45" value="main.c" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#0178b9, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="22" y="80" width="156" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-46" value="app.c" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#0178b9, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="200" y="80" width="156" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-47" value="hmi_settings" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#ffc414, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#000000, #ededed);fontFamily=Verdana;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="378" y="80" width="156" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-48" value="hmi_ota" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#ffc414, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#000000, #ededed);fontFamily=Verdana;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="556" y="80" width="156" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-49" value="hmi_wifi" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#ffc414, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#000000, #ededed);fontFamily=Verdana;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="734" y="80" width="156" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-50" value="bsp_elecrow_s3" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#414141, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="912" y="80" width="156" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-51" value="rcc_link" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#676767, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="80" width="156" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-52" value="ui_app (hmi_ui)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#a8d25b, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1268" y="80" width="156" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-boot-53" value="hmi_power" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#ffc414, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#000000, #ededed);fontFamily=Verdana;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1446" y="80" width="156" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="hmi-fw-dataflow" name="HMI FW 4 - Luồng dữ liệu">
+    <mxGraphModel dx="1600" dy="1000" grid="0" gridSize="5" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="hmi-fw-dataflow-1" value="Luồng dữ liệu controller → màn hình" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="0" y="0" width="1500" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-2" value="Hai task chỉ gặp nhau ở rcc_snapshot_t (bảo vệ bằng mutex trong rcc_link). Số trong vòng tròn là thứ tự các chỗ phải sửa khi thêm một trường dữ liệu." style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=light-dark(#333333,#EDEDED);fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="0" y="34" width="1500" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-3" value="Robot Charge Controller" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#0178b9, #ededed);strokeColor=none;fontStyle=1;fontColor=light-dark(#ffffff, #ededed);fontFamily=Verdana;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="0" y="300" width="170" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-4" value="HMI firmware (ESP32-S3)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#b0e3e6;strokeColor=none;strokeWidth=3;fontStyle=1;fontSize=15;verticalAlign=top;align=left;spacingLeft=12;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="220" y="80" width="1330" height="610" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-5" value="task rcc_link" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="250" y="130" width="330" height="450" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-6" value="task LVGL (giữ LVGL lock), refresh 1 s" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=none;fontColor=#333333;verticalAlign=bottom;align=left;spacingLeft=12;spacingBottom=4;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="810" y="130" width="710" height="450" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-7" value="uart_read_bytes()&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;UART1 115200 8N1&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#676767;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="280" y="170" width="270" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-8" value="rcc_codec_feed()&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;rcc_codec: frame → rcc_message_t&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#676767;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="280" y="290" width="270" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-9" value="cập nhật snapshot&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;rcc_link: giữ mutex s_model_lock&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#676767;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="280" y="410" width="270" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-10" value="rcc_snapshot_t&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;hmi_common/rcc_types.h&lt;/span&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#ffc414;strokeColor=none;fontStyle=1;fontFamily=Verdana;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="615" y="285" width="160" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-11" value="hmi_shell&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;rcc_link_snapshot()&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="840" y="170" width="270" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-12" value="hmi_model_update()&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;memcmp view → lv_subject_set_pointer()&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="840" y="290" width="270" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-13" value="hmi_present&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;hp_*_view(): text, tone, enum&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="290" width="270" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-14" value="page_*.c&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;observer apply_*() → widget&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="840" y="410" width="270" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-15" value="rcc_link_request_start/stop()&lt;br&gt;&lt;span style=&quot;font-weight:normal;font-size:10px;&quot;&gt;không block, gọi từ task LVGL&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#676767;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1220" y="480" width="270" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-16" value="frame" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="hmi-fw-dataflow-3" target="hmi-fw-dataflow-7">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="232" y="340" />
+              <mxPoint x="232" y="202" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-17" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;" edge="1" parent="1" source="hmi-fw-dataflow-7" target="hmi-fw-dataflow-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;" edge="1" parent="1" source="hmi-fw-dataflow-8" target="hmi-fw-dataflow-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-19" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;exitX=1;exitY=0.5;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="hmi-fw-dataflow-9" target="hmi-fw-dataflow-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-20" value="bản sao" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;exitX=0.5;exitY=0;entryX=0;entryY=0.5;" edge="1" parent="1" source="hmi-fw-dataflow-10" target="hmi-fw-dataflow-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;" edge="1" parent="1" source="hmi-fw-dataflow-11" target="hmi-fw-dataflow-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-22" value="gọi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;exitX=1;exitY=0.3;entryX=0;entryY=0.3;" edge="1" parent="1" source="hmi-fw-dataflow-12" target="hmi-fw-dataflow-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-23" value="view POD" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;exitX=0;exitY=0.7;entryX=1;entryY=0.7;" edge="1" parent="1" source="hmi-fw-dataflow-13" target="hmi-fw-dataflow-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-24" value="subject đổi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;" edge="1" parent="1" source="hmi-fw-dataflow-12" target="hmi-fw-dataflow-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-25" value="START/STOP" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="hmi-fw-dataflow-14" target="hmi-fw-dataflow-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-26" value="rcc_codec_request() qua UART" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=light-dark(#383838, #ededed);fontStyle=1;fontSize=11;labelBackgroundColor=default;endArrow=classic;dashed=1;exitX=0.5;exitY=1;entryX=0.5;entryY=1;" edge="1" parent="1" source="hmi-fw-dataflow-15" target="hmi-fw-dataflow-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1355" y="640" />
+              <mxPoint x="85" y="640" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-27" value="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=15;fontStyle=1;fillColor=#A8D25B;strokeColor=none;fontColor=light-dark(#000000,#EDEDED);" vertex="1" parent="1">
+          <mxGeometry x="265" y="275" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-28" value="2" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=15;fontStyle=1;fillColor=#A8D25B;strokeColor=none;fontColor=light-dark(#000000,#EDEDED);" vertex="1" parent="1">
+          <mxGeometry x="265" y="395" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-29" value="3" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=15;fontStyle=1;fillColor=#A8D25B;strokeColor=none;fontColor=light-dark(#000000,#EDEDED);" vertex="1" parent="1">
+          <mxGeometry x="600" y="270" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-30" value="4" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=15;fontStyle=1;fillColor=#A8D25B;strokeColor=none;fontColor=light-dark(#000000,#EDEDED);" vertex="1" parent="1">
+          <mxGeometry x="1205" y="275" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-31" value="5" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=15;fontStyle=1;fillColor=#A8D25B;strokeColor=none;fontColor=light-dark(#000000,#EDEDED);" vertex="1" parent="1">
+          <mxGeometry x="825" y="275" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-32" value="6" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=15;fontStyle=1;fillColor=#A8D25B;strokeColor=none;fontColor=light-dark(#000000,#EDEDED);" vertex="1" parent="1">
+          <mxGeometry x="825" y="395" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-33" value="Thêm một trường dữ liệu controller: sửa ở đâu" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="220" y="720" width="600" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-34" value="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=15;fontStyle=1;fillColor=#A8D25B;strokeColor=none;fontColor=light-dark(#000000,#EDEDED);" vertex="1" parent="1">
+          <mxGeometry x="220" y="760" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-35" value="rcc_codec" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="265" y="760" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-36" value="Giải mã trường mới (chỉ khi giao thức đổi), có host test" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="470" y="760" width="700" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-37" value="2" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=15;fontStyle=1;fillColor=#A8D25B;strokeColor=none;fontColor=light-dark(#000000,#EDEDED);" vertex="1" parent="1">
+          <mxGeometry x="220" y="800" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-38" value="rcc_link" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="265" y="800" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-39" value="Chép giá trị vào snapshot" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="470" y="800" width="700" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-40" value="3" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=15;fontStyle=1;fillColor=#A8D25B;strokeColor=none;fontColor=light-dark(#000000,#EDEDED);" vertex="1" parent="1">
+          <mxGeometry x="220" y="840" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-41" value="hmi_common" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="265" y="840" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-42" value="Thêm trường vào rcc_snapshot_t" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="470" y="840" width="700" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-43" value="4" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=15;fontStyle=1;fillColor=#A8D25B;strokeColor=none;fontColor=light-dark(#000000,#EDEDED);" vertex="1" parent="1">
+          <mxGeometry x="220" y="880" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-44" value="ui_present" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="265" y="880" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-45" value="Thêm trường vào view, tính text/tone trong hp_*_view(), có host test" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="470" y="880" width="700" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-46" value="5" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=15;fontStyle=1;fillColor=#A8D25B;strokeColor=none;fontColor=light-dark(#000000,#EDEDED);" vertex="1" parent="1">
+          <mxGeometry x="220" y="920" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-47" value="ui_app / hmi_model" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="265" y="920" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-48" value="Chỉ phải sửa khi cần một view mới" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="470" y="920" width="700" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-49" value="6" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=15;fontStyle=1;fillColor=#A8D25B;strokeColor=none;fontColor=light-dark(#000000,#EDEDED);" vertex="1" parent="1">
+          <mxGeometry x="220" y="960" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-50" value="ui_app / pages" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;strokeColor=#A8D25B;fontStyle=1;fontColor=light-dark(#000000,#EDEDED);fontFamily=Verdana;strokeWidth=3;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="265" y="960" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hmi-fw-dataflow-51" value="Tạo widget trong enter, gán giá trị trong apply_*" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="470" y="960" width="700" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
