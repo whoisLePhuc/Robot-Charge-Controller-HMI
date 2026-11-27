@@ -1,5 +1,5 @@
 /*
- * Composition root. Start order (see docs/firmware-restructure-design.md, section 4):
+ * Composition root. Start order (see docs/09-decisions/archive/firmware-restructure-design.md, section 4):
  *   1. boot report and memory check (16 MB flash, 8 MB PSRAM); stop here if it does not match
  *   2. task watchdog
  *   3. services: settings (NVS), OTA, Wi-Fi -> OTA wiring on HMI_WIFI_EVENT, Wi-Fi

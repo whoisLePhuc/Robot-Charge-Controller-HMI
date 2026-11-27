@@ -168,7 +168,7 @@ observations are distinguished from hardware acceptance throughout.
 - Web OTA update service with dual app slots and boot rollback configured.
 
 The language setting is stored, but the main UI labels remain English. See
-[local settings, Wi-Fi and OTA](docs/settings-wifi-and-ota.md) for current behavior
+[local settings, Wi-Fi and OTA](docs/06-services/settings-wifi-ota.md) for current behavior
 and implementation limits.
 
 ## Project Status
@@ -217,13 +217,13 @@ common              hmi_common: rcc_snapshot_t (controller data contract), board
 Rules, the dependency table and step-by-step recipes (adding a controller field,
 a module or a page): [firmware/components/README.md](firmware/components/README.md)
 and [firmware/components/ui/README.md](firmware/components/ui/README.md). Design
-record and rationale: [docs/firmware-restructure-design.md](docs/firmware-restructure-design.md).
+record and rationale: [ADR-0001](docs/09-decisions/0001-esp-idf-component-layout.md).
 
 ## Build and Upload
 
 The image runs the five-page HMI on the ST77922 QSPI LCD with integrated
 capacitive touch and RCC UART1 transport.
-See the [bring-up guide](docs/elecrow-s3-bringup.md) for hardware details.
+See the [board guide](docs/03-hardware/elecrow-s3-board.md) for hardware details.
 
 Install ESP-IDF 6.1.0, then run from an ESP-IDF PowerShell/cmd or shell:
 
@@ -243,7 +243,7 @@ The application attempts to start UART1 and polls the connected peer. START/STOP
 can send protocol commands; acceptance and relay operation depend on controller
 configuration, authorization and state. A disconnected peer is shown as offline.
 
-See the [Elecrow bring-up guide](docs/elecrow-s3-bringup.md) for board wiring.
+See the [controller wiring guide](docs/03-hardware/controller-wiring.md) for board wiring.
 
 ## Controller Simulator
 
@@ -277,7 +277,7 @@ Enter help for all commands and quit to release the serial port.
 Simulator values and relay states are synthetic; the simulator does not operate
 physical charging hardware.
 
-See the [simulator guide](docs/controller-simulator.md) for failure injection and
+See the [testing and simulation guide](docs/07-development/testing-and-simulation.md) for failure injection and
 expected results.
 
 ## Automated Tests
@@ -344,14 +344,22 @@ Robot-Charge-Controller-HMI/
 | Resource | Description |
 |---|---|
 | [Documentation Index](docs/README.md) | Reading order and implementation status |
-| [Elecrow Bring-up](docs/elecrow-s3-bringup.md) | Elecrow S3 build, display, touch and HMI status |
-| [Settings, Wi-Fi and OTA](docs/settings-wifi-and-ota.md) | Local configuration, network access, update procedure and limits |
-| [Controller Interface](docs/controller-interface.md) | Framing, command payloads and control semantics |
-| [UI Pages and Information](docs/ui-pages-and-information.md) | Page contents, states and operator feedback |
+| [Elecrow Board](docs/03-hardware/elecrow-s3-board.md) | Pins, flash layout, start-up sequence |
+| [Controller Wiring](docs/03-hardware/controller-wiring.md) | UART connection to the controller or the simulator |
+| [Build and Flash](docs/07-development/build-and-flash.md) | `idf.py` workflow and configuration files |
+| [Settings, Wi-Fi and OTA](docs/06-services/settings-wifi-ota.md) | Local configuration, network access, update procedure and limits |
+| [Controller Protocol](docs/04-controller-protocol/framing-and-transport.md) | Framing, command payloads, code tables ([commands](docs/04-controller-protocol/commands-and-payloads.md), [codes](docs/04-controller-protocol/code-tables.md)) |
+| [UI Pages and States](docs/05-ui/ui-pages-and-states.md) | Page contents, states and refresh model |
+| [Operator and Safety Behavior](docs/05-ui/operator-safety-behavior.md) | START/STOP, authority, link loss, known gaps |
+| [Firmware Architecture](docs/02-architecture/firmware-architecture.md) | Layers, start-up order, tasks and locks |
+| [Data Flow](docs/02-architecture/data-flow.md) | Controller to screen and back |
 | [Interactive UI Reference](docs/mockups/hmi-ui-landscape.html) | Browser replica of the firmware UI: every page, command state and overlay |
 | [Firmware README](firmware/README.md) | Build, configuration files and checks |
 | [Firmware Components](firmware/components/README.md) | Layers, dependency rules, where to change what |
-| [Firmware Restructure Design](docs/firmware-restructure-design.md) | Why the firmware is laid out this way; PlatformIO to ESP-IDF migration record |
+| [Decisions](docs/09-decisions/README.md) | Why the firmware is laid out this way (ADR-0001; original record archived) |
 | [Desktop UI Simulator](firmware/tools/sim/README.md) | Render and inspect the LVGL interface on a PC |
-| [Controller Simulator](docs/controller-simulator.md) | Interactive scenarios, fault injection and host tests |
-| [Controller Change Requests](docs/controller-change-requests.md) | Interface dependencies and proposed controller changes |
+| [Testing and Simulation](docs/07-development/testing-and-simulation.md) | Host tests, controller simulator, desktop UI simulator |
+| [Getting Started](docs/01-overview/getting-started.md) | Clone to first run, in the order that needs least equipment |
+| [How-to Recipes](docs/07-development/how-to-recipes.md) | Add a field, page, module; change behaviour safely |
+| [Troubleshooting](docs/07-development/troubleshooting.md) | Symptoms, likely causes, where to look |
+| [Controller Change Requests](docs/04-controller-protocol/controller-change-requests.md) | Interface dependencies and proposed controller changes |

@@ -172,6 +172,12 @@ static void test_bar(void)
     hp_bar_spec(&m, false, &b); CHECK(b.kind == HP_BAR_MSG); CHECK(b.button == HP_B_NONE);
     m.command_state = RCC_COMMAND_REJECTED; m.command_reason = 0x000A;
     hp_bar_spec(&m, true, &b); CHECK(b.title_kind == HP_K_WARN); CHECK_STR(b.sub, "FAULT_ACTIVE");
+    /* G2: a STOP answered REJECTED/QUEUE_FULL still took effect (controller ICD); the bar must not say "rejected" */
+    m.command_reason = 0x0007;
+    hp_bar_spec(&m, true, &b); CHECK(b.title_kind == HP_K_WARN);
+    CHECK_STR(b.title, "Stop took effect, not tracked"); CHECK_STR(b.sub, "Send STOP again");
+    m.last_command = 0x20; hp_bar_spec(&m, true, &b); CHECK(strcmp(b.title, "Stop took effect, not tracked") != 0);   /* START + QUEUE_FULL stays a rejection */
+    m.last_command = 0x21;
     idle(&m); m.last_command = 0x20; m.command_state = RCC_COMMAND_REJECTED; m.command_reason = 0x0099; m.command_age_ms = 100;
     hp_bar_spec(&m, true, &b); CHECK_STR(b.title, "START rejected"); CHECK_STR(b.sub, "0x0099"); CHECK(b.button == HP_B_START);
 }
