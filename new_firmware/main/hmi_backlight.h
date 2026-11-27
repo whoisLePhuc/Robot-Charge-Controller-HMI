@@ -8,13 +8,12 @@
 extern "C" {
 #endif
 
-#define HMI_BACKLIGHT_GPIO 41
+/* Dim/sleep policy over the BSP backlight driver. Start the activity timer and fade to the stored
+ * brightness; call once the UI is up (the BSP brings the backlight up at its floor). */
+void hmi_backlight_start(void);
 
-/* Initialize LEDC PWM channel and fade service for backlight on GPIO 41 */
-esp_err_t hmi_backlight_init(uint8_t initial_pct);
-
-/* Set backlight target duty percentage (0..100) with optional smooth fading */
-void hmi_backlight_set_duty(uint8_t pct, bool fade);
+/* Touch hook (bsp_touch_activity_cb_t): records activity; true if the touch only woke the screen. */
+bool hmi_backlight_on_touch(void);
 
 /* Notify user interaction (touch) to reset sleep timer and wake screen if dimmed */
 void hmi_backlight_notify_activity(void);

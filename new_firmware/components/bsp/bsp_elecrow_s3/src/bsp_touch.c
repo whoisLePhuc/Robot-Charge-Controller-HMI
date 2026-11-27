@@ -1,13 +1,13 @@
-#include "elecrow_s3_touch.h"
+/* Capacitive touch as an LVGL pointer: integrated ST77922 TDDI (0x55) or FT6x36-compatible (0x38). */
+#include "bsp_elecrow_s3.h"
 
 #include "driver/gpio.h"
 #include "driver/i2c_master.h"
 #include "esp_check.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "hmi_backlight.h"
+#include "bsp_pins.h"
 
-enum { TOUCH_SDA = 38, TOUCH_SCL = 39, TOUCH_RST = 48, TOUCH_INT = 47 };
 static const char *TAG = "elecrow_touch";
 static i2c_master_dev_handle_t s_device;
 static bool s_integrated;
@@ -15,6 +15,7 @@ static lv_point_t s_last;
 static uint32_t s_errors;
 static bool s_pressed;
 static uint8_t s_max_points = 1;
+static bsp_touch_activity_cb_t s_on_activity;
 
 static esp_err_t read_register(uint16_t reg, uint8_t *data, size_t size)
 {
@@ -66,13 +67,11 @@ static void read_touch(lv_indev_t *indev, lv_indev_data_t *data)
         lv_indev_reset(indev, NULL);
         return; /* Reject corrupt coordinates, do not clamp or complete a tap. */
     }
-    /* Safe screen wake-up: if display was dimmed, wake up and ignore touch gesture */
-    if (hmi_backlight_is_dimmed()) {
-        hmi_backlight_notify_activity();
+    /* Safe screen wake-up: a touch that only woke a dimmed display is not a gesture. */
+    if (s_on_activity && s_on_activity()) {
         lv_indev_reset(indev, NULL);
         return;
     }
-    hmi_backlight_notify_activity();
     data->point.x = x;
     data->point.y = y;
     data->state = LV_INDEV_STATE_PRESSED;
@@ -84,22 +83,23 @@ static void read_touch(lv_indev_t *indev, lv_indev_data_t *data)
     }
 }
 
-esp_err_t elecrow_s3_touch_start(lv_display_t *display)
+esp_err_t bsp_touch_start(lv_display_t *display, bsp_touch_activity_cb_t on_activity)
 {
-    const gpio_config_t reset = {.pin_bit_mask = 1ULL << TOUCH_RST, .mode = GPIO_MODE_OUTPUT};
+    s_on_activity = on_activity;
+    const gpio_config_t reset = {.pin_bit_mask = 1ULL << BSP_TOUCH_RST, .mode = GPIO_MODE_OUTPUT};
     const gpio_config_t interrupt = {
-        .pin_bit_mask = 1ULL << TOUCH_INT, .mode = GPIO_MODE_INPUT,
+        .pin_bit_mask = 1ULL << BSP_TOUCH_INT, .mode = GPIO_MODE_INPUT,
         .pull_up_en = GPIO_PULLUP_ENABLE,
     };
     ESP_RETURN_ON_ERROR(gpio_config(&reset), TAG, "touch reset GPIO");
     ESP_RETURN_ON_ERROR(gpio_config(&interrupt), TAG, "touch interrupt GPIO");
-    ESP_RETURN_ON_ERROR(gpio_set_level(TOUCH_RST, 0), TAG, "touch reset low");
+    ESP_RETURN_ON_ERROR(gpio_set_level(BSP_TOUCH_RST, 0), TAG, "touch reset low");
     vTaskDelay(pdMS_TO_TICKS(10));
-    ESP_RETURN_ON_ERROR(gpio_set_level(TOUCH_RST, 1), TAG, "touch reset high");
+    ESP_RETURN_ON_ERROR(gpio_set_level(BSP_TOUCH_RST, 1), TAG, "touch reset high");
     vTaskDelay(pdMS_TO_TICKS(100));
 
     const i2c_master_bus_config_t config = {
-        .i2c_port = I2C_NUM_0, .sda_io_num = TOUCH_SDA, .scl_io_num = TOUCH_SCL,
+        .i2c_port = I2C_NUM_0, .sda_io_num = BSP_TOUCH_SDA, .scl_io_num = BSP_TOUCH_SCL,
         .clk_source = I2C_CLK_SRC_DEFAULT, .glitch_ignore_cnt = 7,
         .flags.enable_internal_pullup = true,
     };

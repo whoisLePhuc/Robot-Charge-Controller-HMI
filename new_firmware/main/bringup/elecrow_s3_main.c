@@ -10,11 +10,15 @@
 #include "esp_task_wdt.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "elecrow_s3_display.h"
+#include "esp_lvgl_port.h"
+#include "bsp_elecrow_s3.h"
+#include "hmi_backlight.h"
 #include "hmi_config.h"
 #include "hmi_settings.h"
 #include "hmi_wifi.h"
 #include "hmi_ota.h"
+#include "hmi_ui.h"
+#include "rcc_link.h"
 
 static const char *TAG = "elecrow_s3";
 
@@ -71,7 +75,23 @@ void app_main(void)
     ESP_ERROR_CHECK(hmi_ota_init());
     if (!hmi_wifi_init()) ESP_LOGW(TAG, "Wi-Fi unavailable; the Wi-Fi screens will say so");
 
-    ESP_ERROR_CHECK(elecrow_s3_display_start());
+    /* Board: backlight at its floor, LCD, LVGL port. Then link, UI and touch under one LVGL lock. */
+    lv_display_t *display = NULL;
+    ESP_ERROR_CHECK(bsp_display_start(&display));
+    if (!lvgl_port_lock(1000)) ESP_ERROR_CHECK(ESP_ERR_TIMEOUT);
+    const esp_err_t link_err = rcc_link_start();
+    if (link_err != ESP_OK) {
+        ESP_LOGE(TAG, "rcc_link_start failed: %s", esp_err_to_name(link_err));
+    }
+    hmi_ui_start(link_err == ESP_OK);
+    const esp_err_t touch_err = bsp_touch_start(display, hmi_backlight_on_touch);
+    if (touch_err != ESP_OK) {
+        ESP_LOGE(TAG, "Touch init failed: %s", esp_err_to_name(touch_err));
+    }
+    /* The LVGL task owns rendering; do not render on the initialization stack. */
+    lv_obj_invalidate(lv_display_get_screen_active(display));
+    lvgl_port_unlock();
+    hmi_backlight_start();
     ESP_LOGI(TAG, "Five-page HMI ready; controller link started on UART1 (TX=GPIO43, RX=GPIO44).");
 
     /* Confirm running firmware image and cancel rollback */

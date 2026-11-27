@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.22)
 # Components live under components/<layer>/<module>; see components/README.md for the layering rules.
 set(EXTRA_COMPONENT_DIRS
     "${CMAKE_CURRENT_LIST_DIR}/components/common"
+    "${CMAKE_CURRENT_LIST_DIR}/components/bsp"
     "${CMAKE_CURRENT_LIST_DIR}/components/protocol")
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

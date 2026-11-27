@@ -1,4 +1,5 @@
-#include "elecrow_s3_display.h"
+/* ST77922 QSPI panel and LVGL port. Starts no application module: app.c starts the link, UI and touch. */
+#include "bsp_elecrow_s3.h"
 
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
@@ -8,18 +9,10 @@
 #include "esp_lcd_st77922.h"
 #include "esp_lvgl_port.h"
 #include "lvgl.h"
+#include "bsp_pins.h"
 #include "elecrow_s3_panel_init.h"
-#include "elecrow_s3_touch.h"
-#include "hmi_backlight.h"
-#include "hmi_settings.h"
-#include "hmi_ui.h"
-#include "rcc_link.h"
 
-/* Elecrow DLE06235B / ES3C35P pin allocation, not the older CrowPanel Terminal. */
 enum {
-    LCD_CS = 10, LCD_CLK = 12,
-    LCD_D0 = 11, LCD_D1 = 13, LCD_D2 = 14, LCD_D3 = 9,
-    LCD_BACKLIGHT = 41,
     NATIVE_WIDTH = 320, NATIVE_HEIGHT = 480,
     LANDSCAPE_WIDTH = 480, LANDSCAPE_HEIGHT = 320,
     BUFFER_PIXELS = LANDSCAPE_WIDTH * 32,
@@ -38,16 +31,16 @@ static void round_area(lv_area_t *area)
     area->y2 |= 3;
 }
 
-esp_err_t elecrow_s3_display_start(void)
+esp_err_t bsp_display_start(lv_display_t **out_display)
 {
     /* Initialize PWM backlight at 0% while configuring ST77922 display */
-    ESP_RETURN_ON_ERROR(hmi_backlight_init(0), TAG, "backlight init");
+    ESP_RETURN_ON_ERROR(bsp_backlight_init(0), TAG, "backlight init");
 
     const spi_bus_config_t bus = ST77922_PANEL_BUS_QSPI_CONFIG(
-        LCD_CLK, LCD_D0, LCD_D1, LCD_D2, LCD_D3, BUFFER_PIXELS * sizeof(uint16_t));
+        BSP_LCD_CLK, BSP_LCD_D0, BSP_LCD_D1, BSP_LCD_D2, BSP_LCD_D3, BUFFER_PIXELS * sizeof(uint16_t));
     ESP_RETURN_ON_ERROR(spi_bus_initialize(SPI2_HOST, &bus, SPI_DMA_CH_AUTO), TAG, "QSPI bus");
     esp_lcd_panel_io_handle_t io = NULL;
-    esp_lcd_panel_io_spi_config_t io_config = ST77922_PANEL_IO_QSPI_CONFIG(LCD_CS, NULL, NULL);
+    esp_lcd_panel_io_spi_config_t io_config = ST77922_PANEL_IO_QSPI_CONFIG(BSP_LCD_CS, NULL, NULL);
     io_config.pclk_hz = 20 * 1000 * 1000;
     ESP_RETURN_ON_ERROR(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)SPI2_HOST,
                                                &io_config, &io), TAG, "panel IO");
@@ -85,19 +78,8 @@ esp_err_t elecrow_s3_display_start(void)
     ESP_RETURN_ON_FALSE(display, ESP_ERR_NO_MEM, TAG, "LVGL display");
     ESP_RETURN_ON_FALSE(lvgl_port_lock(1000), ESP_ERR_TIMEOUT, TAG, "LVGL lock");
     lv_display_set_rotation(display, LV_DISPLAY_ROTATION_90);
-    const esp_err_t link_err = rcc_link_start();
-    if (link_err != ESP_OK) {
-        ESP_LOGE(TAG, "rcc_link_start failed: %s", esp_err_to_name(link_err));
-    }
-    hmi_ui_start(link_err == ESP_OK);
-    const esp_err_t touch_error = elecrow_s3_touch_start(display);
-    if (touch_error != ESP_OK) {
-        ESP_LOGE(TAG, "Touch init failed: %s", esp_err_to_name(touch_error));
-    }
-    /* The LVGL task owns rendering; do not render on the initialization stack. */
-    lv_obj_invalidate(lv_display_get_screen_active(display));
     lvgl_port_unlock();
-    hmi_backlight_set_duty(hmi_settings_get()->brightness_pct, true);
+    *out_display = display;
     ESP_LOGI(TAG, "ST77922 initialized: QSPI 20 MHz, RGB565, logical 480x320; visual check pending");
     return ESP_OK;
 }

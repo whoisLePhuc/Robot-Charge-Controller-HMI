@@ -9,8 +9,8 @@ esp_err_t hmi_settings_set_brightness(uint8_t p) { cfg.brightness_pct = p; retur
 esp_err_t hmi_settings_set_sleep_timeout(uint16_t s) { cfg.sleep_timeout_s = s; return ESP_OK; }
 esp_err_t hmi_settings_set_dim_pct(uint8_t p) { cfg.dim_pct = p; return ESP_OK; }
 esp_err_t hmi_settings_set_language(uint8_t l) { cfg.language = l; return ESP_OK; }
-esp_err_t hmi_backlight_init(uint8_t p) { (void)p; return ESP_OK; }
-void hmi_backlight_set_duty(uint8_t p, bool f) { (void)p; (void)f; }
+void hmi_backlight_start(void) {}
+bool hmi_backlight_on_touch(void) { return false; }
 void hmi_backlight_set_brightness(uint8_t p) { cfg.brightness_pct = p; }
 void hmi_backlight_notify_activity(void) {}
 bool hmi_backlight_is_dimmed(void) { return false; }
