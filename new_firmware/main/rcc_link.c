@@ -11,6 +11,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
+#include "hmi_config.h"
 #include "rcc_codec.h"
 
 #define LINK_UART ((uart_port_t)RCC_LINK_UART_PORT)

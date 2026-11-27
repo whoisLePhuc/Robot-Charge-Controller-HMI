@@ -15,5 +15,6 @@ idf_component_register(
              esp_lcd esp_driver_spi esp_driver_gpio esp_driver_i2c esp_driver_uart esp_timer
              esp_lvgl_port esp_lcd_st77922 nvs_flash esp_driver_ledc
              esp_wifi esp_netif esp_event app_update esp_http_server
+             hmi_common
 )
 target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wextra -Werror)

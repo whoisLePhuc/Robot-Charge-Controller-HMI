@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "rcc_link.h"
+#include "rcc_types.h"
 
 #define HP_FAULT_COUNT 19
 #define HP_INHIBIT_COUNT 3
