@@ -1,35 +1,39 @@
-/* Elecrow S3 entry point: memory check, watchdog, settings, Wi-Fi/OTA, then LCD, touch, HMI and RCC UART link. */
+/*
+ * Composition root. Start order (see docs/firmware-restructure-design.md, section 4):
+ *   1. boot report and memory check (16 MB flash, 8 MB PSRAM); stop here if it does not match
+ *   2. task watchdog
+ *   3. services: settings (NVS), OTA, Wi-Fi -> OTA wiring on HMI_WIFI_EVENT, Wi-Fi
+ *   4. board display, then controller link, UI and touch under one LVGL lock; backlight to the stored level
+ *   5. confirm the running image (cancel rollback), then the alive loop
+ * Modules do not start each other: every cross-module connection is made here.
+ */
+#include "app.h"
+
 #include <inttypes.h>
+#include <stdbool.h>
 
 #include "esp_err.h"
 #include "esp_event.h"
 #include "esp_flash.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
+#include "esp_lvgl_port.h"
 #include "esp_psram.h"
 #include "esp_system.h"
 #include "esp_task_wdt.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "esp_lvgl_port.h"
+
 #include "bsp_elecrow_s3.h"
-#include "hmi_power.h"
 #include "hmi_config.h"
-#include "hmi_settings.h"
-#include "hmi_wifi.h"
 #include "hmi_ota.h"
+#include "hmi_power.h"
+#include "hmi_settings.h"
 #include "hmi_ui.h"
+#include "hmi_wifi.h"
 #include "rcc_link.h"
 
-static const char *TAG = "elecrow_s3";
-
-/* Wi-Fi link -> OTA web server: the server runs while the station has an IP. */
-static void on_wifi_link(void *arg, esp_event_base_t base, int32_t id, void *data)
-{
-    (void)arg; (void)base; (void)data;
-    if (id == HMI_WIFI_EVENT_CONNECTED) (void)hmi_ota_start_server();
-    else if (id == HMI_WIFI_EVENT_LINK_LOST) hmi_ota_stop_server();
-}
+static const char *TAG = "app";
 
 static const char *reset_reason_name(esp_reset_reason_t r)
 {
@@ -48,7 +52,8 @@ static const char *reset_reason_name(esp_reset_reason_t r)
     }
 }
 
-void app_main(void)
+/* 1. Boot report; false if flash/PSRAM do not match the board. */
+static bool boot_check(void)
 {
     uint32_t flash_bytes = 0;
     const esp_reset_reason_t rst_reason = esp_reset_reason();
@@ -60,10 +65,14 @@ void app_main(void)
     if (flash_bytes != 16u * 1024u * 1024u || !esp_psram_is_initialized() ||
         psram_bytes != 8u * 1024u * 1024u) {
         ESP_LOGE(TAG, "Memory configuration does not match the expected 16 MB flash / 8 MB PSRAM");
-        return;
+        return false;
     }
+    return true;
+}
 
-    /* Initialize Task Watchdog Timer (TWDT): HMI_TWDT_TIMEOUT_MS */
+/* 2. Task watchdog (HMI_TWDT_TIMEOUT_MS, panic). The LVGL task subscribes itself (hmi_shell). */
+static void start_watchdog(void)
+{
     const esp_task_wdt_config_t twdt_config = {
         .timeout_ms = HMI_TWDT_TIMEOUT_MS,
         .idle_core_mask = 0,
@@ -78,8 +87,20 @@ void app_main(void)
     } else {
         ESP_LOGI(TAG, "TWDT initialized (%d ms timeout, panic enabled)", HMI_TWDT_TIMEOUT_MS);
     }
+}
 
-    /* Initialize NVS and load persistent configuration */
+/* Wi-Fi link -> OTA web server: the server runs while the station has an IP. */
+static void on_wifi_link(void *arg, esp_event_base_t base, int32_t id, void *data)
+{
+    (void)arg; (void)base; (void)data;
+    if (id == HMI_WIFI_EVENT_CONNECTED) (void)hmi_ota_start_server();
+    else if (id == HMI_WIFI_EVENT_LINK_LOST) hmi_ota_stop_server();
+}
+
+/* 3. Settings (NVS) first: Wi-Fi credentials and display settings live there. The OTA handler is
+ *    registered before Wi-Fi starts, so the first HMI_WIFI_EVENT_CONNECTED cannot be missed. */
+static void start_services(void)
+{
     ESP_ERROR_CHECK(hmi_settings_init());
     ESP_ERROR_CHECK(hmi_ota_init());
     /* The default loop must exist before the handler is registered; hmi_wifi_init() accepts an existing one. */
@@ -87,8 +108,12 @@ void app_main(void)
     if (loop_err != ESP_ERR_INVALID_STATE) ESP_ERROR_CHECK(loop_err);
     ESP_ERROR_CHECK(esp_event_handler_register(HMI_WIFI_EVENT, ESP_EVENT_ANY_ID, on_wifi_link, NULL));
     if (!hmi_wifi_init()) ESP_LOGW(TAG, "Wi-Fi unavailable; the Wi-Fi screens will say so");
+}
 
-    /* Board: backlight at its floor, LCD, LVGL port. Then link, UI and touch under one LVGL lock. */
+/* 4. Board: backlight at its floor, LCD, LVGL port. Then link, UI and touch under one LVGL lock.
+ *    A failed link or touch is logged and the UI still runs (the link shows offline). */
+static void start_display_and_ui(void)
+{
     lv_display_t *display = NULL;
     ESP_ERROR_CHECK(bsp_display_start(&display));
     if (!lvgl_port_lock(1000)) ESP_ERROR_CHECK(ESP_ERR_TIMEOUT);
@@ -105,9 +130,18 @@ void app_main(void)
     lv_obj_invalidate(lv_display_get_screen_active(display));
     lvgl_port_unlock();
     hmi_power_start();
-    ESP_LOGI(TAG, "Five-page HMI ready; controller link started on UART1 (TX=GPIO43, RX=GPIO44).");
+    ESP_LOGI(TAG, "Five-page HMI ready; controller link started on UART%d (TX=GPIO%d, RX=GPIO%d).",
+             RCC_LINK_UART_PORT, RCC_LINK_TX_GPIO, RCC_LINK_RX_GPIO);
+}
 
-    /* Confirm running firmware image and cancel rollback */
+void app_run(void)
+{
+    if (!boot_check()) return;
+    start_watchdog();
+    start_services();
+    start_display_and_ui();
+
+    /* 5. Everything is up: confirm the running image and cancel rollback. */
     (void)hmi_ota_mark_valid();
 
     for (;;) {
