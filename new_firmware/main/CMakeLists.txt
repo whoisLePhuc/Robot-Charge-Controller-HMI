@@ -4,7 +4,7 @@ file(GLOB PAGE_SRCS RELATIVE ${COMPONENT_DIR} "${COMPONENT_DIR}/ui/pages/page_*.
 
 idf_component_register(
     SRCS "bringup/elecrow_s3_main.c" "bringup/elecrow_s3_display.c" "bringup/elecrow_s3_touch.c"
-         "rcc_link.c" "rcc_codec.c" "hmi_ui.c" "hmi_icons.c" "ui/hmi_theme.c" "ui/hmi_present.c" "ui/hmi_model.c"
+         "hmi_ui.c" "hmi_icons.c" "ui/hmi_theme.c" "ui/hmi_present.c" "ui/hmi_model.c"
          "ui/hmi_widgets.c" "ui/hmi_nav.c" "ui/hmi_shell.c" "ui/hmi_wifi_ui.c" "ui/hmi_pages.c" ${PAGE_SRCS}
          "hmi_settings.c" "hmi_backlight.c" "hmi_wifi.c" "hmi_ota.c"
          "hmi_fonts/hmi_f10.c" "hmi_fonts/hmi_f12.c" "hmi_fonts/hmi_f12b.c" "hmi_fonts/hmi_f14b.c"
@@ -15,6 +15,6 @@ idf_component_register(
              esp_lcd esp_driver_spi esp_driver_gpio esp_driver_i2c esp_driver_uart esp_timer
              esp_lvgl_port esp_lcd_st77922 nvs_flash esp_driver_ledc
              esp_wifi esp_netif esp_event app_update esp_http_server
-             hmi_common
+             hmi_common rcc_link
 )
 target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wextra -Werror)

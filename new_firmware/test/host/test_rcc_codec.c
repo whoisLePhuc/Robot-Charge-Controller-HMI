@@ -1,4 +1,4 @@
-/* Host test for main/rcc_codec.c (no ESP-IDF). Build and run: ./run.sh */
+/* Host test for components/protocol/rcc_codec/src/rcc_codec.c (no ESP-IDF). Build and run: ./run.sh */
 #include <stdio.h>
 #include <string.h>
 #include "rcc_codec.h"
