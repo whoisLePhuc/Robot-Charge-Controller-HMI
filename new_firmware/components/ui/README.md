@@ -1,32 +1,39 @@
 # HMI UI layers
 
-LVGL 9.6 UI for the 480x320 landscape HMI. `main/hmi_ui.c` only implements the public API in `hmi_ui.h`;
-everything else lives here.
+LVGL 9.6 UI for the 480x320 landscape HMI, split into four ESP-IDF components (arrows: may depend on):
 
 ```
-hmi_ui.c               public API (start, select page, open Wi-Fi, sim inject) -> thin wrappers
-ui/hmi_shell.c         chrome (rail/header/banner), action bar + confirm modal, OTA progress overlay,
-                       1 s rebuild/refresh timer, overlay service (hmi_shell_overlay_open/close)
-ui/hmi_nav.c           visible page, page switch (hmi_nav_goto), tap-to-navigate, redraw request
-ui/hmi_wifi_ui.c       Wi-Fi flow + on-screen keyboard, drawn on a shell overlay
-ui/hmi_pages.c         page registry: {name, rail icon, fault badge, main bar, build, set_sub, ops}
-ui/hmi_model.c         retained-mode model: LVGL subjects over small POD views built by hmi_present (Measure, Overview, Faults, Session)
-ui/pages/page_*.c      one build function per page (page_device.h: Device tab ids)
-ui/hmi_widgets.c       absolute-positioned LVGL primitives (box, card, text, icon, chip, kv, scroll area...)
-ui/hmi_theme.c         palette (hmi_theme.h, HC_*/HF_*) and tone -> colour mapping (hmi_theme_present.h)
-ui/hmi_present.c       pure logic: text, tones, derived state. No LVGL, host-tested
+ui_app  ->  ui_core  ->  ui_assets          ui_app also -> rcc_link, hmi_settings, hmi_wifi, hmi_ota, hmi_power
+   |           |                            (services and link: see the rules below for who may call them)
+   +--------> ui_present  ->  hmi_common (rcc_types.h)
 ```
+
+| Component | Files | Role |
+|---|---|---|
+| `ui_app` | `include/hmi_ui.h` | public API (start, select page, open Wi-Fi, sim inject): thin wrappers |
+| | `src/hmi_shell.c` | chrome (rail/header/banner), action bar + confirm modal, OTA progress overlay, 1 s rebuild/refresh timer, overlay service (`hmi_shell_overlay_open/close`) |
+| | `src/hmi_nav.c` | visible page, page switch (`hmi_nav_goto`), tap-to-navigate, redraw request |
+| | `src/hmi_wifi_ui.c` | Wi-Fi flow + on-screen keyboard, drawn on a shell overlay |
+| | `src/hmi_pages.c` | page registry: `{name, rail icon, fault badge, main bar, build, set_sub, ops}` |
+| | `src/hmi_model.c` | retained-mode model: LVGL subjects over small POD views built by `hmi_present` (Measure, Overview, Faults, Session) |
+| | `src/pages/page_*.c` | one build function per page (`page_device.h`: Device tab ids) |
+| `ui_core` | `hmi_widgets.c` | absolute-positioned LVGL primitives (box, card, text, icon, chip, kv, scroll area...) |
+| | `hmi_theme.c` | palette (`hmi_theme.h`, `HC_*`/`HF_*`) and tone -> colour mapping (`hmi_theme_present.h`) |
+| `ui_present` | `hmi_present.c` | pure logic: text, tones, derived state. No LVGL, host-tested |
+| `ui_assets` | `hmi_icons.c`, `src/fonts/` | generated icons (`tools/gen_icons.py`) and fonts (`src/fonts/README.md`), declared in `hmi_icons.h` / `hmi_fonts.h` |
+
+Only `include/hmi_ui.h` of `ui_app` is visible outside the UI. The other `ui_app` headers are private (`src/`).
 
 Include edges (arrows point at what is included):
 
 - `hmi_shell` -> `hmi_pages`, `hmi_nav`, `page_device.h` (tab ids for the header taps), `hmi_widgets`, `hmi_theme_present`
 - `hmi_nav` -> `hmi_pages`, `hmi_widgets`
 - pages -> `hmi_nav` (goto, redraw), `hmi_model` (retained pages: subjects), `hmi_widgets`, `hmi_present`, `hmi_theme_present`
-- `page_device` -> also `hmi_wifi_ui` (opens the Wi-Fi flow) and the settings/backlight/Wi-Fi/OTA services (see rules)
+- `page_device` -> also `hmi_wifi_ui` (opens the Wi-Fi flow) and the settings/power/Wi-Fi/OTA services (see rules)
 - `hmi_wifi_ui` -> `hmi_shell` (overlay service only), `hmi_widgets`; it includes no page and no `hmi_nav`
-- `hmi_widgets` -> `hmi_theme` -> `lvgl`; `hmi_theme.c` -> `hmi_theme_present` -> `hmi_present` -> `rcc_link.h`
+- `hmi_widgets` -> `hmi_theme` -> `lvgl`; `hmi_theme.c` -> `hmi_theme_present` -> `hmi_present` -> `rcc_types.h`
 
-`hmi_theme.h` and `hmi_widgets.h` are LVGL-only: they do not pull in `hmi_present.h` or `rcc_link.h`.
+`hmi_theme.h` and `hmi_widgets.h` are LVGL-only: they do not pull in `hmi_present.h` or `rcc_types.h`.
 
 ## Rules
 
@@ -72,7 +79,7 @@ a zero-padded POD struct built by a pure `hp_*_view()` in `hmi_present` (text, e
 A pointer subject notifies on every set, so the model `memcmp`s the new view with the current one and only calls
 `lv_subject_set_pointer` when the bytes differ. Views are static (no heap); each subject is ~1 small heap block, created
 once with `lv_subject_create` (the `lv_subject_init_*` API is deprecated). The observer module must be on:
-`CONFIG_LV_USE_OBSERVER=y` (the Kconfig default, set in `sdkconfig.elecrow_s3`) and `LV_USE_OBSERVER 1` in `tools/sim/lv_conf.h`.
+`CONFIG_LV_USE_OBSERVER=y` (the Kconfig default, nothing to set in `sdkconfig.defaults`) and `LV_USE_OBSERVER 1` in `tools/sim/lv_conf.h`.
 
 Rules for a retained page:
 - Create objects in the same order as the old builder (z-order is part of the pixels). A region whose shape depends on
@@ -118,15 +125,15 @@ its `hp_*_view()` (with a host test), create the widget in `enter`, and set it i
 
 ## Adding a page
 
-Both kinds need one row in `ui/hmi_pages.c` (`{name, icon, fault_badge, main_bar, build, set_sub, ops}`; `NULL` for unused hooks)
+Both kinds need one row in `ui_app/src/hmi_pages.c` (`{name, icon, fault_badge, main_bar, build, set_sub, ops}`; `NULL` for unused hooks)
 and an extern next to the others. Add an id to `hmi_page_id_t` in `hmi_pages.h` only if other code navigates to the page;
 otherwise append a plain row after the designated ones. `parent`/`root` is a 408 px wide container, `ctx->height` px high.
 
-**Legacy page** (rebuilt every refresh): create `ui/pages/page_foo.c` with
+**Legacy page** (rebuilt every refresh): create `ui_app/src/pages/page_foo.c` with
 `void page_foo_build(lv_obj_t *parent, const rcc_snapshot_t *m, const hmi_page_ctx_t *ctx)` and declare it in a header
 (see `page_device.h`); registry row `{"Foo", &icon, false, false, page_foo_build, NULL, NULL}`.
 
-**Retained page** (widgets created once): create `ui/pages/page_foo.c` exporting `const hmi_page_ops_t page_foo_ops`;
+**Retained page** (widgets created once): create `ui_app/src/pages/page_foo.c` exporting `const hmi_page_ops_t page_foo_ops`;
 the registry row is `{"Foo", &icon, false, false, NULL, NULL, &page_foo_ops}` plus
 `extern const hmi_page_ops_t page_foo_ops;`. Skeleton:
 
@@ -144,10 +151,10 @@ static void leave(void) { memset(&fo, 0, sizeof(fo)); }
 const hmi_page_ops_t page_foo_ops = {.enter = enter, .leave = leave};   /* .update only for data-shaped regions */
 ```
 
-That is all for the build systems: `main/CMakeLists.txt` globs `ui/pages/page_*.c` (touch that file after adding
-a page so CMake re-runs) and the simulator Makefile globs `ui/pages/*.c`. The rail and the page switch iterate the table; the rail pitch shrinks above five pages
-(`HMI_PAGES_MAX` is 6; a seventh tab needs a scrolling or "More" rail). Files outside `ui/pages/` must still be
-listed in `main/CMakeLists.txt` and in `APPSRC` in `tools/sim/Makefile`.
+That is all for the build systems: `ui_app/CMakeLists.txt` globs `src/pages/page_*.c` (touch that file after adding
+a page so CMake re-runs) and the simulator Makefile globs every `src/*.c` of the UI components. The rail and the page switch iterate the table; the rail pitch shrinks above five pages
+(`HMI_PAGES_MAX` is 6; a seventh tab needs a scrolling or "More" rail). Other new `.c` files must still be
+listed in their component's `CMakeLists.txt` (the simulator picks them up).
 
 ## Checks
 
@@ -176,6 +183,6 @@ See `tools/sim/README.md`.
 ## LVGL Pro / XML
 
 LVGL 9.5+ removed the XML runtime, so LVGL Pro (Editor) output cannot be loaded at run time. If it is used,
-export it as C and place the result in `ui/gen/`. Never hand-edit generated files; regenerate them. Bind the
+export it as C and place the result in a `ui_app/src/gen/` directory. Never hand-edit generated files; regenerate them. Bind the
 generated widgets through the same layers: colours and fonts from `hmi_theme`, text and state from
 `hmi_present`, navigation through `hmi_nav.h`, and data via the snapshot handed to the page.
