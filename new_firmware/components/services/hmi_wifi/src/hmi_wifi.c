@@ -18,9 +18,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "nvs.h"
-#include "hmi_ota.h"
 
 static const char *TAG = "hmi_wifi";
+
+ESP_EVENT_DEFINE_BASE(HMI_WIFI_EVENT);
 
 #define NVS_NS              "hmi_wifi"
 #define CONNECT_TIMEOUT_MS  20000
@@ -38,6 +39,12 @@ static int64_t now_ms(void) { return esp_timer_get_time() / 1000; }
 static void lock(void) { xSemaphoreTake(s_lock, portMAX_DELAY); }
 static void unlock(void) { xSemaphoreGive(s_lock); }
 static void touch(void) { ++s_st.version; }
+/* Called from the event loop task: never block on the loop's own queue. */
+static void post_link_event(int32_t id)
+{
+    const esp_err_t err = esp_event_post(HMI_WIFI_EVENT, id, NULL, 0, 0);
+    if (err != ESP_OK) ESP_LOGW(TAG, "link event %d not posted: %s", (int)id, esp_err_to_name(err));
+}
 
 /* ---- credentials */
 static bool cred_load(char *ssid, size_t ssid_n, char *pass, size_t pass_n)
@@ -174,7 +181,7 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
         } else if (s_st.state == HMI_WIFI_CONNECTED) {
             s_st.state = HMI_WIFI_IDLE;
             touch();
-            (void)hmi_ota_stop_server();
+            post_link_event(HMI_WIFI_EVENT_LINK_LOST);
             if (s_auto) { s_retries = 0; ++s_st.attempt; begin_connect(s_st.ssid, s_pass); }   /* link dropped: reconnect */
         }
         break; }
@@ -200,7 +207,7 @@ static void on_ip_event(void *arg, esp_event_base_t base, int32_t id, void *data
     cred_save(s_st.ssid, s_pass);
     touch();
     unlock();
-    (void)hmi_ota_start_server();
+    post_link_event(HMI_WIFI_EVENT_CONNECTED);
 }
 
 /* ---- public API */

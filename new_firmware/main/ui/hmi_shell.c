@@ -13,7 +13,7 @@
 
 #include "esp_log.h"
 #include "esp_task_wdt.h"
-#include "hmi_backlight.h"
+#include "hmi_power.h"
 #include "hmi_config.h"
 #include "hmi_icons.h"
 #include "hmi_model.h"
@@ -404,7 +404,7 @@ static void refresh(lv_timer_t *timer)
     rcc_snapshot_t m_now;
     rcc_link_snapshot(&m_now);
     const bool in_session = hp_in_session(&m_now);
-    hmi_backlight_tick(!in_session);
+    hmi_power_tick(!in_session);
 
     update_ota_overlay();
 

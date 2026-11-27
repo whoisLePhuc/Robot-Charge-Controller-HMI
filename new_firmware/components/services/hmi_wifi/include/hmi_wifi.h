@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "esp_event_base.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -50,6 +52,16 @@ typedef struct {
     int8_t rssi;          /* link RSSI while connected */
     uint32_t version;     /* incremented on every change */
 } hmi_wifi_status_t;
+
+/* Link events on the default event loop, for modules that act on the Wi-Fi link without depending on
+ * this one (app.c starts/stops the OTA web server on them). CONNECTED: the station got an IP.
+ * LINK_LOST: an established connection dropped. Neither is posted for a user disconnect, a cancelled
+ * attempt or a failed connect. */
+ESP_EVENT_DECLARE_BASE(HMI_WIFI_EVENT);
+enum {
+    HMI_WIFI_EVENT_CONNECTED,
+    HMI_WIFI_EVENT_LINK_LOST,
+};
 
 /* Starts the station and auto-connects to the credentials saved by the last successful connection.
  * Needs NVS (hmi_settings_init) and enough free internal RAM; returns false on failure (UI shows unavailable). */

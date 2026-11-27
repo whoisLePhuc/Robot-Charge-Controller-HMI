@@ -1,4 +1,4 @@
-/* LEDC PWM backlight driver. The dim/sleep policy that decides the duty is hmi_backlight (services). */
+/* LEDC PWM backlight driver. The dim/sleep policy that decides the duty is hmi_power (services). */
 #include "bsp_elecrow_s3.h"
 
 #include <inttypes.h>

@@ -6,14 +6,12 @@ idf_component_register(
     SRCS "bringup/elecrow_s3_main.c"
          "hmi_ui.c" "hmi_icons.c" "ui/hmi_theme.c" "ui/hmi_present.c" "ui/hmi_model.c"
          "ui/hmi_widgets.c" "ui/hmi_nav.c" "ui/hmi_shell.c" "ui/hmi_wifi_ui.c" "ui/hmi_pages.c" ${PAGE_SRCS}
-         "hmi_settings.c" "hmi_backlight.c" "hmi_wifi.c" "hmi_ota.c"
          "hmi_fonts/hmi_f10.c" "hmi_fonts/hmi_f12.c" "hmi_fonts/hmi_f12b.c" "hmi_fonts/hmi_f14b.c"
          "hmi_fonts/hmi_f16b.c" "hmi_fonts/hmi_f22b.c" "hmi_fonts/hmi_f28b.c"
          "hmi_fonts/hmi_hero28.c"
     INCLUDE_DIRS "." "ui"
     REQUIRES esp_psram spi_flash esp_system heap log freertos
-             esp_timer esp_lvgl_port nvs_flash
-             esp_wifi esp_netif esp_event app_update esp_http_server
-             hmi_common rcc_link bsp_elecrow_s3
+             esp_timer esp_lvgl_port esp_event
+             hmi_common rcc_link bsp_elecrow_s3 hmi_settings hmi_wifi hmi_ota hmi_power
 )
 target_compile_options(${COMPONENT_LIB} PRIVATE -Wall -Wextra -Werror)

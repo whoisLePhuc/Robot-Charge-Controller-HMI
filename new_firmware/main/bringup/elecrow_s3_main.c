@@ -2,6 +2,7 @@
 #include <inttypes.h>
 
 #include "esp_err.h"
+#include "esp_event.h"
 #include "esp_flash.h"
 #include "esp_heap_caps.h"
 #include "esp_log.h"
@@ -12,7 +13,7 @@
 #include "freertos/task.h"
 #include "esp_lvgl_port.h"
 #include "bsp_elecrow_s3.h"
-#include "hmi_backlight.h"
+#include "hmi_power.h"
 #include "hmi_config.h"
 #include "hmi_settings.h"
 #include "hmi_wifi.h"
@@ -21,6 +22,14 @@
 #include "rcc_link.h"
 
 static const char *TAG = "elecrow_s3";
+
+/* Wi-Fi link -> OTA web server: the server runs while the station has an IP. */
+static void on_wifi_link(void *arg, esp_event_base_t base, int32_t id, void *data)
+{
+    (void)arg; (void)base; (void)data;
+    if (id == HMI_WIFI_EVENT_CONNECTED) (void)hmi_ota_start_server();
+    else if (id == HMI_WIFI_EVENT_LINK_LOST) hmi_ota_stop_server();
+}
 
 static const char *reset_reason_name(esp_reset_reason_t r)
 {
@@ -73,6 +82,10 @@ void app_main(void)
     /* Initialize NVS and load persistent configuration */
     ESP_ERROR_CHECK(hmi_settings_init());
     ESP_ERROR_CHECK(hmi_ota_init());
+    /* The default loop must exist before the handler is registered; hmi_wifi_init() accepts an existing one. */
+    const esp_err_t loop_err = esp_event_loop_create_default();
+    if (loop_err != ESP_ERR_INVALID_STATE) ESP_ERROR_CHECK(loop_err);
+    ESP_ERROR_CHECK(esp_event_handler_register(HMI_WIFI_EVENT, ESP_EVENT_ANY_ID, on_wifi_link, NULL));
     if (!hmi_wifi_init()) ESP_LOGW(TAG, "Wi-Fi unavailable; the Wi-Fi screens will say so");
 
     /* Board: backlight at its floor, LCD, LVGL port. Then link, UI and touch under one LVGL lock. */
@@ -84,14 +97,14 @@ void app_main(void)
         ESP_LOGE(TAG, "rcc_link_start failed: %s", esp_err_to_name(link_err));
     }
     hmi_ui_start(link_err == ESP_OK);
-    const esp_err_t touch_err = bsp_touch_start(display, hmi_backlight_on_touch);
+    const esp_err_t touch_err = bsp_touch_start(display, hmi_power_on_touch);
     if (touch_err != ESP_OK) {
         ESP_LOGE(TAG, "Touch init failed: %s", esp_err_to_name(touch_err));
     }
     /* The LVGL task owns rendering; do not render on the initialization stack. */
     lv_obj_invalidate(lv_display_get_screen_active(display));
     lvgl_port_unlock();
-    hmi_backlight_start();
+    hmi_power_start();
     ESP_LOGI(TAG, "Five-page HMI ready; controller link started on UART1 (TX=GPIO43, RX=GPIO44).");
 
     /* Confirm running firmware image and cancel rollback */

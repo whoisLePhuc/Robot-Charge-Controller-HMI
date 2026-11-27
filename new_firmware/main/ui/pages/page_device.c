@@ -4,7 +4,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 
-#include "hmi_backlight.h"
+#include "hmi_power.h"
 #include "hmi_config.h"
 #include "hmi_icons.h"
 #include "hmi_nav.h"
@@ -34,7 +34,7 @@ static void tab_click(lv_event_t *e)
 
 static void set_brightness_cb(lv_event_t *e)
 {
-    hmi_backlight_set_brightness((uint8_t)(uintptr_t)lv_event_get_user_data(e));
+    hmi_power_set_brightness((uint8_t)(uintptr_t)lv_event_get_user_data(e));
     hmi_nav_request_redraw();
 }
 
