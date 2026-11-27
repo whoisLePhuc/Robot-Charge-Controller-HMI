@@ -288,6 +288,11 @@ void hp_bar_spec(const rcc_snapshot_t *m, bool is_overview, hp_bar_spec_t *b)
             b->button = hp_start_allowed(m) ? HP_B_START : HP_B_NONE; break;
         case RCC_COMMAND_REJECTED:
             b->title_kind = HP_K_WARN;
+            if (m->command_reason == 0x0007) {   /* QUEUE_FULL: for a STOP the controller still acted (ICD STOP ledger full) */
+                snprintf(b->title, sizeof(b->title), "Stop took effect, not tracked");
+                snprintf(b->sub, sizeof(b->sub), "Send STOP again");
+                break;
+            }
             snprintf(b->title, sizeof(b->title), "STOP rejected");
             snprintf(b->sub, sizeof(b->sub), "%s", hp_reason_text(m->command_reason, rb, sizeof(rb))); break;
         case RCC_COMMAND_FAILED:
