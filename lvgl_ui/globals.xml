@@ -1,0 +1,51 @@
+<globals>
+  <fonts>
+    <bin name="hmi_f10" size="10" src_path="fonts/hmi/montserrat-600-normal.ttf" bpp="4" range="0x20-0x7E,0xB0,0xB7,0x2014,0x2022,0x2026,0x2212,0xB1,0x2264,0x2192,0x1EBF,0x1EC7" as_file="false" />
+    <bin name="hmi_f12" size="12" src_path="fonts/hmi/montserrat-500-normal.ttf" bpp="4" range="0x20-0x7E,0xB0,0xB7,0x2014,0x2022,0x2026,0x2212,0x2264,0x2192" as_file="false" />
+    <bin name="hmi_f12b" size="12" src_path="fonts/hmi/montserrat-700-normal.ttf" bpp="4" range="0x20-0x7E,0xB0,0xB7,0x2014,0x2022,0x2026,0x2212,0x2264,0x2192" as_file="false" />
+    <bin name="hmi_f14b" size="14" src_path="fonts/hmi/montserrat-700-normal.ttf" bpp="4" range="0x20-0x7E,0xB0,0xB7,0x2014,0x2022,0x2026,0x2212,0x2264,0x2192" as_file="false" />
+    <bin name="hmi_f16b" size="16" src_path="fonts/hmi/montserrat-800-normal.ttf" bpp="4" range="0x20-0x7E,0xB0,0xB7,0x2014,0x2022,0x2026,0x2212,0x2264" as_file="false" />
+    <bin name="hmi_f22b" size="22" src_path="fonts/hmi/montserrat-800-normal.ttf" bpp="4" range="0x20,0x2D,0x2E,0x30-0x39,0x2014,0x2212,0x2264" as_file="false" />
+    <bin name="hmi_f28b" size="28" src_path="fonts/hmi/montserrat-800-normal.ttf" bpp="4" range="0x20,0x2D,0x2E,0x30-0x39,0x2014,0x2212,0x2264" as_file="false" />
+    <bin name="hmi_hero28" size="28" src_path="fonts/hmi/montserrat-900-italic.ttf" bpp="4" range="0x20,0x2D,0x41-0x5A,0x5F" as_file="false" />
+  </fonts>
+  <images>
+    <data name="hmi_icon_home_19" color_format="a8" src_path="images/hmi/hmi_icon_home_19.png" />
+    <data name="hmi_icon_gauge_19" color_format="a8" src_path="images/hmi/hmi_icon_gauge_19.png" />
+    <data name="hmi_icon_list_19" color_format="a8" src_path="images/hmi/hmi_icon_list_19.png" />
+    <data name="hmi_icon_chip_19" color_format="a8" src_path="images/hmi/hmi_icon_chip_19.png" />
+    <data name="hmi_icon_warn_12" color_format="a8" src_path="images/hmi/hmi_icon_warn_12.png" />
+    <data name="hmi_icon_warn_13" color_format="a8" src_path="images/hmi/hmi_icon_warn_13.png" />
+    <data name="hmi_icon_warn_14" color_format="a8" src_path="images/hmi/hmi_icon_warn_14.png" />
+    <data name="hmi_icon_warn_15" color_format="a8" src_path="images/hmi/hmi_icon_warn_15.png" />
+    <data name="hmi_icon_warn_16" color_format="a8" src_path="images/hmi/hmi_icon_warn_16.png" />
+    <data name="hmi_icon_warn_18" color_format="a8" src_path="images/hmi/hmi_icon_warn_18.png" />
+    <data name="hmi_icon_warn_19" color_format="a8" src_path="images/hmi/hmi_icon_warn_19.png" />
+    <data name="hmi_icon_warn_20" color_format="a8" src_path="images/hmi/hmi_icon_warn_20.png" />
+    <data name="hmi_icon_checkc_15" color_format="a8" src_path="images/hmi/hmi_icon_checkc_15.png" />
+    <data name="hmi_icon_checkc_18" color_format="a8" src_path="images/hmi/hmi_icon_checkc_18.png" />
+    <data name="hmi_icon_check_11" color_format="a8" src_path="images/hmi/hmi_icon_check_11.png" />
+    <data name="hmi_icon_check_12" color_format="a8" src_path="images/hmi/hmi_icon_check_12.png" />
+    <data name="hmi_icon_cross_10" color_format="a8" src_path="images/hmi/hmi_icon_cross_10.png" />
+    <data name="hmi_icon_relay_13" color_format="a8" src_path="images/hmi/hmi_icon_relay_13.png" />
+    <data name="hmi_icon_link_13" color_format="a8" src_path="images/hmi/hmi_icon_link_13.png" />
+    <data name="hmi_icon_clock_13" color_format="a8" src_path="images/hmi/hmi_icon_clock_13.png" />
+    <data name="hmi_icon_chev_10" color_format="a8" src_path="images/hmi/hmi_icon_chev_10.png" />
+    <data name="hmi_icon_bolt_13" color_format="a8" src_path="images/hmi/hmi_icon_bolt_13.png" />
+    <data name="hmi_icon_wave_13" color_format="a8" src_path="images/hmi/hmi_icon_wave_13.png" />
+    <data name="hmi_icon_power_13" color_format="a8" src_path="images/hmi/hmi_icon_power_13.png" />
+    <data name="hmi_icon_stop_16" color_format="a8" src_path="images/hmi/hmi_icon_stop_16.png" />
+    <data name="hmi_icon_play_16" color_format="a8" src_path="images/hmi/hmi_icon_play_16.png" />
+    <data name="hmi_icon_spin_16" color_format="a8" src_path="images/hmi/hmi_icon_spin_16.png" />
+    <data name="hmi_icon_spin_44" color_format="a8" src_path="images/hmi/hmi_icon_spin_44.png" />
+    <data name="hmi_icon_refresh_11" color_format="a8" src_path="images/hmi/hmi_icon_refresh_11.png" />
+    <data name="hmi_icon_back_14" color_format="a8" src_path="images/hmi/hmi_icon_back_14.png" />
+    <data name="hmi_icon_lock_11" color_format="a8" src_path="images/hmi/hmi_icon_lock_11.png" />
+    <data name="hmi_icon_shift_14" color_format="a8" src_path="images/hmi/hmi_icon_shift_14.png" />
+    <data name="hmi_icon_bksp_16" color_format="a8" src_path="images/hmi/hmi_icon_bksp_16.png" />
+    <data name="hmi_icon_eye_14" color_format="a8" src_path="images/hmi/hmi_icon_eye_14.png" />
+    <data name="hmi_icon_eyeoff_14" color_format="a8" src_path="images/hmi/hmi_icon_eyeoff_14.png" />
+    <data name="hmi_icon_wifi_13" color_format="a8" src_path="images/hmi/hmi_icon_wifi_13.png" />
+    <data name="hmi_icon_wifi_22" color_format="a8" src_path="images/hmi/hmi_icon_wifi_22.png" />
+  </images>
+</globals>

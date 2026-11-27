@@ -1,0 +1,12 @@
+<component>
+  <api>
+    <prop name="column_x" type="int" default="13" />
+    <prop name="row_y" type="int" default="0" />
+    <prop name="column_width" type="int" default="150" />
+    <prop name="row_text" type="string" default="IOUT_OVERCURRENT" />
+    <prop name="row_color" type="color" default="0xf8fafc" />
+    <prop name="row_alignment" type="enum:lv_text_align" default="left" />
+    <prop name="caption_font" type="font" default="hmi_f10" />
+  </api>
+  <view x="$column_x" y="{row_y + 2}" text="$row_text" style_text_font="$caption_font" style_text_color="$row_color" clickable="false" scrollable="false" width="$column_width" height="13" long_mode="dots" style_text_align="$row_alignment" extends="lv_label" />
+</component>

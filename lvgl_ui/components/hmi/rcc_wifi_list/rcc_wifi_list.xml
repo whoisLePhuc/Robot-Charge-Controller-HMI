@@ -1,0 +1,26 @@
+<component>
+  <api>
+    <prop name="caption_font" type="font" default="hmi_f10" />
+    <prop name="detail_font" type="font" default="hmi_f12" />
+    <prop name="refresh_icon" type="image" default="hmi_icon_refresh_11" />
+    <slot name="networks" />
+  </api>
+  <view extends="lv_obj" width="480" height="320" clickable="false" scrollable="false" style_bg_opa="0%" style_pad_all="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_radius="0">
+    <lv_button x="400" y="10" width="72" height="26" clickable="true" style_radius="8" style_border_width="1" style_bg_opa="100%" style_bg_color="0x0c2538" style_border_color="0x1e4963" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0" name="scan" style_bg_opa-pressed="70%">
+      <lv_label x="28" y="6" width="32" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x38bdf8" scrollable="false" text="SCAN" long_mode="wrap" style_text_align="left" style_text_letter_space="1" />
+      <lv_image x="11" y="7" width="11" height="11" clickable="false" scrollable="false" src="$refresh_icon" style_image_recolor="0x38bdf8" style_image_recolor_opa="100%" />
+    </lv_button>
+    <lv_obj x="8" y="46" width="464" height="26" clickable="false" style_radius="8" style_border_width="1" style_bg_opa="100%" style_bg_color="0x0a2617" style_border_color="0x22c55e" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0" name="status">
+      <lv_obj x="10" y="10" width="6" height="6" clickable="false" style_radius="3" style_border_width="0" style_bg_opa="100%" style_bg_color="0x22c55e" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" name="status_dot" />
+      <lv_label x="24" y="6" width="69" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0xcbd5e1" scrollable="false" text="Connected to" long_mode="wrap" style_text_align="left" name="status_text" />
+      <lv_label x="98" y="6" width="200" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0xf8fafc" scrollable="false" text="MSVN-Lab-5G" long_mode="dots" style_text_align="left" name="status_ssid" />
+      <lv_button x="360" y="0" width="104" height="26" clickable="true" style_radius="8" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" name="disconnect">
+        <lv_label x="0" y="6" width="94" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" scrollable="false" text="DISCONNECT" long_mode="dots" style_text_align="right" style_text_letter_space="1" />
+      </lv_button>
+    </lv_obj>
+    <lv_obj x="8" y="78" width="464" height="214" clickable="true" style_radius="0" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="true" scrollbar_mode="auto" style_shadow_width="0" style_outline_width="0" name="networks" style_bg_color-scrollbar="0x64748b" style_bg_opa-scrollbar="100%" style_width-scrollbar="3" style_radius-scrollbar="2" style_pad_right-scrollbar="1">
+        </lv_obj>
+    <lv_label x="0" y="299" width="480" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x64748b" scrollable="false" text="Drag to scroll · tap a network to connect" long_mode="dots" style_text_align="center" name="list_tip" />
+    <lv_label name="empty_hint" text="No networks found - tap SCAN" clickable="false" scrollable="false" x="0" y="151" width="480" height="content" style_text_font="$detail_font" style_text_color="0x94a3b8" style_text_align="center" hidden="true" />
+  </view>
+</component>

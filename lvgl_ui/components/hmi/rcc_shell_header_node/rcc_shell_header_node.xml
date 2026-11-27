@@ -1,0 +1,9 @@
+<component>
+  <api>
+    <prop name="font" type="font" default="hmi_f12b" />
+  </api>
+  <view x="64" y="4" width="110" height="24" scrollable="false" clickable="true" style_pad_all="0" style_bg_color="0x090d14" style_bg_opa="0%" style_radius="6" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_bg_opa-pressed="178" extends="lv_button">
+    <lv_label x="0" y="5" text="NODE" scrollable="false" clickable="false" style_text_font="$font" style_text_color="0x94a3b8" style_text_align="left" style_text_letter_space="1" name="node_prefix" />
+    <lv_label x="49" y="5" text="RCC-01" scrollable="false" clickable="false" style_text_font="$font" style_text_color="0xcbd5e1" style_text_align="left" style_text_letter_space="1" name="node_name" />
+  </view>
+</component>

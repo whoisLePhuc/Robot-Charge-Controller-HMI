@@ -1,0 +1,25 @@
+<component>
+  <api>
+    <prop name="card_x" type="int" default="0" />
+    <prop name="title" type="string" default="VOUT" />
+    <prop name="limit" type="string" default="· ≤60V" />
+    <prop name="unit" type="string" default="V" />
+    <prop name="hue" type="color" default="0xfbbf24" />
+    <prop name="limit_x" type="int" default="51" />
+    <prop name="reading" type="string" default="48.2" />
+    <prop name="filtered" type="string" default="Filtered 48.1 V" />
+    <prop name="unit_x" type="int" default="81" />
+    <prop name="small" type="font" default="hmi_f10" />
+    <prop name="reading_font" type="font" default="hmi_f28b" />
+    <prop name="unit_font" type="font" default="hmi_f14b" />
+  </api>
+  <view extends="lv_obj" scrollable="false" clickable="false" x="$card_x" y="0" width="200" height="76" style_bg_color="0x111722" style_bg_opa="100%" style_radius="10" style_border_width="1" style_border_color="0x1e293b" style_border_opa="100%" style_outline_width="0" style_shadow_width="0" style_pad_all="-1">
+    <lv_label x="13" y="8" text="$title" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x94a3b8" style_text_letter_space="1" name="channel_title" />
+    <lv_label x="$limit_x" y="8" text="$limit" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x64748b" name="channel_limit" />
+    <lv_obj x="141" y="7" width="46" height="17" clickable="false" scrollable="false" style_bg_color="0x172030" style_bg_opa="100%" style_radius="6" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="channel_badge" />
+    <lv_label x="148" y="9" text="VALID" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x22c55e" name="channel_status" />
+    <lv_label x="13" y="29" text="$reading" scrollable="false" clickable="false" style_text_font="$reading_font" style_text_color="$hue" name="channel_value" />
+    <lv_label x="$unit_x" y="33" text="$unit" scrollable="false" clickable="false" style_text_font="$unit_font" style_text_color="0x94a3b8" name="channel_unit" />
+    <lv_label x="13" y="56" text="$filtered" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0xcbd5e1" width="174" height="13" long_mode="dots" style_text_align="left" name="channel_filtered" />
+  </view>
+</component>

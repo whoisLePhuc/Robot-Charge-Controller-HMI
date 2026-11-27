@@ -1,0 +1,54 @@
+<component>
+  <api>
+    <prop name="symbols" type="bool" default="false" />
+    <prop name="shifted" type="bool" default="false" />
+    <prop name="count_text" type="string" default="0 / 63" />
+    <prop name="toggle_text" type="string" default="?123" />
+    <prop name="caption_font" type="font" default="hmi_f10" />
+    <prop name="data_font" type="font" default="hmi_f12b" />
+    <prop name="eye_icon" type="image" default="hmi_icon_eye_14" />
+    <prop name="shift_icon" type="image" default="hmi_icon_shift_14" />
+    <prop name="erase_icon" type="image" default="hmi_icon_bksp_16" />
+    <slot name="password_field" />
+    <slot name="password_eye_icon" />
+    <slot name="key_symbols" />
+    <slot name="key_go" />
+    <slot name="key_go_label" />
+  </api>
+  <view extends="lv_obj" width="480" height="320" clickable="false" scrollable="false" style_bg_opa="0%" style_pad_all="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_radius="0">
+    <lv_label x="8" y="46" width="68" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" scrollable="false" text="PASSWORD" long_mode="wrap" style_text_align="left" style_text_letter_space="1" />
+    <lv_label x="372" y="46" width="100" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x64748b" scrollable="false" text="$count_text" long_mode="dots" style_text_align="right" name="password_count" />
+    <lv_obj x="8" y="62" width="464" height="34" clickable="false" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="0x111722" style_border_color="0x38bdf8" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0">
+      <lv_obj x="0" y="0" width="440" height="34" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" name="password_field">
+          </lv_obj>
+      <lv_button x="420" y="0" width="44" height="34" clickable="true" style_radius="10" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" name="password_eye">
+        <lv_image x="15" y="10" width="14" height="14" clickable="false" scrollable="false" src="$eye_icon" style_image_recolor="0x94a3b8" style_image_recolor_opa="100%" name="password_eye_icon" />
+      </lv_button>
+    </lv_obj>
+    <lv_buttonmatrix name="matrix_0" x="4" y="112" width="472" height="38" map="'1' '2' '3' '4' '5' '6' '7' '8' '9' '0'" scrollable="false" style_bg_opa="0%" style_border_width="0" style_pad_all="0" style_pad_gap="3" style_radius="0" style_outline_width="0" style_shadow_width="0" style_bg_color-items="0x172030" style_bg_opa-items="100%" style_radius-items="6" style_border_width-items="1" style_border_color-items="0x1e293b" style_text_font-items="$data_font" style_text_color-items="0xcbd5e1" style_bg_opa-items-pressed="70%" style_shadow_width-items="0" />
+    <lv_buttonmatrix name="matrix_1" x="4" y="153" width="472" height="38" map="'q' 'w' 'e' 'r' 't' 'y' 'u' 'i' 'o' 'p'" scrollable="false" style_bg_opa="0%" style_border_width="0" style_pad_all="0" style_pad_gap="3" style_radius="0" style_outline_width="0" style_shadow_width="0" style_bg_color-items="0x172030" style_bg_opa-items="100%" style_radius-items="6" style_border_width-items="1" style_border_color-items="0x1e293b" style_text_font-items="$data_font" style_text_color-items="0xcbd5e1" style_bg_opa-items-pressed="70%" style_shadow_width-items="0" />
+    <lv_buttonmatrix name="matrix_2" x="4" y="194" width="472" height="38" map="'a' 's' 'd' 'f' 'g' 'h' 'j' 'k' 'l'" scrollable="false" style_bg_opa="0%" style_border_width="0" style_pad_all="0" style_pad_gap="3" style_radius="0" style_outline_width="0" style_shadow_width="0" style_bg_color-items="0x172030" style_bg_opa-items="100%" style_radius-items="6" style_border_width-items="1" style_border_color-items="0x1e293b" style_text_font-items="$data_font" style_text_color-items="0xcbd5e1" style_bg_opa-items-pressed="70%" style_shadow_width-items="0" />
+    <lv_buttonmatrix name="matrix_3" x="74" y="235" width="{symbols ? 44 : 331}" height="38" map="'z' 'x' 'c' 'v' 'b' 'n' 'm'" scrollable="false" style_bg_opa="0%" style_border_width="0" style_pad_all="0" style_pad_gap="3" style_radius="0" style_outline_width="0" style_shadow_width="0" style_bg_color-items="0x172030" style_bg_opa-items="100%" style_radius-items="6" style_border_width-items="1" style_border_color-items="0x1e293b" style_text_font-items="$data_font" style_text_color-items="0xcbd5e1" style_bg_opa-items-pressed="70%" style_shadow_width-items="0" />
+    <lv_button x="4" y="235" width="67" height="38" clickable="true" style_radius="6" style_border_width="1" style_bg_opa="100%" style_bg_color="{shifted ? 0x0c2538 : 0x172030}" style_border_color="{shifted ? 0x38bdf8 : 0x1e293b}" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0" name="key_shift" style_bg_opa-pressed="70%">
+      <lv_image x="26" y="12" width="14" height="14" clickable="false" scrollable="false" src="$shift_icon" style_image_recolor="0x94a3b8" style_image_recolor_opa="100%" name="shift_image" />
+    </lv_button>
+    <lv_button x="409" y="235" width="67" height="38" clickable="true" style_radius="6" style_border_width="1" style_bg_opa="100%" style_bg_color="0x172030" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0" name="key_erase" style_bg_opa-pressed="70%">
+      <lv_image x="25" y="11" width="16" height="16" clickable="false" scrollable="false" src="$erase_icon" style_image_recolor="0x94a3b8" style_image_recolor_opa="100%" />
+    </lv_button>
+    <lv_button x="4" y="276" width="69" height="38" clickable="true" style_radius="6" style_border_width="1" style_bg_opa="100%" style_bg_color="0x172030" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0" name="key_symbols" style_bg_opa-pressed="70%">
+      <lv_label x="0" y="12" width="69" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" scrollable="false" text="$toggle_text" long_mode="wrap" style_text_align="center" />
+    </lv_button>
+    <lv_button x="76" y="276" width="43" height="38" clickable="true" style_radius="6" style_border_width="1" style_bg_opa="100%" style_bg_color="0x172030" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0" name="key_comma" style_bg_opa-pressed="70%">
+      <lv_label x="0" y="12" width="43" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xcbd5e1" scrollable="false" text="," long_mode="wrap" style_text_align="center" />
+    </lv_button>
+    <lv_button x="122" y="276" width="200" height="38" clickable="true" style_radius="6" style_border_width="1" style_bg_opa="100%" style_bg_color="0x172030" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0" name="key_space" style_bg_opa-pressed="70%">
+      <lv_label x="0" y="12" width="200" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x64748b" scrollable="false" text="space" long_mode="wrap" style_text_align="center" />
+    </lv_button>
+    <lv_button x="325" y="276" width="43" height="38" clickable="true" style_radius="6" style_border_width="1" style_bg_opa="100%" style_bg_color="0x172030" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0" name="key_period" style_bg_opa-pressed="70%">
+      <lv_label x="0" y="12" width="43" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xcbd5e1" scrollable="false" text="." long_mode="wrap" style_text_align="center" />
+    </lv_button>
+    <lv_button x="371" y="276" width="105" height="38" clickable="true" style_radius="6" style_border_width="1" style_bg_opa="100%" style_bg_color="0x172030" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0" name="key_go" style_bg_opa-pressed="70%">
+      <lv_label x="0" y="12" width="105" height="13" clickable="false" style_text_font="$data_font" style_text_color="0x64748b" scrollable="false" text="Connect" long_mode="wrap" style_text_align="center" name="key_go_label" />
+    </lv_button>
+  </view>
+</component>

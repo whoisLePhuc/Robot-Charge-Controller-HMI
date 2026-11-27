@@ -1,0 +1,31 @@
+<component>
+  <api>
+    <prop name="card_x" type="int" default="164" />
+    <prop name="card_y" type="int" default="80" />
+    <prop name="card_height" type="int" default="150" />
+    <prop name="title" type="string" default="VOLT" />
+    <prop name="unit" type="string" default="V" />
+    <prop name="accent" type="color" default="0xfbbf24" />
+    <prop name="reading" type="string" default="48.2" />
+    <prop name="summary" type="string" default="80%/60V" />
+    <prop name="fill_width" type="int" default="47" />
+    <prop name="unit_x" type="int" default="60" />
+    <prop name="value_color" type="color" default="0xf8fafc" />
+    <prop name="hide_unit" type="bool" default="false" />
+    <prop name="hide_fill" type="bool" default="false" />
+    <prop name="caption_font" type="font" default="hmi_f10" />
+    <prop name="value_font" type="font" default="hmi_f22b" />
+    <prop name="unit_font" type="font" default="hmi_f12b" />
+    <prop name="card_icon" type="image" default="hmi_icon_bolt_13" />
+  </api>
+  <view extends="lv_obj" scrollable="false" clickable="true" x="$card_x" y="$card_y" width="77" height="$card_height" style_border_color-pressed="0x334155" style_bg_color="0x111722" style_bg_opa="100%" style_radius="10" style_border_width="1" style_border_color="0x1e293b" style_border_opa="100%" style_outline_width="0" style_shadow_width="0" style_pad_all="-1">
+    <lv_label x="9" y="8" text="$title" scrollable="false" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" />
+    <lv_image x="55" y="8" src="$card_icon" clickable="false" scrollable="false" style_image_recolor="$accent" style_image_recolor_opa="100%" name="voltage_icon" />
+    <lv_label x="9" y="{28 + (card_height - 74) / 3}" text="$reading" scrollable="false" clickable="false" style_text_font="$value_font" style_text_color="$value_color" name="voltage_value" />
+    <lv_label x="$unit_x" y="{29 + (card_height - 74) / 3}" text="$unit" scrollable="false" clickable="false" style_text_font="$unit_font" style_text_color="0x94a3b8" hidden="$hide_unit" name="voltage_unit" />
+    <lv_obj x="9" y="{48 + 2 * ((card_height - 74) / 3)}" width="59" height="5" clickable="false" scrollable="false" style_bg_color="0x172030" style_bg_opa="100%" style_radius="3" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="voltage_track" />
+    <lv_obj x="9" y="{48 + 2 * ((card_height - 74) / 3)}" width="$fill_width" height="5" clickable="false" scrollable="false" style_bg_color="$accent" style_bg_opa="100%" style_radius="3" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="voltage_fill" hidden="$hide_fill" />
+    <lv_obj x="56" y="{48 + 2 * ((card_height - 74) / 3)}" width="2" height="5" clickable="false" scrollable="false" style_bg_color="0xffffff" style_bg_opa="115" style_radius="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" />
+    <lv_label x="9" y="{card_height - 21}" text="$summary" scrollable="false" clickable="false" style_text_font="$caption_font" style_text_color="0x64748b" width="59" height="13" long_mode="dots" style_text_align="left" name="voltage_caption" />
+  </view>
+</component>

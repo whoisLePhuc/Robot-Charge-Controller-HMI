@@ -1,0 +1,14 @@
+<screen>
+  <view style_bg_color="0x090d14" style_bg_opa="100%" style_pad_all="0" style_border_width="0" scrollable="false">
+    <rcc_wifi_header heading="Wi-Fi" subtitle="Connected">
+      <rcc_wifi_header-back>
+        <lv_obj-screen_create_event screen="hmi_wifi_list" trigger="clicked" />
+      </rcc_wifi_header-back>
+    </rcc_wifi_header>
+    <rcc_wifi_info connected_ssid="MSVN-Lab-5G" ip_address="192.168.1.42" gateway="192.168.1.1" signal_text="-48 dBm · Excellent" mac_address="A4:CF:12:9B:3E:70" ota_title="WEB OTA" ota_value="Locked" slot_text=" (Target: )" ota_button_text="ENABLE OTA" ota_armed="false">
+      <rcc_wifi_info-done>
+        <lv_obj-screen_create_event screen="hmi_device_settings" trigger="clicked" />
+      </rcc_wifi_info-done>
+    </rcc_wifi_info>
+  </view>
+</screen>

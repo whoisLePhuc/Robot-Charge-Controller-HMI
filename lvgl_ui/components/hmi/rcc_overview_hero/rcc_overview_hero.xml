@@ -1,0 +1,17 @@
+<component>
+  <api>
+    <prop name="card_height" type="int" default="74" />
+    <prop name="heading" type="font" default="hmi_hero28" />
+    <prop name="small" type="font" default="hmi_f10" />
+    <prop name="state_text" type="string" default="CHARGING" />
+    <prop name="sub_text" type="string" default="OPERATIONAL · SESSION #17" />
+    <prop name="summary_x" type="int" default="186" />
+    <slot name="steps" />
+  </api>
+  <view extends="lv_obj" scrollable="false" clickable="false" x="0" y="0" width="408" height="$card_height" style_bg_color="0x111722" style_bg_opa="100%" style_radius="10" style_border_width="1" style_border_color="0x1e293b" style_border_opa="100%" style_outline_width="0" style_shadow_width="0" style_pad_all="-1">
+    <lv_label x="13" y="12" text="$state_text" scrollable="false" clickable="false" style_text_font="$heading" style_text_color="0xffffff" name="state" />
+    <lv_label x="$summary_x" y="22" text="$sub_text" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x94a3b8" width="{395 - summary_x}" height="13" long_mode="dots" style_text_align="right" name="summary" />
+    <lv_obj x="13" y="42" width="382" height="1" clickable="false" scrollable="false" style_bg_color="0x1e293b" style_bg_opa="100%" style_radius="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" />
+    <lv_obj name="steps" x="0" y="0" width="408" height="$card_height" scrollable="false" clickable="false" style_bg_opa="0%" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" />
+  </view>
+</component>

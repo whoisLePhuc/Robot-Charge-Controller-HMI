@@ -1,0 +1,37 @@
+<component>
+  <api>
+    <prop name="card_height" type="int" default="162" />
+    <prop name="caption_font" type="font" default="hmi_f10" />
+    <prop name="body_font" type="font" default="hmi_f12" />
+    <prop name="value_font" type="font" default="hmi_f12b" />
+    <prop name="title_font" type="font" default="hmi_f14b" />
+  </api>
+  <view x="0" y="68" width="408" height="$card_height" clickable="false" scrollable="false" style_bg_color="0x000000" style_bg_opa="0%" style_radius="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" extends="lv_obj">
+    <lv_obj x="0" y="0" width="233" height="$card_height" clickable="false" scrollable="false" style_bg_color="0x111722" style_bg_opa="100%" style_radius="10" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_pad_all="-1" style_border_color="0x1e293b" style_border_opa="100%">
+      <lv_obj x="13" y="14" width="7" height="7" clickable="false" scrollable="false" style_bg_color="0x22c55e" style_bg_opa="100%" style_radius="4" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="device_comm_dot" />
+      <lv_label x="26" y="9" text="ONLINE" style_text_font="$title_font" style_text_color="0x22c55e" clickable="false" scrollable="false" width="80" height="16" long_mode="dots" style_text_align="left" name="device_comm_state" />
+      <lv_label x="110" y="10" text="Reply 0.4 s ago" style_text_font="$caption_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="110" height="13" long_mode="dots" style_text_align="right" name="device_comm_reply" />
+      <lv_label x="13" y="{card_height - 61 + 1}" text="Timeouts" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="98" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="16" y="{card_height - 61 + 2}" text="0" style_text_font="$value_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="96" height="13" long_mode="dots" style_text_align="right" name="device_timeouts" />
+      <lv_label x="13" y="{card_height - 43 + 1}" text="Bad frames" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="98" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="16" y="{card_height - 43 + 2}" text="0" style_text_font="$value_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="96" height="13" long_mode="dots" style_text_align="right" name="device_bad_frames" />
+      <lv_label x="13" y="{card_height - 25 + 1}" text="Missed ev." style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="98" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="16" y="{card_height - 25 + 2}" text="3" style_text_font="$value_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="96" height="13" long_mode="dots" style_text_align="right" name="device_missed" />
+      <lv_label x="122" y="{card_height - 61 + 1}" text="Status age" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="98" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="125" y="{card_height - 61 + 2}" text="0.4 s" style_text_font="$value_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="96" height="13" long_mode="dots" style_text_align="right" name="device_status_age" />
+      <lv_label x="122" y="{card_height - 43 + 1}" text="Meas. age" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="98" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="125" y="{card_height - 43 + 2}" text="0.4 s" style_text_font="$value_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="96" height="13" long_mode="dots" style_text_align="right" name="device_measure_age" />
+      <lv_label x="122" y="{card_height - 25 + 1}" text="Fault age" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="98" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="125" y="{card_height - 25 + 2}" text="0.8 s" style_text_font="$value_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="96" height="13" long_mode="dots" style_text_align="right" name="device_fault_age" />
+    </lv_obj>
+    <lv_obj x="241" y="0" width="167" height="$card_height" clickable="false" scrollable="false" style_bg_color="0x111722" style_bg_opa="100%" style_radius="10" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_pad_all="-1" style_border_color="0x1e293b" style_border_opa="100%">
+      <lv_label x="13" y="8" text="HMI PORT" style_text_font="$caption_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" style_text_letter_space="1" />
+      <lv_label x="13" y="{23 + 1 * ((card_height - 84) / 3) + 1}" text="Bus" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="141" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="16" y="{23 + 1 * ((card_height - 84) / 3) + 2}" text="UART1" style_text_font="$value_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="139" height="13" long_mode="dots" style_text_align="right" name="device_uart" />
+      <lv_label x="13" y="{41 + 2 * ((card_height - 84) / 3) + 1}" text="Baud" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="141" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="16" y="{41 + 2 * ((card_height - 84) / 3) + 2}" text="115200 8N1" style_text_font="$value_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="139" height="13" long_mode="dots" style_text_align="right" name="device_baud" />
+      <lv_label x="13" y="{59 + 3 * ((card_height - 84) / 3) + 1}" text="Pins" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="141" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="16" y="{59 + 3 * ((card_height - 84) / 3) + 2}" text="GPIO43 / 44" style_text_font="$value_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="139" height="13" long_mode="dots" style_text_align="right" name="device_pins" />
+    </lv_obj>
+  </view>
+</component>

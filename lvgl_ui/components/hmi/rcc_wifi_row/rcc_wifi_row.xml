@@ -1,0 +1,30 @@
+<component>
+  <api>
+    <prop name="row_index" type="int" default="0" />
+    <prop name="ssid" type="string" default="MSVN-Lab-5G" />
+    <prop name="details" type="string" default="Connected" />
+    <prop name="signal" type="string" default="-48 dBm" />
+    <prop name="secured" type="bool" default="true" />
+    <prop name="title_width" type="int" default="330" />
+    <prop name="background" type="color" default="0x0c2538" />
+    <prop name="border" type="color" default="0x1e4963" />
+    <prop name="details_color" type="color" default="0xcbd5e1" />
+    <prop name="bar_short" type="color" default="0x22c55e" />
+    <prop name="bar_low" type="color" default="0x22c55e" />
+    <prop name="bar_high" type="color" default="0x22c55e" />
+    <prop name="bar_full" type="color" default="0x22c55e" />
+    <prop name="caption_font" type="font" default="hmi_f10" />
+    <prop name="data_font" type="font" default="hmi_f12b" />
+    <prop name="lock_icon" type="image" default="hmi_icon_lock_11" />
+  </api>
+  <view extends="lv_button" x="0" y="{row_index * 44}" width="464" height="40" style_bg_color="$background" style_bg_opa="100%" style_radius="10" style_border_width="1" style_pad_all="-1" style_border_color="$border" style_outline_width="0" style_shadow_width="0" scrollable="false" style_bg_opa-pressed="70%">
+    <lv_label x="12" y="7" width="$title_width" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xf8fafc" scrollable="false" text="$ssid" long_mode="dots" style_text_align="left" />
+    <lv_label x="12" y="21" width="330" height="13" clickable="false" style_text_font="$caption_font" style_text_color="$details_color" scrollable="false" text="$details" long_mode="dots" style_text_align="left" />
+    <lv_obj x="434" y="23" width="3" height="4" clickable="false" style_radius="1" style_border_width="0" style_bg_opa="100%" style_bg_color="$bar_short" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+    <lv_obj x="439" y="20" width="3" height="7" clickable="false" style_radius="1" style_border_width="0" style_bg_opa="100%" style_bg_color="$bar_low" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+    <lv_obj x="444" y="17" width="3" height="10" clickable="false" style_radius="1" style_border_width="0" style_bg_opa="100%" style_bg_color="$bar_high" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+    <lv_obj x="449" y="14" width="3" height="13" clickable="false" style_radius="1" style_border_width="0" style_bg_opa="100%" style_bg_color="$bar_full" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+    <lv_label x="374" y="13" width="50" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" scrollable="false" text="$signal" long_mode="dots" style_text_align="right" />
+    <lv_image x="353" y="14" width="11" height="11" clickable="false" scrollable="false" src="$lock_icon" style_image_recolor="0x64748b" style_image_recolor_opa="100%" hidden="{!secured}" />
+  </view>
+</component>

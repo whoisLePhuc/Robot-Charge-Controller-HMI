@@ -1,0 +1,16 @@
+<component>
+  <api>
+    <prop name="top" type="int" default="4" />
+    <prop name="tab_height" type="int" default="60" />
+    <prop name="label" type="string" default="Overview" />
+    <prop name="glyph" type="image" default="hmi_icon_home_19" />
+    <prop name="font" type="font" default="hmi_f10" />
+  </api>
+  <view x="0" y="$top" width="56" height="$tab_height" scrollable="false" clickable="false" style_pad_all="0" style_bg_color="0x090d14" style_bg_opa="0%" style_radius="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" extends="lv_obj">
+    <lv_button x="4" y="0" width="47" height="$tab_height" scrollable="false" clickable="true" style_pad_all="0" style_bg_color="0x06090e" style_bg_opa="0%" style_radius="10" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_bg_opa-pressed="178" name="tab_hit">
+      <lv_image x="14" y="12" src="$glyph" clickable="false" scrollable="false" style_image_recolor="0x64748b" style_image_recolor_opa="100%" name="tab_icon" />
+      <lv_label x="0" y="35" text="$label" scrollable="false" clickable="false" style_text_font="$font" style_text_color="0x64748b" style_text_align="left" style_text_letter_space="0" name="tab_label" />
+    </lv_button>
+    <lv_obj x="0" y="14" width="3" height="32" scrollable="false" clickable="false" style_pad_all="0" style_bg_color="0x38bdf8" style_bg_opa="100%" style_radius="2" style_border_width="0" style_outline_width="0" style_shadow_width="0" name="tab_mark" />
+  </view>
+</component>

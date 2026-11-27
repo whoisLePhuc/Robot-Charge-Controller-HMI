@@ -9,6 +9,12 @@
 #include <string.h>
 
 #include "hmi_icons.h"
+#include "hmi_lvgl_headers.h"
+#include "rcc_faults_mask_gen.h"
+#include "rcc_faults_primary_gen.h"
+#include "rcc_faults_register_gen.h"
+#include "rcc_faults_row_gen.h"
+#include "rcc_faults_summary_gen.h"
 #include "hmi_model.h"
 #include "hmi_pages.h"
 #include "hmi_present.h"
@@ -40,7 +46,6 @@ static void apply_sum(lv_observer_t *o, lv_subject_t *s)
     lv_obj_set_style_border_color(fl.sum, HC(fs == HP_FS_OK ? HC_LINE : tc), 0);
     const lv_image_dsc_t *d = fs == HP_FS_OK ? &hmi_icon_checkc_18 : &hmi_icon_warn_18;
     lv_image_set_src(fl.icon, d);
-    lv_obj_set_y(fl.icon, (40 - (int)d->header.h) / 2);
     lv_obj_set_style_image_recolor(fl.icon, HC(tc), 0);
     hw_label_set(fl.title, hp_fault_title(fs));
     lv_obj_set_style_text_color(fl.title, HC(fs == HP_FS_OK ? HC_WHITE : tc), 0);
@@ -60,13 +65,20 @@ static void apply_pri(lv_observer_t *o, lv_subject_t *s)
     hw_label_set(fl.pri_act, v->act);
 }
 
-static void mask_list(list_ui_t *u, int slot, lv_obj_t *p, int x, int y, int w, int h, const char *title)
+static void mask_list(list_ui_t *u, int slot, lv_obj_t *p, int x, int y, int h, const char *title)
 {
-    u->w = w; u->slot = slot; u->filled = false;
-    u->card = hw_card_box(p, x, y, w, h, HC_CARD, 10, HC_LINE);
-    u->hdr = hw_section(u->card, 13, 7, w - 26, title, "", HC_LABEL);
-    u->empty = hw_text_in(u->card, "None (0x0)", 13, 23, w - 26, 18, HF_12, HC_LABEL, LV_TEXT_ALIGN_LEFT);
-    u->scr = hw_scroll_area(u->card, 0, 23, w, h - 23 - 3, slot);
+    u->slot = slot;
+    u->filled = false;
+    u->card = rcc_faults_mask_create(p, x, y, h, title, (lv_font_t *)HF_10, (lv_font_t *)HF_12);
+    u->hdr = lv_obj_find_by_name(u->card, "fault_mask_value");
+    u->empty = lv_obj_find_by_name(u->card, "fault_mask_empty");
+    lv_obj_t *viewport = lv_obj_find_by_name(u->card, "fault_mask_viewport");
+    lv_obj_update_layout(viewport);
+    const int sx = lv_obj_get_x_aligned(viewport), sy = lv_obj_get_y_aligned(viewport);
+    u->w = lv_obj_get_width(viewport);
+    const int sh = lv_obj_get_height(viewport);
+    lv_obj_delete(viewport);
+    u->scr = hw_scroll_area(u->card, sx, sy, u->w, sh, slot);
 }
 
 /* Refill one list for `mask`: caption, empty text or rows. The scroll offset survives (LVGL clamps it); a list
@@ -86,8 +98,10 @@ static void fill_list(list_ui_t *u, uint32_t mask, const char *const *names, int
         const int ry = r * 18;
         char nm[40], bl[8];
         hp_mask_row(nm, sizeof(nm), bl, sizeof(bl), b, names, count);
-        hw_text_in(u->scr, nm, 13, ry, u->w - 26 - 24, 18, HF_10, HC_WHITE, LV_TEXT_ALIGN_LEFT);
-        hw_text_in(u->scr, bl, u->w - 13 - 24, ry, 24, 18, HF_10, HC_LABEL, LV_TEXT_ALIGN_RIGHT);
+        rcc_faults_row_create(u->scr, 13, ry, u->w - 50, nm, HC(HC_WHITE),
+                              LV_TEXT_ALIGN_LEFT, (lv_font_t *)HF_10);
+        rcc_faults_row_create(u->scr, u->w - 37, ry, 24, bl, HC(HC_LABEL),
+                              LV_TEXT_ALIGN_RIGHT, (lv_font_t *)HF_10);
         ++r;
     }
     if (n && keep >= 0) hw_scroll_to(u->scr, keep);
@@ -104,29 +118,25 @@ static void build_body(hp_fault_body_t cls)
     lv_obj_t *p = fl.body;
     if (cls == HP_FB_OK || cls == HP_FB_UNKNOWN) {
         const bool unk = cls == HP_FB_UNKNOWN;
-        const int ch = H - 46, ih = ch - 14;
-        const int gap = (ih - 16 - 17 - 13) / 2;
         for (int k = 0; k < 2; ++k) {
-            lv_obj_t *c = hw_card_box(p, k * 208, 46, 200, ch, HC_CARD, 10, HC_LINE);
-            hw_section(c, 13, 7, 174, k ? "INHIBIT REGISTER" : "FAULT REGISTER", unk ? "\xE2\x80\x94" : "0x0000", HC_LABEL);
-            hw_text_in(c, unk ? "Unreadable" : "0 active bits", 13, 7 + 16 + gap, 174, 17, HF_14B,
-                       unk ? HC_DIM : HC_OK_COL, LV_TEXT_ALIGN_LEFT);
-            hw_text_in(c, unk ? "Link offline" : (k ? "No inhibit bits set" : "No fault bits set"),
-                       13, ch - 7 - 13, 174, 13, HF_10, HC_LABEL, LV_TEXT_ALIGN_LEFT);
+            rcc_faults_register_create(p, k * 208, H - 46, k ? "INHIBIT REGISTER" : "FAULT REGISTER",
+                                       unk ? "—" : "0x0000", unk ? "Unreadable" : "0 active bits",
+                                       unk ? "Link offline" : (k ? "No inhibit bits set" : "No fault bits set"),
+                                       HC(unk ? HC_DIM : HC_OK_COL), (lv_font_t *)HF_10, (lv_font_t *)HF_14B);
         }
         return;
     }
     int y = 46;
     if (cls == HP_FB_PRIMARY_LISTS) {
-        fl.pri = hw_card_box(p, 0, y, 408, 44, HC_WARN_BG, 10, HC_WARN_COL);
-        fl.pri_nm = hw_text_in(fl.pri, "", 13, 6, 300, 18, HF_12B, HC_WARN_COL, LV_TEXT_ALIGN_LEFT);
-        fl.pri_id = hw_text_in(fl.pri, "", 320, 6, 75, 18, HF_12, HC_LABEL, LV_TEXT_ALIGN_RIGHT);
-        fl.pri_act = hw_text_in(fl.pri, "", 13, 23, 382, 14, HF_10, HC_TXT2, LV_TEXT_ALIGN_LEFT);
+        fl.pri = rcc_faults_primary_create(p, (lv_font_t *)HF_10, (lv_font_t *)HF_12, (lv_font_t *)HF_12B);
+        fl.pri_nm = lv_obj_find_by_name(fl.pri, "fault_primary_name");
+        fl.pri_id = lv_obj_find_by_name(fl.pri, "fault_primary_id");
+        fl.pri_act = lv_obj_find_by_name(fl.pri, "fault_primary_action");
         lv_subject_add_observer_obj(hm_fault_pri, apply_pri, fl.pri, NULL);   /* dies with the card on a body rebuild */
         y += 50;
     }
-    mask_list(&fl.list[0], 0, p, 0, y, 200, H - y, "FAULTS");
-    mask_list(&fl.list[1], 1, p, 208, y, 200, H - y, "INHIBITS");
+    mask_list(&fl.list[0], 0, p, 0, y, H - y, "FAULTS");
+    mask_list(&fl.list[1], 1, p, 208, y, H - y, "INHIBITS");
 }
 
 /* Make the body match `m`: rebuild on a class change, else refill only what differs. */
@@ -144,10 +154,10 @@ static void enter(lv_obj_t *p, const rcc_snapshot_t *m, const hmi_page_ctx_t *ct
 {
     memset(&fl, 0, sizeof(fl));
     fl.root = p; fl.H = ctx->height; fl.bk = -1;
-    fl.sum = hw_card_box(p, 0, 0, 408, 40, HC_CARD, 10, HC_LINE);
-    fl.icon = hw_icon(fl.sum, &hmi_icon_checkc_18, 13, 0, HC_OK_COL);
-    fl.title = hw_text_in(fl.sum, "", 41, 0, 250, 40, HF_14B, HC_WHITE, LV_TEXT_ALIGN_LEFT);
-    fl.read = hw_text_in(fl.sum, "", 290, 0, 105, 40, HF_10, HC_LABEL, LV_TEXT_ALIGN_RIGHT);
+    fl.sum = rcc_faults_summary_create(p, (lv_font_t *)HF_10, (lv_font_t *)HF_14B, &hmi_icon_checkc_18);
+    fl.icon = lv_obj_find_by_name(fl.sum, "fault_summary_icon");
+    fl.title = lv_obj_find_by_name(fl.sum, "fault_summary_title");
+    fl.read = lv_obj_find_by_name(fl.sum, "fault_summary_age");
     lv_subject_add_observer_obj(hm_fault_sum, apply_sum, fl.sum, NULL);
     fl.body = hw_obj(p, 0, 0, 408, fl.H);
     sync_body(m);

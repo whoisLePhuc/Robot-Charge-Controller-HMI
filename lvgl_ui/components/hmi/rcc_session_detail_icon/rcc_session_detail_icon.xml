@@ -1,0 +1,8 @@
+<component>
+  <api>
+    <prop name="detail_x" type="int" default="0" />
+    <prop name="detail_y" type="int" default="0" />
+    <prop name="mark" type="image" default="hmi_icon_chev_10" />
+  </api>
+  <view extends="lv_image" scrollable="false" clickable="false" x="$detail_x" y="$detail_y" src="$mark" style_image_recolor="0x94a3b8" style_image_recolor_opa="100%" />
+</component>

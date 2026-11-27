@@ -1,0 +1,10 @@
+<component>
+  <api>
+    <prop name="glyph" type="image" default="hmi_icon_warn_12" />
+    <prop name="font" type="font" default="hmi_f10" />
+  </api>
+  <view x="64" y="32" width="408" height="20" scrollable="false" clickable="true" style_pad_all="-1" style_bg_color="0x161e2b" style_bg_opa="100%" style_radius="6" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_border_color="0xffffff" style_bg_opa-pressed="178" style_border_opa="26" extends="lv_button">
+    <lv_image x="0" y="0" src="$glyph" clickable="false" scrollable="false" style_image_recolor="0xfacc15" style_image_recolor_opa="100%" name="banner_icon" />
+    <lv_label x="0" y="0" text="Controller offline" scrollable="false" clickable="false" style_text_font="$font" style_text_color="0xfacc15" style_text_align="left" style_text_letter_space="0" name="banner_text" />
+  </view>
+</component>

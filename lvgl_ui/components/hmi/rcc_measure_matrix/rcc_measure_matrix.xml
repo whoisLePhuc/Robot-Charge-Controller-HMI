@@ -1,0 +1,21 @@
+<component>
+  <api>
+    <prop name="matrix_height" type="int" default="148" />
+    <prop name="small" type="font" default="hmi_f10" />
+    <prop name="seq_x" type="int" default="154" />
+    <slot name="matrix_cells" />
+  </api>
+  <view extends="lv_obj" scrollable="false" clickable="false" x="0" y="82" width="408" height="$matrix_height" style_bg_color="0x111722" style_bg_opa="100%" style_radius="10" style_border_width="1" style_border_color="0x1e293b" style_border_opa="100%" style_outline_width="0" style_shadow_width="0" style_pad_all="-1">
+    <lv_label x="13" y="8" text="ADC QUALITY MATRIX" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x94a3b8" style_text_letter_space="1" name="matrix_title" />
+    <lv_label x="$seq_x" y="8" text="SEQ 48213 · AGE 12 ms" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0xcbd5e1" width="{395 - seq_x}" height="13" long_mode="dots" style_text_align="right" name="matrix_seq" />
+    <lv_label x="59" y="{matrix_height - 67}" text="PRES" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x94a3b8" width="47" height="13" long_mode="dots" style_text_align="center" name="matrix_header_0" />
+    <lv_label x="106" y="{matrix_height - 67}" text="FRESH" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x94a3b8" width="47" height="13" long_mode="dots" style_text_align="center" name="matrix_header_1" />
+    <lv_label x="154" y="{matrix_height - 67}" text="CAL" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x94a3b8" width="47" height="13" long_mode="dots" style_text_align="center" name="matrix_header_2" />
+    <lv_label x="201" y="{matrix_height - 67}" text="RANGE" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x94a3b8" width="47" height="13" long_mode="dots" style_text_align="center" name="matrix_header_3" />
+    <lv_label x="249" y="{matrix_height - 67}" text="SAT" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x94a3b8" width="47" height="13" long_mode="dots" style_text_align="center" name="matrix_header_4" />
+    <lv_label x="297" y="{matrix_height - 67}" text="PLAUS" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x94a3b8" width="47" height="13" long_mode="dots" style_text_align="center" name="matrix_header_5" />
+    <lv_label x="347" y="{matrix_height - 67}" text="FLOOR" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x94a3b8" width="47" height="13" long_mode="dots" style_text_align="center" name="matrix_header_6" />
+    <lv_obj x="344" y="{matrix_height - 68}" width="1" height="61" clickable="false" scrollable="false" style_bg_color="0x1e293b" style_bg_opa="100%" style_radius="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" />
+    <lv_obj name="matrix_cells" x="0" y="0" width="408" height="$matrix_height" scrollable="false" clickable="false" style_bg_opa="0%" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" />
+  </view>
+</component>

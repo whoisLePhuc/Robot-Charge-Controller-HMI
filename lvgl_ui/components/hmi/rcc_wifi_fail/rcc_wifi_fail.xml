@@ -1,0 +1,38 @@
+<component>
+  <api>
+    <prop name="failure_title" type="string" default="Wrong password" />
+    <prop name="failure_text" type="string" default="The access point rejected the credentials. Check the password and try again." />
+    <prop name="attempt_text" type="string" default="1" />
+    <prop name="signal_text" type="string" default="-61 dBm" />
+    <prop name="show_password_hint" type="bool" default="true" />
+    <slot name="choose_other" />
+    <slot name="retry" />
+    <prop name="caption_font" type="font" default="hmi_f10" />
+    <prop name="data_font" type="font" default="hmi_f12b" />
+    <prop name="title_font" type="font" default="hmi_f14b" />
+    <prop name="result_icon" type="image" default="hmi_icon_warn_20" />
+  </api>
+  <view extends="lv_obj" width="480" height="320" clickable="false" scrollable="false" style_bg_opa="0%" style_pad_all="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_radius="0">
+    <lv_obj x="8" y="48" width="464" height="62" clickable="false" style_radius="12" style_border_width="1" style_bg_opa="100%" style_bg_color="0x35101b" style_border_color="0xf43f5e" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0">
+      <lv_obj x="14" y="13" width="36" height="36" clickable="false" style_radius="18" style_border_width="0" style_bg_opa="100%" style_bg_color="0x4a1624" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+      <lv_image x="22" y="21" width="20" height="20" clickable="false" scrollable="false" src="$result_icon" style_image_recolor="0xf43f5e" style_image_recolor_opa="100%" />
+      <lv_label x="62" y="9" width="390" height="16" clickable="false" style_text_font="$title_font" style_text_color="0xf8fafc" scrollable="false" text="$failure_title" long_mode="dots" style_text_align="left" />
+      <lv_label x="62" y="28" width="388" height="content" clickable="false" style_text_font="$caption_font" style_text_color="0xcbd5e1" scrollable="false" text="$failure_text" long_mode="wrap" style_text_align="left" />
+    </lv_obj>
+    <lv_obj x="8" y="118" width="229" height="44" clickable="false" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="0x111722" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0">
+      <lv_label x="12" y="7" width="56" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" scrollable="false" text="ATTEMPT" long_mode="wrap" style_text_align="left" style_text_letter_space="1" />
+      <lv_label x="12" y="24" width="205" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xf8fafc" scrollable="false" text="$attempt_text" long_mode="dots" style_text_align="left" />
+    </lv_obj>
+    <lv_obj x="243" y="118" width="229" height="44" clickable="false" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="0x111722" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0">
+      <lv_label x="12" y="7" width="44" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" scrollable="false" text="SIGNAL" long_mode="wrap" style_text_align="left" style_text_letter_space="1" />
+      <lv_label x="12" y="24" width="205" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xf8fafc" scrollable="false" text="$signal_text" long_mode="dots" style_text_align="left" />
+    </lv_obj>
+    <lv_label x="12" y="172" width="456" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" scrollable="false" text="Passwords are case-sensitive. WPA2 passwords have 8 to 63 characters." long_mode="dots" style_text_align="left" hidden="{!show_password_hint}" />
+    <lv_button x="8" y="268" width="228" height="40" clickable="true" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="0x172030" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" name="choose_other" style_bg_opa-pressed="70%" style_shadow_width="0" style_outline_width="0">
+      <lv_label x="0" y="13" width="228" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xcbd5e1" scrollable="false" text="CHOOSE OTHER" long_mode="dots" style_text_align="center" style_text_letter_space="1" />
+    </lv_button>
+    <lv_button x="244" y="268" width="228" height="40" clickable="true" style_radius="10" style_border_width="0" style_bg_opa="100%" style_bg_color="0x0ea5e9" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="retry" style_bg_opa-pressed="70%" style_shadow_width="0" style_outline_width="0">
+      <lv_label x="0" y="13" width="228" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xffffff" scrollable="false" text="RETRY" long_mode="dots" style_text_align="center" style_text_letter_space="1" />
+    </lv_button>
+  </view>
+</component>

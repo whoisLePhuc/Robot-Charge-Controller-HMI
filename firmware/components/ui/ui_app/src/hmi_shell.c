@@ -27,6 +27,25 @@
 #include "pages/page_device.h"
 #include "rcc_link.h"
 
+#include "hmi_lvgl_headers.h"
+#include "rcc_shell_action_gen.h"
+#include "rcc_shell_action_status_gen.h"
+#include "rcc_shell_banner_gen.h"
+#include "rcc_shell_confirm_gen.h"
+#include "rcc_shell_frame_gen.h"
+#include "rcc_shell_header_fault_gen.h"
+#include "rcc_shell_header_link_gen.h"
+#include "rcc_shell_header_node_gen.h"
+#include "rcc_shell_no_authority_gen.h"
+#include "rcc_shell_ota_gen.h"
+#include "rcc_shell_overlay_gen.h"
+#include "rcc_shell_rail_gen.h"
+#include "rcc_shell_rail_badge_gen.h"
+#include "rcc_shell_rail_tab_gen.h"
+
+/* The Editor uses mutable font pointers in generated APIs. LVGL only reads these. */
+#define LAYOUT_FONT(font) ((lv_font_t *)(font))
+
 static bool link_started;
 static lv_obj_t *screen, *content, *bar_box, *modal, *overlay;
 static lv_obj_t *rail_tab[HMI_PAGES_MAX], *rail_mark[HMI_PAGES_MAX], *rail_badge[HMI_PAGES_MAX];
@@ -59,42 +78,33 @@ static void send_start_click(lv_event_t *e) { (void)e; (void)rcc_link_request_st
 static void open_modal(const rcc_snapshot_t *m)
 {
     if (modal) return;
-    char b[48], t[24];
-    lv_obj_set_style_opa(bar_box, 77, 0);
-    modal = hw_obj(screen, 56, 32, 424, 288);
-    lv_obj_set_clickable(modal, true);
-    lv_obj_set_style_bg_color(modal, HC(HC_INK), 0);
-    lv_obj_set_style_bg_opa(modal, 209, 0);
-    lv_obj_add_event_cb(modal, cancel_click, LV_EVENT_CLICKED, NULL);
-
-    lv_obj_t *card = hw_card_box(modal, 36, 14, 352, 208, HC_CARD, 12, HC_NAV_CUR);
-    lv_obj_set_clickable(card, true);                       /* taps inside the card must not cancel */
-    hw_text_in(card, m->simulated_measurements ? "Start with SIMULATED V/I" : "Confirm Charge Start", 17, 12, 318, 19, HF_16B, HC_WHITE, LV_TEXT_ALIGN_LEFT);
-
-    hp_controller_summary(b, sizeof(b), m);
-    hw_kv(card, 17, 38, 318, 21, "Controller state", b, HC_WHITE);
-
-    hp_fmt_age(t, sizeof(t), m->reply_age_ms); snprintf(b, sizeof(b), "ONLINE \xC2\xB7 %s ago", t);
-    hw_kv(card, 17, 59, 318, 21, "UART link", b, HC_WHITE);
-
-    if (hp_v_valid(m) && hp_i_valid(m)) snprintf(b, sizeof(b), "Fresh \xC2\xB7 %" PRIu32 " ms", m->measurement_sample_age_ms);
-    else snprintf(b, sizeof(b), "Not valid");
-    hw_kv(card, 17, 80, 318, 21, m->simulated_measurements ? "SIMULATED V/I" : "ADC telemetry", b, HC_WHITE);
+    char state[48], link[48], measure[48], fault[48], age[24];
+    const bool simulated = m->simulated_measurements;
+    hp_controller_summary(state, sizeof(state), m);
+    hp_fmt_age(age, sizeof(age), m->reply_age_ms);
+    snprintf(link, sizeof(link), "ONLINE \xC2\xB7 %s ago", age);
+    if (hp_v_valid(m) && hp_i_valid(m))
+        snprintf(measure, sizeof(measure), "Fresh \xC2\xB7 %" PRIu32 " ms", m->measurement_sample_age_ms);
+    else
+        snprintf(measure, sizeof(measure), "Not valid");
 
     const hp_fault_state_t fs = hp_fault_state(m);
-    if (fs == HP_FS_FAULT) snprintf(b, sizeof(b), "%s", hp_fault_name(m->primary_fault));
-    else if (fs == HP_FS_INHIBIT) hp_mask_text(b, sizeof(b), m->inhibit_mask, hp_inhibit_names, 3);
-    else snprintf(b, sizeof(b), "0x00000000 (Clear)");
-    hw_kv(card, 17, 101, 318, 21, "Fault / Inhibit", b, fs == HP_FS_OK ? HC_WHITE : fs == HP_FS_FAULT ? HC_FAULT_COL : HC_WARN_COL);
+    if (fs == HP_FS_FAULT) snprintf(fault, sizeof(fault), "%s", hp_fault_name(m->primary_fault));
+    else if (fs == HP_FS_INHIBIT) hp_mask_text(fault, sizeof(fault), m->inhibit_mask, hp_inhibit_names, 3);
+    else snprintf(fault, sizeof(fault), "0x00000000 (Clear)");
 
-    hw_text_in(card, m->simulated_measurements ? "REAL relay command; contacts are not measured." : "Controller validates VREQ & precheck before closing relay.", 17, 128, 318, 13, HF_10, HC_LABEL, LV_TEXT_ALIGN_LEFT);
-
-    lv_obj_t *c1 = hw_button(card, 17, 157, 154, 38, HC_SURFACE2, 10, cancel_click, NULL);
-    lv_obj_t *l1 = hw_text_in(c1, "CANCEL", 0, 0, 154, 38, HF_12B, HC_WHITE, LV_TEXT_ALIGN_CENTER); hw_spacing(l1, 1);
-    lv_obj_set_clickable(l1, false);
-    lv_obj_t *c2 = hw_button(card, 181, 157, 154, 38, HC_START_COL, 10, send_start_click, NULL);
-    lv_obj_t *l2 = hw_text_in(c2, "SEND START", 0, 0, 154, 38, HF_12B, HC_INK, LV_TEXT_ALIGN_CENTER); hw_spacing(l2, 1);
-    lv_obj_set_clickable(l2, false);
+    const char *title = simulated ? "Start with SIMULATED V/I" : "Confirm Charge Start";
+    const char *measurement_label = simulated ? "SIMULATED V/I" : "ADC telemetry";
+    const char *footnote = simulated ? "REAL relay command; contacts are not measured." :
+        "Controller validates VREQ & precheck before closing relay.";
+    const uint32_t fault_color = fs == HP_FS_OK ? HC_WHITE : fs == HP_FS_FAULT ? HC_FAULT_COL : HC_WARN_COL;
+    lv_obj_set_style_opa(bar_box, 77, 0);
+    modal = rcc_shell_confirm_create(screen, title, state, link, measurement_label, measure, fault,
+                                    HC(fault_color), footnote, LAYOUT_FONT(HF_16B), LAYOUT_FONT(HF_12),
+                                    LAYOUT_FONT(HF_12B), LAYOUT_FONT(HF_10));
+    lv_obj_add_event_cb(modal, cancel_click, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(lv_obj_find_by_name(modal, "confirm_cancel"), cancel_click, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(lv_obj_find_by_name(modal, "confirm_send"), send_start_click, LV_EVENT_CLICKED, NULL);
 }
 
 static void action_click(lv_event_t *e)
@@ -111,15 +121,12 @@ static void bar_button(lv_obj_t *p, int x, int w, hp_bar_button_t kind, const lv
     const lv_image_dsc_t *glyph = kind == HP_B_START ? &hmi_icon_play_16 : kind == HP_B_STOPPING ? &hmi_icon_spin_16 : &hmi_icon_stop_16;
     const uint32_t bg = kind == HP_B_START ? HC_START_COL : kind == HP_B_STOPPING ? HC_STOPPING_BG : HC_STOP_COL;
     const uint32_t fg = kind == HP_B_START ? HC_INK : kind == HP_B_STOPPING ? HC_STOPPING_FG : HC_HERO_COL;
-    lv_obj_t *b = hw_button(p, x, 0, w, 42, bg, 10, action_click, (void *)(uintptr_t)(kind == HP_B_START ? 1 : 0));
-    lv_obj_set_style_border_width(b, 1, 0);
-    lv_obj_set_style_border_color(b, HC(HC_HERO_COL), 0);
-    lv_obj_set_style_border_opa(b, 36, 0);
-    lv_obj_t *tx = hw_text(b, label, 0, 0, f, fg);
-    hw_spacing(tx, 1);
-    lv_obj_set_clickable(tx, false);
+    lv_obj_t *b = rcc_shell_action_create(p, x, w, label, glyph, HC(bg), HC(fg), LAYOUT_FONT(f));
+    lv_obj_add_event_cb(b, action_click, LV_EVENT_CLICKED, (void *)(uintptr_t)(kind == HP_B_START ? 1 : 0));
+    lv_obj_t *tx = lv_obj_find_by_name(b, "action_label");
+    lv_obj_t *ic = lv_obj_find_by_name(b, "action_icon");
     const int iw = glyph->header.w, tw = hw_width_of(tx), total = iw + 8 + tw;
-    lv_obj_t *ic = hw_icon(b, glyph, (w - total) / 2, (42 - (int)glyph->header.h) / 2, fg);
+    lv_obj_set_pos(ic, (w - total) / 2, (42 - (int)glyph->header.h) / 2);
     lv_obj_set_pos(tx, (w - total) / 2 + iw + 8, (42 - hw_lh(f)) / 2);
     if (kind == HP_B_STOPPING) {
         lv_image_set_pivot(ic, glyph->header.w / 2, glyph->header.h / 2);
@@ -136,17 +143,13 @@ static void build_bar(const hp_bar_spec_t *b)
     lv_obj_clean(bar_box);
     if (b->kind == HP_BAR_NONE) return;
     if (b->kind == HP_BAR_NOAUTH) {
-        lv_obj_t *nb = hw_card_box(bar_box, 0, 0, 408, 42, HC_WARN_BG, 10, HC_WARN_COL);
-        hw_icon_row(nb, &hmi_icon_warn_20, 12, 0, 42, HC_WARN_COL);
-        hw_text_in(nb, "No control authority \xE2\x80\x94 monitoring only", 42, 6, 354, 17, HF_12B, HC_WHITE, LV_TEXT_ALIGN_LEFT);
-        hw_text_in(nb, "Use physical E-stop. Grant control on the controller service port.", 42, 22, 354, 13, HF_10, HC_LABEL, LV_TEXT_ALIGN_LEFT);
+        rcc_shell_no_authority_create(bar_box, &hmi_icon_warn_20, LAYOUT_FONT(HF_12B), LAYOUT_FONT(HF_10));
         return;
     }
     if (b->kind == HP_BAR_FULL) { bar_button(bar_box, 0, 408, b->button, HF_16B); return; }
     const int msg_w = b->kind == HP_BAR_SPLIT ? 256 : 408;
-    lv_obj_t *mb = hw_card_box(bar_box, 0, 0, msg_w, 42, HC_CARD, 10, HC_LINE);
-    hw_text_in(mb, b->title, 13, 7, msg_w - 26, 15, HF_12B, ht_kind_color(b->title_kind), LV_TEXT_ALIGN_LEFT);
-    hw_text_in(mb, b->sub, 13, 23, msg_w - 26, 13, HF_10, HC_LABEL, LV_TEXT_ALIGN_LEFT);
+    rcc_shell_action_status_create(bar_box, msg_w, b->title, b->sub, HC(ht_kind_color(b->title_kind)),
+                                   LAYOUT_FONT(HF_12B), LAYOUT_FONT(HF_10));
     if (b->kind == HP_BAR_SPLIT) bar_button(bar_box, 266, 142, b->button, HF_14B);
 }
 
@@ -160,8 +163,7 @@ lv_obj_t *hmi_shell_overlay_open(void)
     close_modal();
     drop_live();
     lv_obj_clean(content);
-    overlay = hw_box(screen, 0, 0, 480, 320, HC_BG, 0);
-    lv_obj_set_clickable(overlay, true);
+    overlay = rcc_shell_overlay_create(screen);
     lv_obj_move_foreground(overlay);
     return overlay;
 }
@@ -184,63 +186,41 @@ static void banner_click(lv_event_t *e)
 
 static void build_chrome(void)
 {
-    hw_box(screen, 0, 0, 56, 320, HC_INK, 0);
-    hw_box(screen, 55, 0, 1, 320, HC_LINE, 0);
-
+    lv_obj_t *rail = rcc_shell_rail_create(screen);
     const int pitch = 315 / hmi_page_count > 63 ? 63 : 315 / hmi_page_count;   /* 63 px up to five tabs */
     for (int i = 0; i < hmi_page_count; ++i) {
-        rail_tab[i] = hw_button(screen, 4, 4 + i * pitch, 47, pitch - 3, HC_INK, 10, nav_click, (void *)(uintptr_t)i);
-        lv_obj_set_style_bg_opa(rail_tab[i], LV_OPA_TRANSP, 0);
-        rail_mark[i] = hw_box(screen, 0, 4 + i * pitch + 14, 3, 32, HC_NAV_CUR, 2);
-        rail_icon[i] = hw_icon(rail_tab[i], hmi_pages[i].icon, 14, 12, HC_DIM);
-        rail_label[i] = hw_text(rail_tab[i], hmi_pages[i].name, 0, 35, HF_10, HC_DIM);
-        lv_obj_set_clickable(rail_label[i], false);
-        rail_badge[i] = NULL;
-        if (hmi_pages[i].fault_badge) {
-            rail_badge[i] = hw_box(rail_tab[i], 31, 8, 8, 8, HC_WARN_COL, 4);
-            lv_obj_set_style_outline_width(rail_badge[i], 2, 0);
-            lv_obj_set_style_outline_color(rail_badge[i], HC(HC_INK), 0);
-        }
+        lv_obj_t *tab = rcc_shell_rail_tab_create(rail, 4 + i * pitch, pitch - 3,
+                                                hmi_pages[i].name, hmi_pages[i].icon, LAYOUT_FONT(HF_10));
+        rail_tab[i] = lv_obj_find_by_name(tab, "tab_hit");
+        rail_mark[i] = lv_obj_find_by_name(tab, "tab_mark");
+        rail_icon[i] = lv_obj_find_by_name(tab, "tab_icon");
+        rail_label[i] = lv_obj_find_by_name(tab, "tab_label");
+        lv_obj_add_event_cb(rail_tab[i], nav_click, LV_EVENT_CLICKED, (void *)(uintptr_t)i);
+        rail_badge[i] = hmi_pages[i].fault_badge ? rcc_shell_rail_badge_create(rail_tab[i]) : NULL;
     }
 
-    hdr_dev = hw_button(screen, 64, 4, 110, 24, HC_BG, 6, dev_click, NULL);
-    lv_obj_set_style_bg_opa(hdr_dev, LV_OPA_TRANSP, 0);
-    lv_obj_t *n1 = hw_text(hdr_dev, "NODE", 0, 0, HF_12B, HC_LABEL);
-    hw_spacing(n1, 1);
-    lv_obj_set_clickable(n1, false);
+    hdr_dev = rcc_shell_header_node_create(screen, LAYOUT_FONT(HF_12B));
+    lv_obj_add_event_cb(hdr_dev, dev_click, LV_EVENT_CLICKED, NULL);
+    lv_obj_t *n1 = lv_obj_find_by_name(hdr_dev, "node_prefix");
+    lv_obj_t *n2 = lv_obj_find_by_name(hdr_dev, "node_name");
     const int nw = hw_width_of(n1);
-    lv_obj_set_pos(n1, 0, (24 - hw_lh(HF_12B)) / 2);
-    lv_obj_t *n2 = hw_text(hdr_dev, "RCC-01", nw + 8, 0, HF_12B, HC_TXT2);
-    hw_spacing(n2, 1);
-    lv_obj_set_clickable(n2, false);
-    lv_obj_set_pos(n2, nw + 8, (24 - hw_lh(HF_12B)) / 2);
-    hdr_dev_w = nw + 8 + hw_width_of(n2);
+    lv_obj_set_x(n2, lv_obj_get_x_aligned(n1) + nw + 8);
+    hdr_dev_w = lv_obj_get_x_aligned(n2) + hw_width_of(n2);
     lv_obj_set_width(hdr_dev, hdr_dev_w);
 
-    hdr_pill = hw_button(screen, 239, 5, 123, 23, HC_CARD, 10, link_click, NULL);
-    lv_obj_set_style_border_width(hdr_pill, 1, 0);
-    lv_obj_set_style_border_color(hdr_pill, HC(HC_LINE), 0);
-    lv_obj_set_style_pad_all(hdr_pill, -1, 0);
-    hdr_dot = hw_box(hdr_pill, 11, 8, 7, 7, HC_OK_COL, 4);
-    hdr_text = hw_text(hdr_pill, "", 24, 0, HF_12B, HC_OK_COL);
-    lv_obj_set_clickable(hdr_text, false);
+    hdr_pill = rcc_shell_header_link_create(screen, LAYOUT_FONT(HF_12B));
+    hdr_dot = lv_obj_find_by_name(hdr_pill, "link_dot");
+    hdr_text = lv_obj_find_by_name(hdr_pill, "link_text");
+    lv_obj_add_event_cb(hdr_pill, link_click, LV_EVENT_CLICKED, NULL);
 
-    hdr_fault_box = hw_button(screen, 438, 4, 34, 24, HC_CARD, 8, fault_click, NULL);
-    lv_obj_set_style_border_width(hdr_fault_box, 1, 0);
-    lv_obj_set_style_border_color(hdr_fault_box, HC(HC_LINE), 0);
-    lv_obj_set_style_pad_all(hdr_fault_box, -1, 0);
-    hdr_fault_icon = hw_icon(hdr_fault_box, &hmi_icon_checkc_15, 9, 5, HC_DIM);
-    lv_obj_set_clickable(hdr_fault_icon, false);
+    hdr_fault_box = rcc_shell_header_fault_create(screen, &hmi_icon_checkc_15);
+    hdr_fault_icon = lv_obj_find_by_name(hdr_fault_box, "fault_icon");
+    lv_obj_add_event_cb(hdr_fault_box, fault_click, LV_EVENT_CLICKED, NULL);
 
-    banner_box = hw_button(screen, 64, 32, 408, 20, HC_OFF_BG, 6, banner_click, NULL);
-    lv_obj_set_style_border_width(banner_box, 1, 0);
-    lv_obj_set_style_border_color(banner_box, HC(HC_HERO_COL), 0);
-    lv_obj_set_style_border_opa(banner_box, 26, 0);
-    lv_obj_set_style_pad_all(banner_box, -1, 0);
-    banner_icon = hw_icon(banner_box, &hmi_icon_warn_12, 0, 0, HC_WARN_COL);
-    banner_text = hw_text(banner_box, "", 0, 0, HF_10, HC_WARN_COL);
-    lv_obj_set_clickable(banner_icon, false);
-    lv_obj_set_clickable(banner_text, false);
+    banner_box = rcc_shell_banner_create(screen, &hmi_icon_warn_12, LAYOUT_FONT(HF_10));
+    banner_icon = lv_obj_find_by_name(banner_box, "banner_icon");
+    banner_text = lv_obj_find_by_name(banner_box, "banner_text");
+    lv_obj_add_event_cb(banner_box, banner_click, LV_EVENT_CLICKED, NULL);
     lv_obj_set_hidden(banner_box, true);
 }
 
@@ -259,7 +239,8 @@ static void update_chrome(const rcc_snapshot_t *m, const char *banner, hp_kind_t
         } else {
             lv_obj_set_style_bg_opa(rail_tab[i], LV_OPA_TRANSP, 0);
         }
-        lv_obj_set_pos(rail_label[i], (47 - hw_width_of(rail_label[i])) / 2, 35 + (13 - hw_lh(HF_10)) / 2);
+        const int label_width = hw_width_of(rail_label[i]);
+        lv_obj_set_x(rail_label[i], (lv_obj_get_width(rail_tab[i]) - label_width) / 2);
         if (rail_badge[i]) {
             lv_obj_set_style_bg_color(rail_badge[i], HC(badge), 0);
             lv_obj_set_hidden(rail_badge[i], !(fs == HP_FS_FAULT || fs == HP_FS_INHIBIT));
@@ -343,6 +324,7 @@ static void redraw_cb(void *unused) { (void)unused; rebuild(); }
 static lv_obj_t *s_ota_modal = NULL;
 static lv_obj_t *s_ota_bar = NULL;
 static lv_obj_t *s_ota_label = NULL;
+static lv_obj_t *s_ota_track = NULL;
 
 static void update_ota_overlay(void)
 {
@@ -350,21 +332,16 @@ static void update_ota_overlay(void)
     hmi_ota_get_status(&ota);
     if (ota.state == HMI_OTA_RECEIVING || ota.state == HMI_OTA_VERIFYING || ota.state == HMI_OTA_SUCCESS) {
         if (!s_ota_modal) {
-            s_ota_modal = hw_box(screen, 30, 50, 420, 220, HC_OTA_BG, 14);
-            lv_obj_set_style_border_color(s_ota_modal, HC(HC_OTA_EDGE), LV_PART_MAIN);
-            lv_obj_set_style_border_width(s_ota_modal, 2, LV_PART_MAIN);
+            s_ota_modal = rcc_shell_ota_create(screen, LAYOUT_FONT(HF_16B), LAYOUT_FONT(HF_12),
+                                              LAYOUT_FONT(HF_12B), LAYOUT_FONT(HF_14B));
+            s_ota_track = lv_obj_find_by_name(s_ota_modal, "ota_track");
+            s_ota_bar = lv_obj_find_by_name(s_ota_modal, "ota_fill");
+            s_ota_label = lv_obj_find_by_name(s_ota_modal, "ota_status");
             lv_obj_move_foreground(s_ota_modal);
-
-            hw_text_in(s_ota_modal, "FIRMWARE UPDATE IN PROGRESS", 20, 20, 380, 22, HF_16B, HC_NAV_CUR, LV_TEXT_ALIGN_CENTER);
-            hw_text_in(s_ota_modal, "Target slot: writing to flash partition", 20, 50, 380, 16, HF_12, HC_LABEL, LV_TEXT_ALIGN_CENTER);
-            hw_text_in(s_ota_modal, "DO NOT DISCONNECT POWER", 20, 75, 380, 18, HF_12B, HC_AMBER, LV_TEXT_ALIGN_CENTER);
-
-            lv_obj_t *bg = hw_box(s_ota_modal, 30, 115, 360, 20, HC_LINE, 8);
-            s_ota_bar = hw_box(bg, 0, 0, 4, 20, HC_NAV_CUR, 8);
-            s_ota_label = hw_text_in(s_ota_modal, "Writing: 0%", 20, 150, 380, 20, HF_14B, HC_HERO_COL, LV_TEXT_ALIGN_CENTER);
+            lv_obj_update_layout(s_ota_track);
         }
         if (s_ota_modal) {
-            int w = (ota.progress_pct * 360) / 100;
+            int w = (ota.progress_pct * lv_obj_get_width(s_ota_track)) / 100;
             if (w < 4) w = 4;
             lv_obj_set_width(s_ota_bar, w);
             char txt[64];
@@ -418,16 +395,16 @@ static void refresh(lv_timer_t *timer)
 void hmi_shell_start(bool started)
 {
     link_started = started;
-    screen = lv_screen_active();
-    lv_obj_remove_style_all(screen);
-    lv_obj_set_style_bg_color(screen, HC(HC_BG), 0);
-    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
-    lv_obj_set_scrollable(screen, false);
+    lv_obj_t *active = lv_screen_active();
+    lv_obj_remove_style_all(active);
+    lv_obj_set_scrollable(active, false);
+    screen = rcc_shell_frame_create(active);
+    bar_box = lv_obj_find_by_name(screen, "action_host");
+    content = lv_obj_find_by_name(screen, "page_host");
 
     hmi_model_init();
     build_chrome();
-    bar_box = hw_obj(screen, 64, 270, 408, 42);
-    content = hw_obj(screen, 0, 0, 480, 320);
+    lv_obj_move_foreground(bar_box);
     lv_obj_move_background(content);
     hmi_nav_bind(redraw_cb, close_modal);
     lv_timer_create(refresh, 1000, NULL);

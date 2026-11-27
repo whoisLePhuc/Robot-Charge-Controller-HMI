@@ -1,0 +1,8 @@
+<component>
+  <api>
+    <prop name="line_x" type="int" default="64" />
+    <prop name="line_width" type="int" default="24" />
+    <prop name="line_color" type="color" default="0x1e4963" />
+  </api>
+  <view extends="lv_obj" scrollable="false" clickable="false" x="$line_x" y="57" width="$line_width" height="1" style_bg_opa="100%" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" style_bg_color="$line_color" />
+</component>

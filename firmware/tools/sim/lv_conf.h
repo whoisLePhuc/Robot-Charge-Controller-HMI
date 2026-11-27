@@ -1,14 +1,15 @@
 /* LVGL configuration for the PC simulator. Mirrors config/elecrow_s3.defaults (fonts,
- * widgets, 16-bit colour, 64 KiB builtin heap) so the render matches the panel. */
+ * widgets, 16-bit colour, 128 KiB builtin heap) so the render matches the panel. */
 #ifndef LV_CONF_H
 #define LV_CONF_H
 #define LV_COLOR_DEPTH 16
 #define LV_USE_STDLIB_MALLOC LV_STDLIB_BUILTIN
 #define LV_USE_STDLIB_STRING LV_STDLIB_BUILTIN
 #define LV_USE_STDLIB_SPRINTF LV_STDLIB_BUILTIN
-#define LV_MEM_SIZE (64 * 1024)
+#define LV_MEM_SIZE (128 * 1024)
 #define LV_USE_OS LV_OS_NONE
 #define LV_USE_OBSERVER 1   /* subjects: the retained-mode model (ui/hmi_model.c); firmware has CONFIG_LV_USE_OBSERVER=y */
+#define LV_USE_OBJ_NAME 1
 #define LV_USE_LOG 0
 #define LV_USE_ASSERT_NULL 1
 #define LV_FONT_MONTSERRAT_12 1

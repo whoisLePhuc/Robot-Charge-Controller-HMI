@@ -2,9 +2,10 @@
 
 The default Elecrow DLE06235B / ES3C35P ESP32-S3 target includes the five-page
 LVGL UI, LCD/touch, RCC UART1 transport, NVS settings, Wi-Fi station and Web OTA.
-This documentation was reconciled with HMI source revision `28d2253` on
-2026-10-30. Implementation statements describe source and configuration;
-they do not establish hardware acceptance.
+These guides were reconciled with HMI source revision `28d2253` on
+2026-10-30 and have not all been revalidated against the LVGL Pro migration.
+See the [LVGL Pro HMI guide](../lvgl_ui/HMI.md) and [UI notes](../firmware/components/ui/README.md) for the current workflow.
+Implementation statements do not establish hardware acceptance.
 
 ## Reading order
 

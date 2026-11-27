@@ -1,0 +1,11 @@
+<component>
+  <api>
+    <prop name="badge_x" type="int" default="0" />
+    <prop name="badge_y" type="int" default="0" />
+    <prop name="badge_width" type="int" default="38" />
+    <prop name="small" type="font" default="hmi_f10" />
+  </api>
+  <view extends="lv_obj" scrollable="false" clickable="false" x="$badge_x" y="$badge_y" width="$badge_width" height="17" style_bg_opa="100%" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" style_bg_color="0x2b2309" style_radius="6">
+    <lv_label x="7" y="2" text="LOW" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0xfacc15" />
+  </view>
+</component>

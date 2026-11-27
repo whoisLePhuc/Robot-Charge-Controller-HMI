@@ -1,0 +1,13 @@
+<component>
+  <api>
+    <prop name="card_x" type="int" default="0" />
+    <prop name="title" type="string" default="SESSION" />
+    <prop name="value" type="string" default="17" />
+    <prop name="small" type="font" default="hmi_f10" />
+    <prop name="bold" type="font" default="hmi_f12b" />
+  </api>
+  <view extends="lv_obj" scrollable="false" clickable="false" x="$card_x" y="0" width="98" height="39" style_bg_color="0x111722" style_bg_opa="100%" style_radius="8" style_border_width="1" style_border_color="0x1e293b" style_border_opa="100%" style_outline_width="0" style_shadow_width="0" style_pad_all="-1">
+    <lv_label x="9" y="5" text="$title" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x94a3b8" width="80" height="13" long_mode="dots" style_text_align="left" />
+    <lv_label x="9" y="19" text="$value" scrollable="false" clickable="false" style_text_font="$bold" style_text_color="0xf8fafc" width="80" height="13" long_mode="dots" style_text_align="left" name="summary_value" />
+  </view>
+</component>

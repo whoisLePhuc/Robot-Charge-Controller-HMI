@@ -1,0 +1,10 @@
+<component>
+  <api>
+    <prop name="detail_x" type="int" default="100" />
+    <prop name="detail_y" type="int" default="3" />
+    <prop name="detail_width" type="int" default="100" />
+    <prop name="text" type="string" default="—" />
+    <prop name="small" type="font" default="hmi_f10" />
+  </api>
+  <view extends="lv_label" scrollable="false" clickable="false" x="$detail_x" y="$detail_y" width="$detail_width" height="13" text="$text" long_mode="dots" style_text_font="$small" style_text_color="0xcbd5e1" style_text_align="right" />
+</component>

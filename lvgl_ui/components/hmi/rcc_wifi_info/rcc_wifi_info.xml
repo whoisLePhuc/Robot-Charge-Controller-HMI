@@ -1,0 +1,62 @@
+<component>
+  <api>
+    <prop name="connected_ssid" type="string" default="MSVN-Lab-5G" />
+    <prop name="ip_address" type="string" default="192.168.1.42" />
+    <prop name="gateway" type="string" default="192.168.1.1" />
+    <prop name="signal_text" type="string" default="-48 dBm · Excellent" />
+    <prop name="mac_address" type="string" default="A4:CF:12:9B:3E:70" />
+    <prop name="ota_title" type="string" default="WEB OTA" />
+    <prop name="ota_value" type="string" default="Locked" />
+    <prop name="slot_text" type="string" default=" (Target: )" />
+    <prop name="ota_button_text" type="string" default="ENABLE OTA" />
+    <prop name="ota_armed" type="bool" default="false" />
+    <slot name="done" />
+    <prop name="caption_font" type="font" default="hmi_f10" />
+    <prop name="data_font" type="font" default="hmi_f12b" />
+    <prop name="title_font" type="font" default="hmi_f14b" />
+    <prop name="result_icon" type="image" default="hmi_icon_wifi_22" />
+  </api>
+  <view extends="lv_obj" width="480" height="320" clickable="false" scrollable="false" style_bg_opa="0%" style_pad_all="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_radius="0">
+    <lv_obj x="8" y="48" width="464" height="62" clickable="false" style_radius="12" style_border_width="1" style_bg_opa="100%" style_bg_color="0x0a2617" style_border_color="0x22c55e" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0">
+      <lv_obj x="14" y="13" width="36" height="36" clickable="false" style_radius="18" style_border_width="0" style_bg_opa="100%" style_bg_color="0x0f3a22" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+      <lv_image x="21" y="20" width="22" height="22" clickable="false" scrollable="false" src="$result_icon" style_image_recolor="0x22c55e" style_image_recolor_opa="100%" />
+      <lv_label x="62" y="15" width="290" height="16" clickable="false" style_text_font="$title_font" style_text_color="0xf8fafc" scrollable="false" text="$connected_ssid" long_mode="dots" style_text_align="left" />
+      <lv_label x="62" y="34" width="290" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0xcbd5e1" scrollable="false" text="Station connected" long_mode="dots" style_text_align="left" />
+      <lv_obj x="396" y="22" width="54" height="17" clickable="false" style_radius="6" style_border_width="0" style_bg_opa="100%" style_bg_color="0x0f3a22" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+      <lv_label x="403" y="24" width="40" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x22c55e" scrollable="false" text="ONLINE" long_mode="wrap" style_text_align="left" />
+    </lv_obj>
+    <lv_obj x="8" y="118" width="229" height="44" clickable="false" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="0x111722" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0">
+      <lv_label x="12" y="7" width="72" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" scrollable="false" text="IP ADDRESS" long_mode="wrap" style_text_align="left" style_text_letter_space="1" />
+      <lv_label x="12" y="24" width="205" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xf8fafc" scrollable="false" text="$ip_address" long_mode="dots" style_text_align="left" />
+    </lv_obj>
+    <lv_obj x="243" y="118" width="229" height="44" clickable="false" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="0x111722" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0">
+      <lv_label x="12" y="7" width="61" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" scrollable="false" text="GATEWAY" long_mode="wrap" style_text_align="left" style_text_letter_space="1" />
+      <lv_label x="12" y="24" width="205" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xf8fafc" scrollable="false" text="$gateway" long_mode="dots" style_text_align="left" />
+    </lv_obj>
+    <lv_obj x="8" y="168" width="229" height="44" clickable="false" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="0x111722" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0">
+      <lv_label x="12" y="7" width="44" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" scrollable="false" text="SIGNAL" long_mode="wrap" style_text_align="left" style_text_letter_space="1" />
+      <lv_label x="12" y="24" width="205" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xf8fafc" scrollable="false" text="$signal_text" long_mode="dots" style_text_align="left" />
+    </lv_obj>
+    <lv_obj x="243" y="168" width="229" height="44" clickable="false" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="0x111722" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0">
+      <lv_label x="12" y="7" width="27" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" scrollable="false" text="MAC" long_mode="wrap" style_text_align="left" style_text_letter_space="1" />
+      <lv_label x="12" y="24" width="205" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xf8fafc" scrollable="false" text="$mac_address" long_mode="dots" style_text_align="left" />
+    </lv_obj>
+    <lv_obj x="8" y="218" width="229" height="44" clickable="false" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="0x111722" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0">
+      <lv_label x="12" y="7" width="57" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" scrollable="false" text="$ota_title" long_mode="wrap" style_text_align="left" style_text_letter_space="1" />
+      <lv_label x="12" y="24" width="205" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xf8fafc" scrollable="false" text="$ota_value" long_mode="dots" style_text_align="left" />
+    </lv_obj>
+    <lv_obj x="243" y="218" width="229" height="44" clickable="false" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="0x111722" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" style_shadow_width="0" style_outline_width="0">
+      <lv_label x="12" y="7" width="97" height="13" clickable="false" style_text_font="$caption_font" style_text_color="0x94a3b8" scrollable="false" text="DUAL-OTA SLOT" long_mode="wrap" style_text_align="left" style_text_letter_space="1" />
+      <lv_label x="12" y="24" width="205" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xf8fafc" scrollable="false" text="$slot_text" long_mode="dots" style_text_align="left" />
+    </lv_obj>
+    <lv_button x="8" y="268" width="148" height="40" clickable="true" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="0x172030" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" name="forget" style_bg_opa-pressed="70%" style_shadow_width="0" style_outline_width="0">
+      <lv_label x="0" y="13" width="148" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xcbd5e1" scrollable="false" text="FORGET" long_mode="dots" style_text_align="center" style_text_letter_space="1" />
+    </lv_button>
+    <lv_button x="166" y="268" width="148" height="40" clickable="true" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="{ota_armed ? 0x2b2309 : 0x172030}" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" name="ota" style_bg_opa-pressed="70%" style_shadow_width="0" style_outline_width="0">
+      <lv_label x="0" y="13" width="148" height="13" clickable="false" style_text_font="$data_font" style_text_color="{ota_armed ? 0xfacc15 : 0xcbd5e1}" scrollable="false" text="$ota_button_text" long_mode="dots" style_text_align="center" style_text_letter_space="1" />
+    </lv_button>
+    <lv_button x="324" y="268" width="148" height="40" clickable="true" style_radius="10" style_border_width="0" style_bg_opa="100%" style_bg_color="0x0ea5e9" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="done" style_bg_opa-pressed="70%" style_shadow_width="0" style_outline_width="0">
+      <lv_label x="0" y="13" width="148" height="13" clickable="false" style_text_font="$data_font" style_text_color="0xffffff" scrollable="false" text="DONE" long_mode="dots" style_text_align="center" style_text_letter_space="1" />
+    </lv_button>
+  </view>
+</component>

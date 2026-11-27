@@ -1,0 +1,18 @@
+<component>
+  <api>
+    <prop name="row_y" type="int" default="0" />
+    <prop name="row_height" type="int" default="20" />
+    <prop name="since" type="string" default="0:00" />
+    <prop name="caption" type="string" default="STATE" />
+    <prop name="event_color" type="color" default="0x22c55e" />
+    <prop name="small" type="font" default="hmi_f10" />
+    <prop name="bold" type="font" default="hmi_f12b" />
+    <prop name="divider_visible" type="bool" default="true" />
+  </api>
+  <view extends="lv_obj" scrollable="false" clickable="false" x="0" y="$row_y" width="408" height="$row_height" style_bg_opa="0%" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0">
+    <lv_label x="11" y="3" text="$since" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x94a3b8" width="44" height="13" long_mode="dots" style_text_align="left" />
+    <lv_obj x="57" y="7" width="6" height="6" clickable="false" scrollable="false" style_bg_color="$event_color" style_bg_opa="100%" style_radius="3" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" />
+    <lv_label x="70" y="3" text="$caption" scrollable="false" clickable="false" style_text_font="$bold" style_text_color="0xf8fafc" name="event_name" />
+    <lv_obj x="11" y="19" width="386" height="1" clickable="false" scrollable="false" style_bg_color="0x1e293b" style_bg_opa="100%" style_radius="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" hidden="{!divider_visible}" />
+  </view>
+</component>

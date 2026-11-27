@@ -1,0 +1,70 @@
+<component>
+  <api>
+    <prop name="card_height" type="int" default="162" />
+    <prop name="caption_font" type="font" default="hmi_f10" />
+    <prop name="body_font" type="font" default="hmi_f12" />
+    <prop name="value_font" type="font" default="hmi_f12b" />
+    <prop name="wifi_icon" type="image" default="hmi_icon_wifi_13" />
+    <prop name="chevron_icon" type="image" default="hmi_icon_chev_10" />
+    <slot name="device_wifi_button" />
+  </api>
+  <view x="0" y="68" width="408" height="$card_height" clickable="false" scrollable="false" style_bg_color="0x000000" style_bg_opa="0%" style_radius="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" extends="lv_obj">
+    <lv_obj x="0" y="0" width="200" height="$card_height" clickable="false" scrollable="false" style_bg_color="0x111722" style_bg_opa="100%" style_radius="10" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_pad_all="-1" style_border_color="0x1e293b" style_border_opa="100%">
+      <lv_label x="13" y="8" text="DISPLAY &amp; POWER" style_text_font="$caption_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" style_text_letter_space="1" />
+      <lv_label x="13" y="24" text="Backlight: 100%" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="174" height="15" long_mode="dots" style_text_align="left" name="device_backlight" />
+      <lv_button x="13" y="42" width="40" height="22" clickable="true" scrollable="false" style_bg_color="0x172030" style_bg_opa="100%" style_radius="6" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="device_brightness0" style_bg_opa-pressed="70%">
+        <lv_label x="0" y="4" text="25%" style_text_font="$caption_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="40" height="13" long_mode="dots" style_text_align="center" />
+      </lv_button>
+      <lv_button x="57" y="42" width="40" height="22" clickable="true" scrollable="false" style_bg_color="0x172030" style_bg_opa="100%" style_radius="6" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="device_brightness1" style_bg_opa-pressed="70%">
+        <lv_label x="0" y="4" text="50%" style_text_font="$caption_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="40" height="13" long_mode="dots" style_text_align="center" />
+      </lv_button>
+      <lv_button x="101" y="42" width="40" height="22" clickable="true" scrollable="false" style_bg_color="0x172030" style_bg_opa="100%" style_radius="6" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="device_brightness2" style_bg_opa-pressed="70%">
+        <lv_label x="0" y="4" text="75%" style_text_font="$caption_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="40" height="13" long_mode="dots" style_text_align="center" />
+      </lv_button>
+      <lv_button x="145" y="42" width="40" height="22" clickable="true" scrollable="false" style_bg_color="0x0c2538" style_bg_opa="100%" style_radius="6" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="device_brightness3" style_bg_opa-pressed="70%" style_border_color="0x38bdf8">
+        <lv_label x="0" y="4" text="100%" style_text_font="$caption_font" style_text_color="0x38bdf8" clickable="false" scrollable="false" width="40" height="13" long_mode="dots" style_text_align="center" />
+      </lv_button>
+      <lv_label x="13" y="70" text="Sleep timeout: 3 min" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="174" height="15" long_mode="dots" style_text_align="left" name="device_sleep" />
+      <lv_button x="13" y="88" width="40" height="22" clickable="true" scrollable="false" style_bg_color="0x172030" style_bg_opa="100%" style_radius="6" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="device_timeout0" style_bg_opa-pressed="70%">
+        <lv_label x="0" y="4" text="OFF" style_text_font="$caption_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="40" height="13" long_mode="dots" style_text_align="center" />
+      </lv_button>
+      <lv_button x="57" y="88" width="40" height="22" clickable="true" scrollable="false" style_bg_color="0x172030" style_bg_opa="100%" style_radius="6" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="device_timeout1" style_bg_opa-pressed="70%">
+        <lv_label x="0" y="4" text="1m" style_text_font="$caption_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="40" height="13" long_mode="dots" style_text_align="center" />
+      </lv_button>
+      <lv_button x="101" y="88" width="40" height="22" clickable="true" scrollable="false" style_bg_color="0x0c2538" style_bg_opa="100%" style_radius="6" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="device_timeout2" style_bg_opa-pressed="70%" style_border_color="0x38bdf8">
+        <lv_label x="0" y="4" text="3m" style_text_font="$caption_font" style_text_color="0x38bdf8" clickable="false" scrollable="false" width="40" height="13" long_mode="dots" style_text_align="center" />
+      </lv_button>
+      <lv_button x="145" y="88" width="40" height="22" clickable="true" scrollable="false" style_bg_color="0x172030" style_bg_opa="100%" style_radius="6" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="device_timeout3" style_bg_opa-pressed="70%">
+        <lv_label x="0" y="4" text="5m" style_text_font="$caption_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="40" height="13" long_mode="dots" style_text_align="center" />
+      </lv_button>
+      <lv_label x="13" y="119" text="Idle dim level" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="174" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="16" y="120" text="15%" style_text_font="$value_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="172" height="13" long_mode="dots" style_text_align="right" name="device_dim" />
+      <lv_label x="13" y="137" text="Wake method" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="174" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="16" y="138" text="Touch" style_text_font="$value_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="172" height="13" long_mode="dots" style_text_align="right" name="device_wake" />
+    </lv_obj>
+    <lv_obj x="208" y="0" width="200" height="$card_height" clickable="false" scrollable="false" style_bg_color="0x111722" style_bg_opa="100%" style_radius="10" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_pad_all="-1" style_border_color="0x1e293b" style_border_opa="100%">
+      <lv_label x="13" y="8" text="SYSTEM" style_text_font="$caption_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" style_text_letter_space="1" />
+      <lv_obj x="130" y="7" width="57" height="17" clickable="false" scrollable="false" style_bg_color="0x0a2617" style_bg_opa="100%" style_radius="6" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="device_system_box" />
+      <lv_label x="137" y="9" text="ACTIVE" style_text_font="$caption_font" style_text_color="0x22c55e" clickable="false" scrollable="false" name="device_system_text" />
+      <lv_label x="13" y="24" text="Language" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="174" height="15" long_mode="dots" style_text_align="left" />
+      <lv_button x="13" y="42" width="84" height="22" clickable="true" scrollable="false" style_bg_color="0x0c2538" style_bg_opa="100%" style_radius="6" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="device_language0" style_bg_opa-pressed="70%" style_border_color="0x38bdf8">
+        <lv_label x="0" y="4" text="English" style_text_font="$caption_font" style_text_color="0x38bdf8" clickable="false" scrollable="false" width="84" height="13" long_mode="dots" style_text_align="center" />
+      </lv_button>
+      <lv_button x="103" y="42" width="84" height="22" clickable="true" scrollable="false" style_bg_color="0x172030" style_bg_opa="100%" style_radius="6" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="device_language1" style_bg_opa-pressed="70%">
+        <lv_label x="0" y="4" text="Tiếng Việt" style_text_font="$caption_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="84" height="13" long_mode="dots" style_text_align="center" />
+      </lv_button>
+      <lv_label x="13" y="75" text="Task watchdog" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="174" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="16" y="76" text="5.0 s" style_text_font="$value_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="172" height="13" long_mode="dots" style_text_align="right" name="device_watchdog" />
+      <lv_label x="13" y="93" text="LCD driver" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="174" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="16" y="94" text="ST77922 QSPI" style_text_font="$value_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="172" height="13" long_mode="dots" style_text_align="right" name="device_lcd" />
+      <lv_label x="13" y="111" text="Firmware" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="174" height="15" long_mode="dots" style_text_align="left" />
+      <lv_label x="16" y="112" text="unknown" style_text_font="$value_font" style_text_color="0x22c55e" clickable="false" scrollable="false" width="172" height="13" long_mode="dots" style_text_align="right" name="device_version" />
+      <lv_button x="13" y="132" width="174" height="22" clickable="true" scrollable="false" style_bg_color="0x172030" style_bg_opa="100%" style_radius="6" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="device_wifi_button" style_bg_opa-pressed="70%">
+        <lv_image x="8" y="4" src="$wifi_icon" style_image_recolor="0x38bdf8" style_image_recolor_opa="100%" clickable="false" scrollable="false" />
+        <lv_label x="28" y="4" text="Wi-Fi" style_text_font="$caption_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="40" height="13" long_mode="dots" style_text_align="left" />
+        <lv_label x="66" y="4" text="MSVN-Lab-5G" style_text_font="$caption_font" style_text_color="0x22c55e" clickable="false" scrollable="false" width="84" height="13" long_mode="dots" style_text_align="right" name="device_wifi_status" />
+        <lv_image x="156" y="6" src="$chevron_icon" style_image_recolor="0x64748b" style_image_recolor_opa="100%" clickable="false" scrollable="false" />
+      </lv_button>
+    </lv_obj>
+  </view>
+</component>

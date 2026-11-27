@@ -1,0 +1,8 @@
+<component>
+  <api>
+    <prop name="glyph" type="image" default="hmi_icon_checkc_15" />
+  </api>
+  <view x="438" y="4" width="34" height="24" scrollable="false" clickable="true" style_pad_all="-1" style_bg_color="0x111722" style_bg_opa="100%" style_radius="8" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_border_color="0x1e293b" style_bg_opa-pressed="178" extends="lv_button">
+    <lv_image x="9" y="5" src="$glyph" clickable="false" scrollable="false" style_image_recolor="0x64748b" style_image_recolor_opa="100%" name="fault_icon" />
+  </view>
+</component>

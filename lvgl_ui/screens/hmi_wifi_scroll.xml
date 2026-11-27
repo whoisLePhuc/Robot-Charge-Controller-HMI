@@ -1,0 +1,25 @@
+<screen>
+  <view style_bg_color="0x090d14" style_bg_opa="100%" style_pad_all="0" style_border_width="0" scrollable="false">
+    <rcc_wifi_header heading="Wi-Fi" subtitle="6 networks found">
+      <rcc_wifi_header-back>
+        <lv_obj-screen_create_event screen="hmi_device_settings" trigger="clicked" />
+      </rcc_wifi_header-back>
+    </rcc_wifi_header>
+    <rcc_wifi_list>
+      <rcc_wifi_list-networks>
+        <rcc_wifi_row row_index="0" y="0" ssid="MSVN-Lab-5G" details="Connected · 192.168.1.42" signal="-48 dBm" secured="true" title_width="330" background="0x0c2538" border="0x1e4963" details_color="0xcbd5e1" bar_short="0x22c55e" bar_low="0x22c55e" bar_high="0x22c55e" bar_full="0x22c55e">
+          <lv_obj-screen_create_event screen="hmi_wifi_info" trigger="clicked" />
+        </rcc_wifi_row>
+        <rcc_wifi_row row_index="1" y="44" ssid="MSVN-Office" details="Secured" signal="-61 dBm" secured="true" title_width="330" background="0x111722" border="0x1e293b" details_color="0x94a3b8" bar_short="0x22c55e" bar_low="0x22c55e" bar_high="0x22c55e" bar_full="0x2b3648">
+          <lv_obj-screen_create_event screen="hmi_wifi_pass" trigger="clicked" />
+        </rcc_wifi_row>
+        <rcc_wifi_row row_index="2" y="88" ssid="Factory-IoT" details="Secured" signal="-72 dBm" secured="true" title_width="330" background="0x111722" border="0x1e293b" details_color="0x94a3b8" bar_short="0xfacc15" bar_low="0xfacc15" bar_high="0x2b3648" bar_full="0x2b3648" />
+        <rcc_wifi_row row_index="3" y="132" ssid="Guest" details="Open network" signal="-83 dBm" secured="false" title_width="345" background="0x111722" border="0x1e293b" details_color="0x94a3b8" bar_short="0xfb923c" bar_low="0x2b3648" bar_high="0x2b3648" bar_full="0x2b3648">
+          <lv_obj-screen_create_event screen="hmi_wifi_open" trigger="clicked" />
+        </rcc_wifi_row>
+        <rcc_wifi_row row_index="4" y="176" ssid="RCC-Service" details="Secured" signal="-86 dBm" secured="true" title_width="330" background="0x111722" border="0x1e293b" details_color="0x94a3b8" bar_short="0xfb923c" bar_low="0x2b3648" bar_high="0x2b3648" bar_full="0x2b3648" />
+        <rcc_wifi_row row_index="5" y="220" ssid="Warehouse-AP" details="Secured" signal="-89 dBm" secured="true" title_width="330" background="0x111722" border="0x1e293b" details_color="0x94a3b8" bar_short="0xfb923c" bar_low="0x2b3648" bar_high="0x2b3648" bar_full="0x2b3648" />
+      </rcc_wifi_list-networks>
+    </rcc_wifi_list>
+  </view>
+</screen>

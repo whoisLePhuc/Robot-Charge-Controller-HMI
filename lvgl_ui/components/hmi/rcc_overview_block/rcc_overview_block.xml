@@ -1,0 +1,9 @@
+<component>
+  <api>
+    <prop name="page_height" type="int" default="230" />
+    <prop name="small" type="font" default="hmi_f10" />
+  </api>
+  <view extends="lv_obj" scrollable="false" clickable="false" x="164" y="{page_height - 21}" width="244" height="19" style_bg_color="0x2b2309" style_bg_opa="100%" style_radius="6" style_border_width="1" style_border_color="0xfacc15" style_border_opa="100%" style_outline_width="0" style_shadow_width="0" style_pad_all="-1">
+    <lv_label x="0" y="3" text="START blocked" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0xfacc15" width="244" height="13" long_mode="dots" style_text_align="center" name="reason" />
+  </view>
+</component>

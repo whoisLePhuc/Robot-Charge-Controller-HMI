@@ -1,0 +1,12 @@
+<component>
+  <api>
+    <prop name="caption_font" type="font" default="hmi_f10" />
+    <prop name="title_font" type="font" default="hmi_f14b" />
+    <prop name="badge_icon" type="image" default="hmi_icon_checkc_18" />
+  </api>
+  <view x="0" y="0" width="408" height="40" clickable="false" scrollable="false" style_bg_color="0x111722" style_bg_opa="100%" style_radius="10" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_pad_all="-1" style_border_color="0x1e293b" style_border_opa="100%" extends="lv_obj">
+    <lv_image x="13" y="11" src="$badge_icon" style_image_recolor="0x22c55e" style_image_recolor_opa="100%" clickable="false" scrollable="false" name="fault_summary_icon" />
+    <lv_label x="41" y="12" text="All Systems Nominal — No Faults" style_text_font="$title_font" style_text_color="0xf8fafc" clickable="false" scrollable="false" width="250" height="16" long_mode="dots" style_text_align="left" name="fault_summary_title" />
+    <lv_label x="290" y="13" text="Read 0.8 s ago" style_text_font="$caption_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="105" height="13" long_mode="dots" style_text_align="right" name="fault_summary_age" />
+  </view>
+</component>

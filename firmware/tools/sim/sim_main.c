@@ -10,6 +10,7 @@
 int sim_scenario(const char *);
 void sim_command_state(const char *);
 void sim_ota_state(const char *);
+extern int sim_start_requests, sim_stop_requests;
 
 static uint16_t fb[W * H] __attribute__((aligned(4)));
 static uint32_t now_ms;
@@ -42,11 +43,17 @@ int main(int argc, char **argv)
     if (!sim_scenario(argv[1])) { fprintf(stderr, "unknown scenario\n"); return 2; }
     int page = atoi(argv[2]);
     const char *tab = "", *click_what = "";
+    int expected_start = -1, expected_stop = -1;
     for (int i = 4; i < argc; ++i) {
         if (!strncmp(argv[i], "tab=", 4)) tab = argv[i] + 4;
         else if (!strncmp(argv[i], "cmd=", 4)) sim_command_state(argv[i] + 4);
         else if (!strncmp(argv[i], "ota=", 4)) sim_ota_state(argv[i] + 4);
         else if (!strncmp(argv[i], "click=", 6)) click_what = argv[i] + 6;
+        else if (!strncmp(argv[i], "expect_requests=", 16) &&
+                 sscanf(argv[i] + 16, "%d,%d", &expected_start, &expected_stop) != 2) {
+            fprintf(stderr, "expected expect_requests=START_COUNT,STOP_COUNT\n");
+            return 2;
+        }
     }
     lv_init(); lv_tick_set_cb(tick_cb);
     lv_display_t *d = lv_display_create(W, H);
@@ -60,7 +67,13 @@ int main(int argc, char **argv)
     if (page > 0) { click(26, page * 64 + 32); run(100); }
     if (!strcmp(tab, "link")) { click(64 + 3 + 134 + 67, 34 + 30 + 16); run(1200); }
     if (!strcmp(tab, "settings")) { click(64 + 3 + 268 + 67, 34 + 30 + 16); run(1200); }
-    if (!strcmp(click_what, "confirm")) { click(260, 290); run(100); }
+    if (!strcmp(click_what, "confirm") || !strcmp(click_what, "send-start") ||
+        !strcmp(click_what, "cancel-start") || !strcmp(click_what, "stop")) {
+        click(260, 290);
+        run(100);
+        if (!strcmp(click_what, "send-start")) click(350, 222);
+        if (!strcmp(click_what, "cancel-start")) click(186, 222);
+    }
     { int cx, cy; if (sscanf(click_what, "%d,%d", &cx, &cy) == 2) { click(cx, cy); run(1200); } }
     { int x0, y0, y1; if (sscanf(click_what, "drag=%d,%d,%d", &x0, &y0, &y1) == 3) {
         pt.x = x0; pt.y = y0; down = true; run(60);
@@ -95,6 +108,11 @@ int main(int argc, char **argv)
         }
     }
     run(1100);                                    /* let the 1 s refresh timer settle */
+    if (expected_start >= 0 && (sim_start_requests != expected_start || sim_stop_requests != expected_stop)) {
+        fprintf(stderr, "request counts: got %d,%d, expected %d,%d\n",
+                sim_start_requests, sim_stop_requests, expected_start, expected_stop);
+        return 1;
+    }
     dump_ppm(argv[3]);
     for (int i = 4; i < argc; ++i) {              /* seq=B,C: switch snapshot live, let the refresh update the page, dump <out>.N.ppm */
         if (strncmp(argv[i], "seq=", 4)) continue;

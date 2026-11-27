@@ -1,0 +1,23 @@
+<component>
+  <api>
+    <prop name="event_height" type="int" default="185" />
+    <prop name="small" type="font" default="hmi_f10" />
+    <prop name="bold" type="font" default="hmi_f12b" />
+    <prop name="body_font" type="font" default="hmi_f12" />
+    <prop name="sync_icon" type="image" default="hmi_icon_refresh_11" />
+    <prop name="offline_icon" type="image" default="hmi_icon_warn_16" />
+    <prop name="sync_icon_x" type="int" default="8" />
+    <prop name="sync_text_x" type="int" default="25" />
+  </api>
+  <view extends="lv_obj" scrollable="false" clickable="false" x="0" y="45" width="408" height="$event_height" style_bg_color="0x111722" style_bg_opa="100%" style_radius="10" style_border_width="1" style_border_color="0x1e293b" style_border_opa="100%" style_outline_width="0" style_shadow_width="0" style_pad_all="-1">
+    <lv_label x="11" y="10" text="EVENT LOG" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x94a3b8" style_text_letter_space="1" name="event_heading" />
+    <lv_button name="sync" x="330" y="6" width="67" height="22" scrollable="false" style_bg_color="0x0c2538" style_bg_opa="100%" style_radius="8" style_border_width="1" style_border_color="0x1e4963" style_border_opa="100%" style_bg_opa-pressed="178" style_outline_width="0" style_shadow_width="0" style_pad_all="0">
+      <lv_image x="$sync_icon_x" y="4" src="$sync_icon" clickable="false" scrollable="false" style_image_recolor="0x38bdf8" style_image_recolor_opa="100%" />
+      <lv_label x="$sync_text_x" y="3" text="SYNC" scrollable="false" clickable="false" style_text_font="$small" style_text_color="0x38bdf8" style_text_letter_space="1" />
+    </lv_button>
+    <lv_image x="90" y="{34 + (event_height - 50) / 2}" src="$offline_icon" clickable="false" scrollable="false" style_image_recolor="0xfacc15" style_image_recolor_opa="100%" name="event_offline_icon" />
+    <lv_label x="112" y="{34 + (event_height - 47) / 2}" text="Event log unavailable — UART link lost" scrollable="false" clickable="false" style_text_font="$bold" style_text_color="0xfacc15" width="290" height="13" long_mode="dots" style_text_align="left" name="event_offline_text" />
+    <lv_label x="11" y="36" text="No events held by the controller" scrollable="false" clickable="false" style_text_font="$body_font" style_text_color="0x94a3b8" width="386" height="15" long_mode="dots" style_text_align="left" name="event_empty" />
+    <lv_obj name="event_rows" x="0" y="34" width="408" height="{event_height - 37}" scrollable="false" clickable="false" style_bg_opa="0%" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" />
+  </view>
+</component>

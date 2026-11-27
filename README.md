@@ -123,8 +123,8 @@ Charging decisions, interlocks and relay control remain owned by the controller.
 
 On 2026-11-27 the firmware moved from PlatformIO to a plain ESP-IDF project and
 was split into layered components (see [Firmware Architecture](#firmware-architecture)).
-Behavior and UI are unchanged: the desktop simulator renders all 80 checked
-screens pixel-identical to the former PlatformIO source. The restructured image
+The earlier restructure was checked against 80 PlatformIO screenshots; the
+subsequent LVGL Pro migration has not passed that full pixel comparison. The restructured image
 has not yet been flashed to a board. Source implementation and earlier bring-up
 observations are distinguished from hardware acceptance throughout.
 
@@ -175,11 +175,11 @@ and implementation limits.
 
 | Area | Current state |
 |---|---|
-| Firmware build | 2026-11-27: `idf.py build` (ESP-IDF 6.1.0) from a clean tree, 0 warnings with `-Wall -Wextra -Werror` on project components |
+| Firmware build | ESP-IDF 6.1.0 build verified; LVGL-generated sources emit deprecation warnings |
 | Firmware structure | ESP-IDF components by layer; `sdkconfig` generated from `sdkconfig.defaults` matches the former PlatformIO configuration except the partition file name |
 | Display and touch | Earlier bring-up of the PlatformIO image reports LCD/touch operation; the restructured image is not yet flashed |
 | C host tests | 2026-11-27: `rcc_codec`, `hmi_present` (304 checks) and `rcc_link` pass |
-| Desktop UI simulator | 2026-11-27: 80 screens pixel-identical to the PlatformIO baseline; retained-mode updates identical to fresh builds |
+| Desktop UI simulator | 2026-11-27: 77 of 80 images identical to pre-migration simulator; Wi-Fi scrollbar and spinner differ. 384 retained-mode transitions and 10 scroll checks passed |
 | UART simulator host tests | 2026-11-27: 33 discovered; 32 passed, 1 skipped (optional independent codec comparison) |
 | Controller simulator link | Transport compiled into target; physical adapter-to-HMI test pending |
 | Settings, Wi-Fi and Web OTA | Implemented; hardware acceptance and rollback tests pending |

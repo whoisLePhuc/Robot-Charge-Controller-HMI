@@ -45,3 +45,4 @@ if extra: print("note: %d rendered images have no baseline and were not compared
 sys.exit(1 if bad else 0)
 EOF
 HMI_SIM=$BIN "$PY" check_morph.py $T/hmi-after
+HMI_SIM=$BIN "$PY" check_commands.py $T/hmi-after

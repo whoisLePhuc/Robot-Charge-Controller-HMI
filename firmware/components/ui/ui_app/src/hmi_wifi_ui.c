@@ -1,5 +1,5 @@
 /*
- * Wi-Fi flow and on-screen keyboard: full-screen overlay opened from Device > Settings > Wi-Fi (hand-written C).
+ * Wi-Fi flow and on-screen keyboard: full-screen overlay opened from Device > Settings > Wi-Fi.
  * Talks to hmi_wifi / hmi_ota only; the shell is reached through its overlay service (ui/hmi_shell.h).
  */
 #include "hmi_wifi_ui.h"
@@ -14,6 +14,15 @@
 #include "hmi_theme.h"
 #include "hmi_widgets.h"
 
+#include "hmi_lvgl_headers.h"
+#include "rcc_wifi_busy_gen.h"
+#include "rcc_wifi_fail_gen.h"
+#include "rcc_wifi_header_gen.h"
+#include "rcc_wifi_info_gen.h"
+#include "rcc_wifi_list_gen.h"
+#include "rcc_wifi_pass_gen.h"
+#include "rcc_wifi_row_gen.h"
+
 static lv_obj_t *wifi_layer;
 static hmi_wifi_status_t ws;
 
@@ -22,10 +31,10 @@ static hmi_wifi_status_t ws;
  * password entry (on-screen keyboard), connecting, connected info, failure. The overlay polls
  * hmi_wifi_get() every 250 ms and re-renders only when the backend version or the view changes. */
 typedef enum { WV_LIST, WV_PASS, WV_BUSY, WV_INFO, WV_FAIL } wifi_view_t;
-enum { KEY_SHIFT = 256, KEY_BKSP, KEY_SYM, KEY_GO, KEY_NONE };
-enum { SLOT_LIST };   /* scroll slot of the network list */
+enum { KEY_SHIFT = 256, KEY_BKSP, KEY_SYM, KEY_GO };
+static int32_t wifi_list_scroll;
 
-static lv_obj_t *wifi_field, *wifi_go_key;
+static lv_obj_t *wifi_field, *wifi_go_key, *wifi_go_label;
 static lv_timer_t *wifi_timer;
 static wifi_view_t wifi_view;
 static char wifi_target[33], wifi_pw[HMI_WIFI_PASS_MAX + 1];
@@ -104,113 +113,111 @@ static void wifi_row_cb(lv_event_t *e)
     else wifi_do_connect();
 }
 
-/* ---- shared pieces */
-static void wifi_header(lv_obj_t *l, const char *title, const char *sub)
+/* ---- generated layout bindings */
+static lv_obj_t *wifi_widget(lv_obj_t *root, const char *name)
 {
-    lv_obj_t *b = hw_button(l, 8, 8, 34, 30, HC_SURFACE2, 8, wifi_back_cb, NULL);
-    lv_obj_set_style_border_width(b, 1, 0);
-    lv_obj_set_style_border_color(b, HC(HC_LINE), 0);
-    lv_obj_set_style_pad_all(b, -1, 0);
-    hw_icon_c(b, &hmi_icon_back_14, 17, 15, HC_TXT2);
-    hw_text_in(l, title, 52, 8, 330, 17, HF_14B, HC_WHITE, LV_TEXT_ALIGN_LEFT);
-    hw_text_in(l, sub, 52, 25, 330, 13, HF_10, HC_LABEL, LV_TEXT_ALIGN_LEFT);
+    lv_obj_t *widget = lv_obj_find_by_name(root, name);
+    LV_ASSERT_MSG(widget != NULL, name);
+    return widget;
 }
-static void wifi_bars(lv_obj_t *p, int x, int bottom, int level)
+
+static void wifi_bind(lv_obj_t *root, const char *name, lv_event_cb_t callback, void *user_data)
 {
-    static const int hh[4] = {4, 7, 10, 13};
-    const uint32_t col = level >= 3 ? HC_OK_COL : level == 2 ? HC_WARN_COL : HC_AMP_COL;
-    for (int i = 0; i < 4; ++i) hw_box(p, x + i * 5, bottom - hh[i], 3, hh[i], i < level ? col : HC_TRACK, 1);
+    lv_obj_add_event_cb(wifi_widget(root, name), callback, LV_EVENT_CLICKED, user_data);
 }
-static lv_obj_t *wifi_btn(lv_obj_t *l, int x, int y, int w, const char *s, uint32_t bg, uint32_t fg, bool border, lv_event_cb_t cb)
+
+static void wifi_header(lv_obj_t *parent, const char *title, const char *subtitle)
 {
-    lv_obj_t *b = hw_button(l, x, y, w, 40, bg, 10, cb, NULL);
-    if (border) {
-        lv_obj_set_style_border_width(b, 1, 0);
-        lv_obj_set_style_border_color(b, HC(HC_LINE), 0);
-        lv_obj_set_style_pad_all(b, -1, 0);
-    }
-    lv_obj_t *t = hw_text_in(b, s, 0, 0, w, 40, HF_12B, fg, LV_TEXT_ALIGN_CENTER);
-    hw_spacing(t, 1);
-    return b;
+    lv_obj_t *header = rcc_wifi_header_create(parent, title, subtitle, (lv_font_t *)HF_14B,
+                                             (lv_font_t *)HF_10, &hmi_icon_back_14);
+    wifi_bind(header, "back", wifi_back_cb, NULL);
 }
-static void wifi_cell(lv_obj_t *l, int x, int y, const char *k, const char *v)
+
+static void wifi_spinner_start(lv_obj_t *icon)
 {
-    lv_obj_t *c = hw_card_box(l, x, y, 229, 44, HC_CARD, 10, HC_LINE);
-    lv_obj_t *kl = hw_text(c, k, 12, 7, HF_10, HC_LABEL);
-    hw_spacing(kl, 1);
-    hw_text_in(c, v, 12, 22, 205, 17, HF_12B, HC_WHITE, LV_TEXT_ALIGN_LEFT);
+    const lv_image_dsc_t *image = lv_image_get_src(icon);
+    lv_image_set_pivot(icon, image->header.w / 2, image->header.h / 2);
+    lv_anim_t animation;
+    lv_anim_init(&animation);
+    lv_anim_set_var(&animation, icon);
+    lv_anim_set_exec_cb(&animation, hw_spin_anim);
+    lv_anim_set_values(&animation, 0, 3600);
+    lv_anim_set_duration(&animation, 1000);
+    lv_anim_set_repeat_count(&animation, LV_ANIM_REPEAT_INFINITE);
+    lv_anim_start(&animation);
 }
-static void wifi_spinner(lv_obj_t *p, const lv_image_dsc_t *d, int cx, int cy, uint32_t col)
+
+static void wifi_save_list_scroll(lv_event_t *event)
 {
-    lv_obj_t *ic = hw_icon_c(p, d, cx, cy, col);
-    lv_image_set_pivot(ic, d->header.w / 2, d->header.h / 2);
-    lv_anim_t an; lv_anim_init(&an);
-    lv_anim_set_var(&an, ic); lv_anim_set_exec_cb(&an, hw_spin_anim);
-    lv_anim_set_values(&an, 0, 3600); lv_anim_set_duration(&an, 1000);
-    lv_anim_set_repeat_count(&an, LV_ANIM_REPEAT_INFINITE);
-    lv_anim_start(&an);
+    wifi_list_scroll = lv_obj_get_scroll_y(lv_event_get_target_obj(event));
 }
 
 /* ---- list view */
-static void wifi_view_list(lv_obj_t *l)
+static void wifi_view_list(lv_obj_t *parent)
 {
-    char sub[32];
-    if (ws.state == HMI_WIFI_UNAVAILABLE) snprintf(sub, sizeof(sub), "Wi-Fi unavailable");
-    else if (ws.state == HMI_WIFI_SCANNING) snprintf(sub, sizeof(sub), "Scanning...");
-    else snprintf(sub, sizeof(sub), "%u network%s found", (unsigned)ws.ap_count, ws.ap_count == 1 ? "" : "s");
-    wifi_header(l, "Wi-Fi", sub);
+    char subtitle[32];
+    const bool connected = ws.state == HMI_WIFI_CONNECTED;
+    const bool unavailable = ws.state == HMI_WIFI_UNAVAILABLE;
+    const bool scanning = ws.state == HMI_WIFI_SCANNING;
+    if (unavailable) snprintf(subtitle, sizeof(subtitle), "Wi-Fi unavailable");
+    else if (scanning) snprintf(subtitle, sizeof(subtitle), "Scanning...");
+    else snprintf(subtitle, sizeof(subtitle), "%u network%s found", (unsigned)ws.ap_count, ws.ap_count == 1 ? "" : "s");
+    wifi_header(parent, "Wi-Fi", subtitle);
 
-    lv_obj_t *sc = hw_button(l, 400, 10, 72, 26, HC_NAV_BOX, 8, wifi_scan_cb, NULL);
-    lv_obj_set_style_border_width(sc, 1, 0);
-    lv_obj_set_style_border_color(sc, HC(HC_NAV_EDGE), 0);
-    lv_obj_set_style_pad_all(sc, -1, 0);
-    lv_obj_t *sl = hw_text(sc, "SCAN", 0, 0, HF_10, HC_NAV_CUR);
-    hw_spacing(sl, 1);
-    const int sw = hw_width_of(sl), tot = 12 + 6 + sw;
-    hw_icon_row(sc, &hmi_icon_refresh_11, (72 - tot) / 2, 0, 26, HC_NAV_CUR);
-    lv_obj_set_pos(sl, (72 - tot) / 2 + 17, (26 - hw_lh(HF_10)) / 2);
-
-    const bool conn = ws.state == HMI_WIFI_CONNECTED, un = ws.state == HMI_WIFI_UNAVAILABLE;
-    lv_obj_t *st = hw_card_box(l, 8, 46, 464, 26, conn ? HC_OK_BG : un ? HC_WARN_BG : HC_CARD, 8, conn ? HC_OK_COL : un ? HC_WARN_COL : HC_LINE);
-    hw_box(st, 10, 10, 6, 6, conn ? HC_OK_COL : un ? HC_WARN_COL : ws.state == HMI_WIFI_SCANNING ? HC_NAV_CUR : HC_DIM, 3);
-    if (conn) {
-        lv_obj_t *a = hw_text(st, "Connected to", 24, 0, HF_10, HC_TXT2);
-        const int aw = hw_width_of(a);
-        lv_obj_set_y(a, (26 - hw_lh(HF_10)) / 2);
-        hw_text_in(st, ws.ssid, 24 + aw + 5, 0, 200, 26, HF_10, HC_WHITE, LV_TEXT_ALIGN_LEFT);
-        lv_obj_t *db = hw_button(st, 360, 0, 104, 26, HC_CARD, 8, wifi_disc_cb, NULL);
-        lv_obj_set_style_bg_opa(db, LV_OPA_TRANSP, 0);
-        lv_obj_t *dl = hw_text_in(db, "DISCONNECT", 0, 0, 94, 26, HF_10, HC_LABEL, LV_TEXT_ALIGN_RIGHT);
-        hw_spacing(dl, 1);
+    lv_obj_t *view = rcc_wifi_list_create(parent, (lv_font_t *)HF_10, (lv_font_t *)HF_12, &hmi_icon_refresh_11);
+    wifi_bind(view, "scan", wifi_scan_cb, NULL);
+    wifi_bind(view, "disconnect", wifi_disc_cb, NULL);
+    lv_obj_t *status = wifi_widget(view, "status");
+    lv_obj_t *status_dot = wifi_widget(view, "status_dot");
+    lv_obj_t *status_text = wifi_widget(view, "status_text");
+    lv_obj_t *status_ssid = wifi_widget(view, "status_ssid");
+    lv_obj_set_hidden(status_ssid, !connected);
+    lv_obj_set_hidden(wifi_widget(view, "disconnect"), !connected);
+    if (connected) {
+        lv_label_set_text(status_ssid, ws.ssid);
     } else {
-        hw_text_in(st, un ? "Wi-Fi driver is not available in this build" : ws.state == HMI_WIFI_SCANNING ? "Scanning for networks..." : "Not connected",
-                   24, 0, 420, 26, HF_10, un ? HC_WARN_COL : HC_LABEL, LV_TEXT_ALIGN_LEFT);
+        lv_obj_set_style_bg_color(status, HC(unavailable ? HC_WARN_BG : HC_CARD), 0);
+        lv_obj_set_style_border_color(status, HC(unavailable ? HC_WARN_COL : HC_LINE), 0);
+        lv_obj_set_style_bg_color(status_dot, HC(unavailable ? HC_WARN_COL : scanning ? HC_NAV_CUR : HC_DIM), 0);
+        lv_obj_update_layout(status);
+        lv_obj_set_width(status_text, lv_obj_get_width(status) - 44);
+        lv_obj_set_style_text_color(status_text, HC(unavailable ? HC_WARN_COL : HC_LABEL), 0);
+        lv_label_set_text(status_text, unavailable ? "Wi-Fi driver is not available in this build" :
+                          scanning ? "Scanning for networks..." : "Not connected");
     }
 
-    if (!ws.ap_count) {
-        hw_text_in(l, un ? "Wi-Fi is not available on this controller" : "No networks found - tap SCAN", 0, 150, 480, 17, HF_12, HC_LABEL, LV_TEXT_ALIGN_CENTER);
+    const bool have_networks = ws.ap_count > 0;
+    lv_obj_t *empty_hint = wifi_widget(view, "empty_hint");
+    lv_obj_t *networks = wifi_widget(view, "networks");
+    lv_obj_set_hidden(empty_hint, have_networks);
+    lv_obj_set_hidden(networks, !have_networks);
+    lv_obj_set_hidden(wifi_widget(view, "list_tip"), !have_networks);
+    if (!have_networks) {
+        if (unavailable) lv_label_set_text(empty_hint, "Wi-Fi is not available on this controller");
         return;
     }
-    lv_obj_t *a = hw_scroll_area(l, 8, 78, 464, 214, SLOT_LIST);
+
+    lv_obj_set_scroll_dir(networks, LV_DIR_VER);
     for (int i = 0; i < ws.ap_count; ++i) {
         const hmi_wifi_ap_t *ap = &ws.ap[i];
-        const bool cur = conn && !strcmp(ap->ssid, ws.ssid);
-        lv_obj_t *b = hw_button(a, 0, i * 44, 464, 40, cur ? HC_NAV_BOX : HC_CARD, 10, wifi_row_cb, (void *)(uintptr_t)i);
-        lv_obj_set_style_border_width(b, 1, 0);
-        lv_obj_set_style_border_color(b, HC(cur ? HC_NAV_EDGE : HC_LINE), 0);
-        lv_obj_set_style_pad_all(b, -1, 0);
-        hw_text_in(b, ap->ssid, 12, 6, ap->secure ? 330 : 345, 15, HF_12B, HC_WHITE, LV_TEXT_ALIGN_LEFT);
-        char s2[40];
-        if (cur) snprintf(s2, sizeof(s2), "Connected \xC2\xB7 %s", ws.ip);
-        else snprintf(s2, sizeof(s2), "%s", ap->secure ? "Secured" : "Open network");
-        hw_text_in(b, s2, 12, 21, 330, 13, HF_10, cur ? HC_TXT2 : HC_LABEL, LV_TEXT_ALIGN_LEFT);
-        wifi_bars(b, 434, 27, rssi_level(ap->rssi));
-        char rs[16]; snprintf(rs, sizeof(rs), "%d dBm", (int)ap->rssi);
-        hw_text_in(b, rs, 374, 0, 50, 40, HF_10, HC_LABEL, LV_TEXT_ALIGN_RIGHT);
-        if (ap->secure) hw_icon_row(b, &hmi_icon_lock_11, 353, 0, 40, HC_DIM);
+        const bool current = connected && !strcmp(ap->ssid, ws.ssid);
+        char details[40], signal[16];
+        if (current) snprintf(details, sizeof(details), "Connected \xC2\xB7 %s", ws.ip);
+        else snprintf(details, sizeof(details), "%s", ap->secure ? "Secured" : "Open network");
+        snprintf(signal, sizeof(signal), "%d dBm", (int)ap->rssi);
+        const int level = rssi_level(ap->rssi);
+        const lv_color_t lit = HC(level >= 3 ? HC_OK_COL : level == 2 ? HC_WARN_COL : HC_AMP_COL);
+        const lv_color_t unlit = HC(HC_TRACK);
+        lv_obj_t *row = rcc_wifi_row_create(networks, i, ap->ssid, details, signal, ap->secure != 0,
+                                           ap->secure ? 330 : 345, HC(current ? HC_NAV_BOX : HC_CARD),
+                                           HC(current ? HC_NAV_EDGE : HC_LINE), HC(current ? HC_TXT2 : HC_LABEL),
+                                           lit, level > 1 ? lit : unlit, level > 2 ? lit : unlit,
+                                           level > 3 ? lit : unlit, (lv_font_t *)HF_10, (lv_font_t *)HF_12B,
+                                           &hmi_icon_lock_11);
+        lv_obj_add_event_cb(row, wifi_row_cb, LV_EVENT_CLICKED, (void *)(uintptr_t)i);
     }
-    hw_scroll_restore(a, SLOT_LIST);
-    hw_text_in(l, "Drag to scroll \xC2\xB7 tap a network to connect", 0, 299, 480, 13, HF_10, HC_DIM, LV_TEXT_ALIGN_CENTER);
+    hw_scroll_to(networks, wifi_list_scroll);
+    lv_obj_add_event_cb(networks, wifi_save_list_scroll, LV_EVENT_SCROLL, NULL);
 }
 
 /* ---- password view */
@@ -220,8 +227,7 @@ static void wifi_go_style(void)
     const bool ok = !wifi_target_secure || wifi_pw_len >= HMI_WIFI_PASS_MIN;
     lv_obj_set_style_bg_color(wifi_go_key, HC(ok ? HC_NAV_CUR : HC_SURFACE2), 0);
     lv_obj_set_style_border_color(wifi_go_key, HC(ok ? HC_NAV_CUR : HC_LINE), 0);
-    lv_obj_t *lab = lv_obj_get_child(wifi_go_key, 0);
-    if (lab) lv_obj_set_style_text_color(lab, HC(ok ? HC_BG : HC_DIM), 0);
+    lv_obj_set_style_text_color(wifi_go_label, HC(ok ? HC_BG : HC_DIM), 0);
 }
 static void wifi_field_draw(void)
 {
@@ -282,218 +288,126 @@ static void wifi_key(int code)
 static void wifi_key_cb(lv_event_t *e) { wifi_key((int)(uintptr_t)lv_event_get_user_data(e)); }
 static void wifi_eye_cb(lv_event_t *e) { (void)e; wifi_show_pw = !wifi_show_pw; wifi_redraw(); }
 
-/* ~50 keyboard keys share these (no per-object style allocation) to stay inside LVGL's 64 KB heap. */
-typedef struct {
-    lv_style_t key, key_pr, key_lbl;          /* single keys */
-    lv_style_t mx_main, mx_item, mx_item_pr;  /* button-matrix rows */
-} kb_styles_t;
-static kb_styles_t kb_st;
-static bool kb_st_ready;
-
-static kb_styles_t *kb_styles(void)
-{
-    if (kb_st_ready) return &kb_st;
-    kb_st_ready = true;
-    lv_style_init(&kb_st.key);
-    lv_style_set_bg_color(&kb_st.key, HC(HC_SURFACE2)); lv_style_set_bg_opa(&kb_st.key, LV_OPA_COVER);
-    lv_style_set_radius(&kb_st.key, 6);
-    lv_style_set_border_width(&kb_st.key, 1); lv_style_set_border_color(&kb_st.key, HC(HC_LINE));
-    lv_style_set_pad_all(&kb_st.key, -1);
-    lv_style_init(&kb_st.key_pr);
-    lv_style_set_bg_opa(&kb_st.key_pr, LV_OPA_70);
-    lv_style_init(&kb_st.key_lbl);
-    lv_style_set_text_font(&kb_st.key_lbl, HF_12B); lv_style_set_text_color(&kb_st.key_lbl, HC(HC_TXT2));
-    lv_style_set_text_align(&kb_st.key_lbl, LV_TEXT_ALIGN_CENTER);
-
-    lv_style_init(&kb_st.mx_main);
-    lv_style_set_bg_opa(&kb_st.mx_main, LV_OPA_TRANSP); lv_style_set_border_width(&kb_st.mx_main, 0);
-    lv_style_set_pad_all(&kb_st.mx_main, 0); lv_style_set_pad_gap(&kb_st.mx_main, 3); lv_style_set_radius(&kb_st.mx_main, 0);
-    lv_style_init(&kb_st.mx_item);
-    lv_style_set_bg_color(&kb_st.mx_item, HC(HC_SURFACE2)); lv_style_set_bg_opa(&kb_st.mx_item, LV_OPA_COVER);
-    lv_style_set_radius(&kb_st.mx_item, 6);
-    lv_style_set_border_width(&kb_st.mx_item, 1); lv_style_set_border_color(&kb_st.mx_item, HC(HC_LINE));
-    lv_style_set_text_font(&kb_st.mx_item, HF_12B); lv_style_set_text_color(&kb_st.mx_item, HC(HC_TXT2));
-    lv_style_init(&kb_st.mx_item_pr);
-    lv_style_set_bg_opa(&kb_st.mx_item_pr, LV_OPA_70);
-    return &kb_st;
-}
-
-typedef struct { int code; int w; } kkey_t;
-static void kb_btn(lv_obj_t *l, int x, int y, int w, int code)
-{
-    const bool go = code == KEY_GO, shift = code == KEY_SHIFT, space = code == ' ';
-    const bool shift_on = shift && wifi_shift;
-    /* ~50 keys: share styles (no per-object style allocation) to stay inside LVGL's 64 KB heap */
-    kb_styles_t *st = kb_styles();
-    lv_obj_t *b = lv_button_create(l);
-    lv_obj_remove_style_all(b);
-    lv_obj_set_pos(b, x, y);
-    lv_obj_set_size(b, w, 38);
-    lv_obj_set_scrollable(b, false);
-    lv_obj_add_style(b, &st->key, 0);
-    lv_obj_add_style(b, &st->key_pr, LV_STATE_PRESSED);
-    lv_obj_add_event_cb(b, wifi_key_cb, LV_EVENT_CLICKED, (void *)(uintptr_t)code);
-    if (go) { lv_obj_set_style_bg_color(b, HC(HC_NAV_CUR), 0); lv_obj_set_style_border_color(b, HC(HC_NAV_CUR), 0); }
-    if (shift_on) { lv_obj_set_style_bg_color(b, HC(HC_NAV_BOX), 0); lv_obj_set_style_border_color(b, HC(HC_NAV_CUR), 0); }
-    if (code == KEY_SHIFT) hw_icon_c(b, &hmi_icon_shift_14, w / 2, 19, wifi_sym ? HC_TRACK : shift_on ? HC_NAV_CUR : HC_LABEL);
-    else if (code == KEY_BKSP) hw_icon_c(b, &hmi_icon_bksp_16, w / 2, 19, HC_LABEL);
-    else {
-        char s[12];
-        bool small = false; uint32_t fg = HC_TXT2;
-        if (code == KEY_SYM) { snprintf(s, sizeof(s), "%s", wifi_sym ? "ABC" : "?123"); small = true; fg = HC_LABEL; }
-        else if (go) { snprintf(s, sizeof(s), "Connect"); fg = HC_BG; }
-        else if (space) { snprintf(s, sizeof(s), "space"); small = true; fg = HC_DIM; }
-        else {
-            int ch = code;
-            if (wifi_shift && ch >= 'a' && ch <= 'z') ch -= 32;
-            snprintf(s, sizeof(s), "%c", ch);
-        }
-        lv_obj_t *t = lv_label_create(b);
-        lv_label_set_text(t, s);
-        lv_obj_add_style(t, &st->key_lbl, 0);
-        if (small) lv_obj_set_style_text_font(t, HF_10, 0);
-        if (fg != HC_TXT2) lv_obj_set_style_text_color(t, HC(fg), 0);
-        lv_obj_set_size(t, w, hw_lh(small ? HF_10 : HF_12B));
-        lv_obj_set_pos(t, 0, (38 - hw_lh(small ? HF_10 : HF_12B)) / 2);
-    }
-    if (go) wifi_go_key = b;
-}
-/* Full-width key row, weights as in the concept; fill=false keeps the 10-key unit width. */
-static void wifi_kb_row(lv_obj_t *l, int y, const kkey_t *k, int n, bool fill)
-{
-    int total = 0;
-    for (int i = 0; i < n; ++i) total += k[i].w;
-    const int avail = fill ? 472 - 3 * (n - 1) : 445;
-    if (!fill) total = 100;
-    int acc = 0, x = 4;
-    for (int i = 0; i < n; ++i) {
-        const int w = (acc + k[i].w) * avail / total - acc * avail / total;
-        acc += k[i].w;
-        if (k[i].code != KEY_NONE) kb_btn(l, x, y, w, k[i].code);
-        x += w + 3;
-    }
-}
-
-/* Letter/digit rows are one lv_buttonmatrix each (a handful of objects instead of ~10 buttons). */
+/* One matrix for each letter/digit row keeps the keyboard inside LVGL's heap. */
 static char kb_txt[4][10][2];
 static const char *kb_map[4][11];
+
 static void kb_matrix_cb(lv_event_t *e)
 {
-    lv_obj_t *m = lv_event_get_target_obj(e);
-    const uint32_t id = lv_buttonmatrix_get_selected_button(m);
+    lv_obj_t *matrix = lv_event_get_target_obj(e);
+    const uint32_t id = lv_buttonmatrix_get_selected_button(matrix);
     if (id == LV_BUTTONMATRIX_BUTTON_NONE) return;
-    const char *t = lv_buttonmatrix_get_button_text(m, id);
-    if (t && t[0]) wifi_key((unsigned char)t[0]);
+    const char *text = lv_buttonmatrix_get_button_text(matrix, id);
+    if (text && text[0]) wifi_key((unsigned char)text[0]);
 }
-static void kb_matrix(lv_obj_t *l, int x, int y, int w, int row, const char *chars)
+
+static void kb_matrix_bind(lv_obj_t *matrix, int row, const char *chars)
 {
-    kb_styles_t *st = kb_styles();
-    const int n = (int)strlen(chars);
-    for (int i = 0; i < n; ++i) {
-        kb_txt[row][i][0] = (wifi_shift && chars[i] >= 'a' && chars[i] <= 'z') ? (char)(chars[i] - 32) : chars[i];
+    const int size = (int)strlen(chars);
+    for (int i = 0; i < size; ++i) {
+        const char key = chars[i];
+        kb_txt[row][i][0] = (wifi_shift && key >= 'a' && key <= 'z') ? (char)(key - 32) : key;
         kb_txt[row][i][1] = '\0';
         kb_map[row][i] = kb_txt[row][i];
     }
-    kb_map[row][n] = "";
-    lv_obj_t *m = lv_buttonmatrix_create(l);
-    lv_obj_remove_style_all(m);
-    lv_obj_add_style(m, &st->mx_main, 0);
-    lv_obj_add_style(m, &st->mx_item, LV_PART_ITEMS);
-    lv_obj_add_style(m, &st->mx_item_pr, LV_PART_ITEMS | LV_STATE_PRESSED);
-    lv_obj_set_pos(m, x, y);
-    lv_obj_set_size(m, w, 38);
-    lv_buttonmatrix_set_map(m, kb_map[row]);
-    lv_obj_add_event_cb(m, kb_matrix_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    kb_map[row][size] = "";
+    lv_buttonmatrix_set_map(matrix, kb_map[row]);
+    lv_obj_add_event_cb(matrix, kb_matrix_cb, LV_EVENT_VALUE_CHANGED, NULL);
 }
 
-static void wifi_view_pass(lv_obj_t *l)
+static void wifi_view_pass(lv_obj_t *parent)
 {
-    char sub[48]; const int r = target_rssi();
-    if (r) snprintf(sub, sizeof(sub), "Secured \xC2\xB7 Signal %d dBm", r); else snprintf(sub, sizeof(sub), "Secured network");
-    wifi_header(l, wifi_target, sub);
-    lv_obj_t *pl = hw_text(l, "PASSWORD", 8, 46, HF_10, HC_LABEL);
-    hw_spacing(pl, 1);
-    char c[16]; snprintf(c, sizeof(c), "%d / %d", wifi_pw_len, HMI_WIFI_PASS_MAX);
-    wifi_count_lbl = hw_text_in(l, c, 372, 46, 100, 13, HF_10, HC_DIM, LV_TEXT_ALIGN_RIGHT);
-    lv_obj_t *f = hw_card_box(l, 8, 62, 464, 34, HC_CARD, 10, HC_NAV_CUR);
-    wifi_field = hw_obj(f, 0, 0, 440, 34);
-    lv_obj_t *ey = hw_button(f, 420, 0, 44, 34, HC_CARD, 10, wifi_eye_cb, NULL);
-    lv_obj_set_style_bg_opa(ey, LV_OPA_TRANSP, 0);
-    hw_icon_c(ey, wifi_show_pw ? &hmi_icon_eyeoff_14 : &hmi_icon_eye_14, 22, 17, wifi_show_pw ? HC_NAV_CUR : HC_LABEL);
+    char subtitle[48], count[16];
+    const int rssi = target_rssi();
+    if (rssi) snprintf(subtitle, sizeof(subtitle), "Secured \xC2\xB7 Signal %d dBm", rssi);
+    else snprintf(subtitle, sizeof(subtitle), "Secured network");
+    wifi_header(parent, wifi_target, subtitle);
+    snprintf(count, sizeof(count), "%d / %d", wifi_pw_len, HMI_WIFI_PASS_MAX);
 
-    static const char *const nrm[4] = {"1234567890", "qwertyuiop", "asdfghjkl", "zxcvbnm"};
-    static const char *const sym[4] = {"!@#$%^&*()", "-_=+[]{}\\|", ";:'\"/?<>~", "`"};
-    const char *const *rows = wifi_sym ? sym : nrm;
-    kb_matrix(l, 4, 112, 472, 0, wifi_sym ? sym[0] : nrm[0]);
-    kb_matrix(l, 4, 153, 472, 1, rows[1]);
-    kb_matrix(l, 4, 194, 472, 2, rows[2]);
-    kb_btn(l, 4, 235, 67, KEY_SHIFT);
-    kb_btn(l, 409, 235, 67, KEY_BKSP);
-    if (!wifi_sym) kb_matrix(l, 74, 235, 331, 3, nrm[3]);
-    else kb_matrix(l, 74, 235, 44, 3, sym[3]);
-    const kkey_t last[5] = {{KEY_SYM,16},{',',10},{' ',46},{'.',10},{KEY_GO,24}};
-    wifi_go_key = NULL;
-    wifi_kb_row(l, 276, last, 5, true);
+    lv_obj_t *view = rcc_wifi_pass_create(parent, wifi_sym, wifi_shift, count, wifi_sym ? "ABC" : "?123",
+                                         (lv_font_t *)HF_10, (lv_font_t *)HF_12B,
+                                         wifi_show_pw ? &hmi_icon_eyeoff_14 : &hmi_icon_eye_14,
+                                         &hmi_icon_shift_14, &hmi_icon_bksp_16);
+    wifi_count_lbl = wifi_widget(view, "password_count");
+    wifi_field = wifi_widget(view, "password_field");
+    wifi_go_key = wifi_widget(view, "key_go");
+    wifi_go_label = wifi_widget(view, "key_go_label");
+    wifi_bind(view, "password_eye", wifi_eye_cb, NULL);
+    if (wifi_show_pw)
+        lv_obj_set_style_image_recolor(wifi_widget(view, "password_eye_icon"), HC(HC_NAV_CUR), 0);
+    if (wifi_sym || wifi_shift)
+        lv_obj_set_style_image_recolor(wifi_widget(view, "shift_image"), HC(wifi_sym ? HC_TRACK : HC_NAV_CUR), 0);
+
+    static const char *const normal[4] = {"1234567890", "qwertyuiop", "asdfghjkl", "zxcvbnm"};
+    static const char *const symbols[4] = {"!@#$%^&*()", "-_=+[]{}\\|", ";:'\"/?<>~", "`"};
+    static const char *const matrix_ids[4] = {"matrix_0", "matrix_1", "matrix_2", "matrix_3"};
+    const char *const *rows = wifi_sym ? symbols : normal;
+    for (int i = 0; i < 4; ++i) kb_matrix_bind(wifi_widget(view, matrix_ids[i]), i, rows[i]);
+
+    static const struct { const char *name; int code; } keys[] = {
+        {"key_shift", KEY_SHIFT}, {"key_erase", KEY_BKSP}, {"key_symbols", KEY_SYM},
+        {"key_comma", ','}, {"key_space", ' '}, {"key_period", '.'}, {"key_go", KEY_GO},
+    };
+    for (unsigned i = 0; i < sizeof(keys) / sizeof(keys[0]); ++i)
+        wifi_bind(view, keys[i].name, wifi_key_cb, (void *)(uintptr_t)keys[i].code);
     wifi_field_draw();
 }
 
 /* ---- busy / info / fail views */
-static void wifi_view_busy(lv_obj_t *l)
+static void wifi_view_busy(lv_obj_t *parent)
 {
-    wifi_header(l, "Connecting", wifi_target);
-    wifi_spinner(l, &hmi_icon_spin_44, 240, 72, HC_NAV_CUR);
-    hw_text_in(l, "Joining network...", 0, 104, 480, 17, HF_14B, HC_WHITE, LV_TEXT_ALIGN_CENTER);
-    hw_text_in(l, "Please wait, usually under 10 s", 0, 127, 480, 13, HF_10, HC_LABEL, LV_TEXT_ALIGN_CENTER);
-    static const char *const names[3] = {"Associating", "Authenticating", "Obtaining IP address"};
+    wifi_header(parent, "Connecting", wifi_target);
     const int step = ws.state == HMI_WIFI_CONNECTING ? ws.step : 0;
-    for (int k = 0; k < 3; ++k) {
-        const int y = 168 + k * 22;
-        if (k < step) {
-            hw_box(l, 90, y, 16, 16, HC_OK_BG, 8);
-            hw_icon_c(l, &hmi_icon_check_11, 98, y + 8, HC_OK_COL);
-        } else if (k == step) {
-            wifi_spinner(l, &hmi_icon_spin_16, 98, y + 8, HC_NAV_CUR);
-        } else {
-            lv_obj_t *o = hw_obj(l, 90, y, 16, 16);
-            lv_obj_set_style_radius(o, 8, 0);
-            lv_obj_set_style_border_width(o, 2, 0);
-            lv_obj_set_style_border_color(o, HC(HC_TRACK), 0);
-        }
-        hw_text_in(l, names[k], 116, y, 270, 16, k == step ? HF_12B : HF_12, k < step ? HC_TXT2 : k == step ? HC_WHITE : HC_DIM, LV_TEXT_ALIGN_LEFT);
+    lv_obj_t *view = rcc_wifi_busy_create(parent, (lv_font_t *)HF_14B, (lv_font_t *)HF_10,
+                                         (lv_font_t *)HF_12, (lv_font_t *)HF_12B,
+                                         &hmi_icon_spin_44, &hmi_icon_spin_16, &hmi_icon_check_11);
+    wifi_spinner_start(wifi_widget(view, "spinner"));
+    static const struct { const char *marker, *check, *spinner, *label; } steps[] = {
+        {"step_marker_0", "step_check_0", "step_spinner_0", "step_0"},
+        {"step_marker_1", "step_check_1", "step_spinner_1", "step_1"},
+        {"step_marker_2", "step_check_2", "step_spinner_2", "step_2"},
+    };
+    for (int i = 0; i < 3; ++i) {
+        const bool done = i < step, active = i == step;
+        lv_obj_t *marker = wifi_widget(view, steps[i].marker);
+        lv_obj_t *spinner = wifi_widget(view, steps[i].spinner);
+        lv_obj_t *label = wifi_widget(view, steps[i].label);
+        lv_obj_set_hidden(marker, active);
+        lv_obj_set_hidden(wifi_widget(view, steps[i].check), !done);
+        lv_obj_set_hidden(spinner, !active);
+        if (active) wifi_spinner_start(spinner);
+        lv_obj_set_style_bg_opa(marker, done ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
+        lv_obj_set_style_border_width(marker, done ? 0 : 2, 0);
+        lv_obj_set_style_text_color(label, HC(done ? HC_TXT2 : active ? HC_WHITE : HC_DIM), 0);
+        lv_obj_set_style_text_font(label, active ? HF_12B : HF_12, 0);
+        if (active) lv_obj_set_y(label, lv_obj_get_y_aligned(label) + 1);
     }
-    (void)wifi_btn(l, 150, 268, 180, "CANCEL", HC_SURFACE2, HC_TXT2, true, wifi_back_cb);
+    wifi_bind(view, "cancel", wifi_back_cb, NULL);
 }
-static void wifi_view_info(lv_obj_t *l)
-{
-    wifi_header(l, "Wi-Fi", "Connected");
-    lv_obj_t *c = hw_card_box(l, 8, 48, 464, 62, HC_OK_BG, 12, HC_OK_COL);
-    hw_box(c, 14, 13, 36, 36, HC_OK_DEEP, 18);
-    hw_icon_c(c, &hmi_icon_wifi_22, 32, 31, HC_OK_COL);
-    hw_text_in(c, ws.ssid, 62, 15, 290, 17, HF_14B, HC_WHITE, LV_TEXT_ALIGN_LEFT);
-    hw_text_in(c, "Station connected", 62, 34, 290, 13, HF_10, HC_TXT2, LV_TEXT_ALIGN_LEFT);
-    hw_chip(c, 450, 22, "ONLINE", HC_OK_COL, HC_OK_DEEP);
-    char sg[40]; snprintf(sg, sizeof(sg), "%d dBm \xC2\xB7 %s", (int)ws.rssi, rssi_word(ws.rssi));
-    wifi_cell(l, 8, 118, "IP ADDRESS", ws.ip);
-    wifi_cell(l, 243, 118, "GATEWAY", ws.gateway);
-    wifi_cell(l, 8, 168, "SIGNAL", sg);
-    wifi_cell(l, 243, 168, "MAC", ws.mac);
 
+static void wifi_view_info(lv_obj_t *parent)
+{
+    wifi_header(parent, "Wi-Fi", "Connected");
+    char signal[40];
+    snprintf(signal, sizeof(signal), "%d dBm \xC2\xB7 %s", (int)ws.rssi, rssi_word(ws.rssi));
     hmi_ota_status_t ota;
     hmi_ota_get_status(&ota);
-    char ota_val[64];
-    if (ota.armed) snprintf(ota_val, sizeof(ota_val), "PIN %s \xC2\xB7 /update", ota.pin);
-    else snprintf(ota_val, sizeof(ota_val), "Locked");
-    char slot_str[80];
-    snprintf(slot_str, sizeof(slot_str), "%s (Target: %s)", ota.running_slot, ota.next_slot);
-    wifi_cell(l, 8, 218, ota.armed ? "WEB OTA \xC2\xB7 10 MIN, ONE USE" : "WEB OTA", ota_val);
-    wifi_cell(l, 243, 218, "DUAL-OTA SLOT", slot_str);
+    char ota_value[64], slot_text[80];
+    if (ota.armed) snprintf(ota_value, sizeof(ota_value), "PIN %s \xC2\xB7 /update", ota.pin);
+    else snprintf(ota_value, sizeof(ota_value), "Locked");
+    snprintf(slot_text, sizeof(slot_text), "%s (Target: %s)", ota.running_slot, ota.next_slot);
 
-    (void)wifi_btn(l, 8, 268, 148, "FORGET", HC_SURFACE2, HC_TXT2, true, wifi_forget_cb);
-    (void)wifi_btn(l, 166, 268, 148, ota.armed ? "LOCK OTA" : "ENABLE OTA", ota.armed ? HC_WARN_BG : HC_SURFACE2,
-                   ota.armed ? HC_WARN_COL : HC_TXT2, true, wifi_ota_cb);
-    (void)wifi_btn(l, 324, 268, 148, "DONE", HC_START_COL, HC_HERO_COL, false, wifi_done_cb);
+    lv_obj_t *view = rcc_wifi_info_create(parent, ws.ssid, ws.ip, ws.gateway, signal, ws.mac,
+                                         ota.armed ? "WEB OTA \xC2\xB7 10 MIN, ONE USE" : "WEB OTA",
+                                         ota_value, slot_text, ota.armed ? "LOCK OTA" : "ENABLE OTA",
+                                         ota.armed, (lv_font_t *)HF_10, (lv_font_t *)HF_12B,
+                                         (lv_font_t *)HF_14B, &hmi_icon_wifi_22);
+    wifi_bind(view, "forget", wifi_forget_cb, NULL);
+    wifi_bind(view, "ota", wifi_ota_cb, NULL);
+    wifi_bind(view, "done", wifi_done_cb, NULL);
 }
-static void wifi_view_fail(lv_obj_t *l)
+
+static void wifi_view_fail(lv_obj_t *parent)
 {
     static const char *const title[5] = {"Connection failed", "Wrong password", "Network not found", "No IP address received", "Connection failed"};
     static const char *const msg[5] = {
@@ -502,31 +416,26 @@ static void wifi_view_fail(lv_obj_t *l)
         "The access point is out of range or was renamed. Move closer or scan again.",
         "Joined the access point, but DHCP did not answer. Check the router.",
         "The Wi-Fi driver reported an error. Try again."};
-    const int r = ws.fail_reason < 5 ? ws.fail_reason : 4;
-    wifi_header(l, "Connection failed", wifi_target);
-    lv_obj_t *c = hw_card_box(l, 8, 48, 464, 62, HC_FAULT_BG, 12, HC_FAULT_COL);
-    hw_box(c, 14, 13, 36, 36, HC_FAULT_DEEP, 18);
-    hw_icon_c(c, &hmi_icon_warn_20, 32, 31, HC_FAULT_COL);
-    hw_text_in(c, title[r], 62, 9, 390, 17, HF_14B, HC_WHITE, LV_TEXT_ALIGN_LEFT);
-    lv_obj_t *m = hw_text(c, msg[r], 62, 28, HF_10, HC_TXT2);
-    lv_label_set_long_mode(m, LV_LABEL_LONG_MODE_WRAP);
-    lv_obj_set_width(m, 388);
-    char at[16]; snprintf(at, sizeof(at), "%u", (unsigned)(ws.attempt ? ws.attempt : 1));
-    char sg[24]; const int tr = target_rssi();
-    if (tr) snprintf(sg, sizeof(sg), "%d dBm", tr); else snprintf(sg, sizeof(sg), "\xE2\x80\x94");
-    wifi_cell(l, 8, 118, "ATTEMPT", at);
-    wifi_cell(l, 243, 118, "SIGNAL", sg);
-    if (r == HMI_WIFI_FAIL_PASSWORD)
-        hw_text_in(l, "Passwords are case-sensitive. WPA2 passwords have 8 to 63 characters.", 12, 172, 456, 14, HF_10, HC_LABEL, LV_TEXT_ALIGN_LEFT);
-    (void)wifi_btn(l, 8, 268, 228, "CHOOSE OTHER", HC_SURFACE2, HC_TXT2, true, wifi_done_cb);
-    (void)wifi_btn(l, 244, 268, 228, "RETRY", HC_START_COL, HC_HERO_COL, false, wifi_retry_cb);
+    const int reason = ws.fail_reason < 5 ? ws.fail_reason : 4;
+    wifi_header(parent, "Connection failed", wifi_target);
+    char attempt[16], signal[24];
+    snprintf(attempt, sizeof(attempt), "%u", (unsigned)(ws.attempt ? ws.attempt : 1));
+    const int rssi = target_rssi();
+    if (rssi) snprintf(signal, sizeof(signal), "%d dBm", rssi);
+    else snprintf(signal, sizeof(signal), "\xE2\x80\x94");
+
+    lv_obj_t *view = rcc_wifi_fail_create(parent, title[reason], msg[reason], attempt, signal,
+                                         reason == HMI_WIFI_FAIL_PASSWORD, (lv_font_t *)HF_10,
+                                         (lv_font_t *)HF_12B, (lv_font_t *)HF_14B, &hmi_icon_warn_20);
+    wifi_bind(view, "choose_other", wifi_done_cb, NULL);
+    wifi_bind(view, "retry", wifi_retry_cb, NULL);
 }
 
 static void wifi_render(void)
 {
     if (!wifi_layer) return;
     lv_obj_clean(wifi_layer);
-    wifi_field = NULL; wifi_go_key = NULL; wifi_count_lbl = NULL;
+    wifi_field = NULL; wifi_go_key = NULL; wifi_go_label = NULL; wifi_count_lbl = NULL;
     switch (wifi_view) {
     case WV_PASS: wifi_view_pass(wifi_layer); break;
     case WV_BUSY: wifi_view_busy(wifi_layer); break;
@@ -557,7 +466,7 @@ static void wifi_tick(lv_timer_t *t)
 void hmi_wifi_ui_open(void)
 {
     if (wifi_layer) return;
-    hw_scroll_reset(SLOT_LIST);
+    wifi_list_scroll = 0;
     wifi_view = WV_LIST;
     wifi_layer = hmi_shell_overlay_open();
     if (!wifi_layer) return;

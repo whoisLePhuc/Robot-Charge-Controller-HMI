@@ -1,0 +1,16 @@
+<component>
+  <api>
+    <prop name="step_x" type="int" default="13" />
+    <prop name="step_width" type="int" default="48" />
+    <prop name="offset" type="int" default="0" />
+    <prop name="text" type="string" default="IDLE" />
+    <prop name="text_color" type="color" default="0xcbd5e1" />
+    <prop name="dot_color" type="color" default="0x22c55e" />
+    <prop name="active_opa" type="int" default="0" />
+    <prop name="small" type="font" default="hmi_f10" />
+  </api>
+  <view extends="lv_obj" scrollable="false" clickable="false" x="$step_x" y="48" width="$step_width" height="19" style_bg_color="0x0c2538" style_bg_opa="$active_opa" style_radius="5" style_border_width="1" style_border_color="0x1e4963" style_border_opa="$active_opa" style_outline_width="0" style_shadow_width="0" style_pad_all="-1">
+    <lv_obj x="{7 + offset}" y="6" width="6" height="6" clickable="false" scrollable="false" style_bg_color="$dot_color" style_bg_opa="100%" style_radius="3" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" />
+    <lv_label x="{17 + offset}" y="3" text="$text" scrollable="false" clickable="false" style_text_font="$small" style_text_color="$text_color" />
+  </view>
+</component>

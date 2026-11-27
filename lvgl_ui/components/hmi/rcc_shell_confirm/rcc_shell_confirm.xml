@@ -1,0 +1,36 @@
+<component>
+  <api>
+    <prop name="title" type="string" default="Confirm Charge Start" />
+    <prop name="controller_state" type="string" default="IDLE · Ready" />
+    <prop name="link_status" type="string" default="ONLINE · 0.4 s ago" />
+    <prop name="measurement_label" type="string" default="ADC telemetry" />
+    <prop name="measurement_status" type="string" default="Fresh · 12 ms" />
+    <prop name="fault_status" type="string" default="0x00000000 (Clear)" />
+    <prop name="fault_color" type="color" default="0xf8fafc" />
+    <prop name="footnote" type="string" default="Controller validates VREQ &amp; precheck before closing relay." />
+    <prop name="title_font" type="font" default="hmi_f16b" />
+    <prop name="row_font" type="font" default="hmi_f12" />
+    <prop name="button_font" type="font" default="hmi_f12b" />
+    <prop name="body_font" type="font" default="hmi_f10" />
+  </api>
+  <view x="56" y="32" width="424" height="288" scrollable="false" clickable="true" style_pad_all="0" style_bg_color="0x06090e" style_bg_opa="209" style_radius="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" extends="lv_obj">
+    <lv_obj x="36" y="14" width="352" height="208" scrollable="false" clickable="true" style_pad_all="-1" style_bg_color="0x111722" style_bg_opa="100%" style_radius="12" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_border_color="0x38bdf8" name="confirm_card">
+      <lv_label x="17" y="13" text="$title" scrollable="false" clickable="false" style_text_font="$title_font" style_text_color="0xf8fafc" style_text_align="left" style_text_letter_space="0" width="318" height="17" long_mode="dots" />
+      <lv_label x="17" y="41" text="Controller state" scrollable="false" clickable="false" style_text_font="$row_font" style_text_color="0x94a3b8" style_text_align="left" style_text_letter_space="0" width="318" height="15" long_mode="dots" />
+      <lv_label x="17" y="42" text="$controller_state" scrollable="false" clickable="false" style_text_font="$button_font" style_text_color="0xf8fafc" style_text_align="right" style_text_letter_space="0" width="319" height="13" long_mode="dots" />
+      <lv_label x="17" y="62" text="UART link" scrollable="false" clickable="false" style_text_font="$row_font" style_text_color="0x94a3b8" style_text_align="left" style_text_letter_space="0" width="318" height="15" long_mode="dots" />
+      <lv_label x="17" y="63" text="$link_status" scrollable="false" clickable="false" style_text_font="$button_font" style_text_color="0xf8fafc" style_text_align="right" style_text_letter_space="0" width="319" height="13" long_mode="dots" />
+      <lv_label x="17" y="83" text="$measurement_label" scrollable="false" clickable="false" style_text_font="$row_font" style_text_color="0x94a3b8" style_text_align="left" style_text_letter_space="0" width="318" height="15" long_mode="dots" />
+      <lv_label x="17" y="84" text="$measurement_status" scrollable="false" clickable="false" style_text_font="$button_font" style_text_color="0xf8fafc" style_text_align="right" style_text_letter_space="0" width="319" height="13" long_mode="dots" />
+      <lv_label x="17" y="104" text="Fault / Inhibit" scrollable="false" clickable="false" style_text_font="$row_font" style_text_color="0x94a3b8" style_text_align="left" style_text_letter_space="0" width="318" height="15" long_mode="dots" />
+      <lv_label x="17" y="105" text="$fault_status" scrollable="false" clickable="false" style_text_font="$button_font" style_text_color="$fault_color" style_text_align="right" style_text_letter_space="0" width="319" height="13" long_mode="dots" />
+      <lv_label x="17" y="128" text="$footnote" scrollable="false" clickable="false" style_text_font="$body_font" style_text_color="0x94a3b8" style_text_align="left" style_text_letter_space="0" width="318" height="13" long_mode="dots" />
+      <lv_button x="17" y="157" width="154" height="38" scrollable="false" clickable="true" style_pad_all="0" style_bg_color="0x172030" style_bg_opa="100%" style_radius="10" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_bg_opa-pressed="178" name="confirm_cancel">
+        <lv_label x="0" y="12" text="CANCEL" scrollable="false" clickable="false" style_text_font="$button_font" style_text_color="0xf8fafc" style_text_align="center" style_text_letter_space="1" width="154" height="13" long_mode="dots" />
+      </lv_button>
+      <lv_button x="181" y="157" width="154" height="38" scrollable="false" clickable="true" style_pad_all="0" style_bg_color="0x0ea5e9" style_bg_opa="100%" style_radius="10" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_bg_opa-pressed="178" name="confirm_send">
+        <lv_label x="0" y="12" text="SEND START" scrollable="false" clickable="false" style_text_font="$button_font" style_text_color="0x06090e" style_text_align="center" style_text_letter_space="1" width="154" height="13" long_mode="dots" />
+      </lv_button>
+    </lv_obj>
+  </view>
+</component>

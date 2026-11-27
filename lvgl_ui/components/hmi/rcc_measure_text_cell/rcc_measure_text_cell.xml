@@ -1,0 +1,11 @@
+<component>
+  <api>
+    <prop name="cell_x" type="int" default="59" />
+    <prop name="cell_y" type="int" default="0" />
+    <prop name="cell_width" type="int" default="47" />
+    <prop name="text" type="string" default="—" />
+    <prop name="font" type="font" default="hmi_f10" />
+    <prop name="text_color" type="color" default="0x64748b" />
+  </api>
+  <view extends="lv_label" scrollable="false" clickable="false" x="$cell_x" y="$cell_y" width="$cell_width" height="13" text="$text" long_mode="dots" style_text_font="$font" style_text_color="$text_color" style_text_align="center" />
+</component>

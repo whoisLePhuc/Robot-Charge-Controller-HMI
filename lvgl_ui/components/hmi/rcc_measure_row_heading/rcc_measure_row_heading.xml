@@ -1,0 +1,9 @@
+<component>
+  <api>
+    <prop name="row_y" type="int" default="0" />
+    <prop name="text" type="string" default="VOUT" />
+    <prop name="bold" type="font" default="hmi_f12b" />
+    <prop name="color" type="color" default="0xfbbf24" />
+  </api>
+  <view extends="lv_label" scrollable="false" clickable="false" x="13" y="$row_y" width="46" height="13" text="$text" long_mode="dots" style_text_font="$bold" style_text_color="$color" style_text_align="left" />
+</component>

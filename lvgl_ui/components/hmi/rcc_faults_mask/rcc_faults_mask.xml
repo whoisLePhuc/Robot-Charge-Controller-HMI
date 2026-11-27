@@ -1,0 +1,16 @@
+<component>
+  <api>
+    <prop name="card_x" type="int" default="0" />
+    <prop name="card_y" type="int" default="96" />
+    <prop name="card_height" type="int" default="162" />
+    <prop name="list_title" type="string" default="FAULTS" />
+    <prop name="caption_font" type="font" default="hmi_f10" />
+    <prop name="body_font" type="font" default="hmi_f12" />
+  </api>
+  <view x="$card_x" y="$card_y" width="200" height="$card_height" clickable="false" scrollable="false" style_bg_color="0x111722" style_bg_opa="100%" style_radius="10" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_pad_all="-1" style_border_color="0x1e293b" style_border_opa="100%" extends="lv_obj">
+    <lv_label x="13" y="8" text="$list_title" style_text_font="$caption_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" style_text_letter_space="1" />
+    <lv_label x="81" y="8" text="0x0000" style_text_font="$caption_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="106" height="13" long_mode="dots" style_text_align="right" name="fault_mask_value" />
+    <lv_label x="13" y="24" text="None (0x0)" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="174" height="15" long_mode="dots" style_text_align="left" name="fault_mask_empty" />
+    <lv_obj x="0" y="23" width="200" height="{card_height - 26}" clickable="false" scrollable="false" style_bg_color="0x000000" style_bg_opa="0%" style_radius="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" name="fault_mask_viewport" />
+  </view>
+</component>

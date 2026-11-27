@@ -84,7 +84,7 @@ once with `lv_subject_create` (the `lv_subject_init_*` API is deprecated). The o
 Rules for a retained page:
 - Create objects in the same order as the old builder (z-order is part of the pixels). A region whose shape depends on
   the data (the Measure matrix cells) is a child container that is cleaned and refilled only when its small signature
-  changes (`have`, status bits); keeping every alternative as a hidden widget cost ~8 KB of the 64 KB heap.
+  changes (`have`, status bits); keeping every alternative as a hidden widget cost ~8 KB of the 128 KB heap.
 - Anything positioned from a label's width (chip, unit next to a value) is re-measured in the observer after
   `lv_label_set_text` (`hw_width_of`), never stored from an earlier text.
 - An observer callback only changes widgets: never delete `root`, never `lv_obj_clean(root)`, never navigate.
@@ -104,7 +104,7 @@ Rules for a retained page:
   (`lv_obj_clean`, build again). Never from an observer. Parts that change shape often but are small (the Overview stage strip,
   the Measure matrix) are a child container refilled when their own small key changes.
 - Optional, rarely shown widgets (the Overview start-block strip, driven by `ctx->bar` rather than a subject) can be created
-  and deleted in `update`: that costs less of the 64 KB heap than keeping them hidden.
+  and deleted in `update`: that costs less of the 128 KB heap than keeping them hidden.
 
 Per page: **Measure** binds everything (matrix cells refilled on `have`/bits). **Overview** binds hero, system rows and the
 three gauge cards, strip refilled on `stage`, whole page rebuilt when `stage >= 0` flips. **Faults** binds the summary; body
@@ -182,7 +182,8 @@ See `tools/sim/README.md`.
 
 ## LVGL Pro / XML
 
-LVGL 9.5+ removed the XML runtime, so LVGL Pro (Editor) output cannot be loaded at run time. If it is used,
-export it as C and place the result in a `ui_app/src/gen/` directory. Never hand-edit generated files; regenerate them. Bind the
-generated widgets through the same layers: colours and fonts from `hmi_theme`, text and state from
-`hmi_present`, navigation through `hmi_nav.h`, and data via the snapshot handed to the page.
+The firmware compiles generated component C directly from `lvgl_ui/components/hmi/*/*_gen.c`.
+Edit XML in LVGL Pro, export with Ctrl+B, then rebuild firmware. The C adapters bind named widgets to
+the existing model and callbacks. `sdkconfig.defaults` enables widget names and configures a 128 KiB
+LVGL heap. This exceeds the original 64 KiB restructuring constraint and requires board validation.
+See `lvgl_ui/HMI.md` for the editing workflow.

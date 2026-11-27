@@ -1,0 +1,26 @@
+<screen>
+  <view style_bg_color="0x090d14" style_bg_opa="100%" style_pad_all="0" style_border_width="0" scrollable="false">
+    <rcc_wifi_header heading="MSVN-Office" subtitle="Secured · Signal -61 dBm">
+      <rcc_wifi_header-back>
+        <lv_obj-screen_create_event screen="hmi_wifi_list" trigger="clicked" />
+      </rcc_wifi_header-back>
+    </rcc_wifi_header>
+    <rcc_wifi_pass count_text="6 / 63" eye_icon="hmi_icon_eye_14" shifted="false">
+      <rcc_wifi_pass-password_field>
+        <lv_obj x="12" y="14" width="6" height="6" clickable="false" style_radius="3" style_border_width="0" style_bg_opa="100%" style_bg_color="0xf8fafc" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+        <lv_obj x="23" y="14" width="6" height="6" clickable="false" style_radius="3" style_border_width="0" style_bg_opa="100%" style_bg_color="0xf8fafc" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+        <lv_obj x="34" y="14" width="6" height="6" clickable="false" style_radius="3" style_border_width="0" style_bg_opa="100%" style_bg_color="0xf8fafc" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+        <lv_obj x="45" y="14" width="6" height="6" clickable="false" style_radius="3" style_border_width="0" style_bg_opa="100%" style_bg_color="0xf8fafc" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+        <lv_obj x="56" y="14" width="6" height="6" clickable="false" style_radius="3" style_border_width="0" style_bg_opa="100%" style_bg_color="0xf8fafc" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+        <lv_obj x="67" y="14" width="6" height="6" clickable="false" style_radius="3" style_border_width="0" style_bg_opa="100%" style_bg_color="0xf8fafc" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+        <lv_obj x="78" y="9" width="2" height="16" clickable="false" style_radius="1" style_border_width="0" style_bg_opa="100%" style_bg_color="0x38bdf8" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" style_shadow_width="0" style_outline_width="0" />
+      </rcc_wifi_pass-password_field>
+      <rcc_wifi_pass-key_symbols>
+        <lv_obj-screen_create_event screen="hmi_wifi_sym" trigger="clicked" />
+      </rcc_wifi_pass-key_symbols>
+      <rcc_wifi_pass-key_go>
+        <lv_obj-screen_create_event screen="hmi_wifi_busy" trigger="clicked" />
+      </rcc_wifi_pass-key_go>
+    </rcc_wifi_pass>
+  </view>
+</screen>

@@ -1,0 +1,6 @@
+<component>
+  <view x="0" y="0" width="480" height="320" scrollable="false" clickable="false" style_pad_all="0" style_bg_color="0x090d14" style_bg_opa="100%" style_radius="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" extends="lv_obj">
+    <lv_obj x="0" y="0" width="480" height="320" scrollable="false" clickable="false" style_pad_all="0" style_bg_color="0x090d14" style_bg_opa="0%" style_radius="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" name="page_host" />
+    <lv_obj x="64" y="270" width="408" height="42" scrollable="false" clickable="false" style_pad_all="0" style_bg_color="0x090d14" style_bg_opa="0%" style_radius="0" style_border_width="0" style_outline_width="0" style_shadow_width="0" name="action_host" />
+  </view>
+</component>

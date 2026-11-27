@@ -1,0 +1,12 @@
+<component>
+  <api>
+    <prop name="caption_font" type="font" default="hmi_f10" />
+    <prop name="body_font" type="font" default="hmi_f12" />
+    <prop name="value_font" type="font" default="hmi_f12b" />
+  </api>
+  <view x="0" y="46" width="408" height="44" clickable="false" scrollable="false" style_bg_color="0x2b2309" style_bg_opa="100%" style_radius="10" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_pad_all="-1" style_border_color="0xfacc15" style_border_opa="100%" extends="lv_obj">
+    <lv_label x="13" y="8" text="PRIMARY · IOUT_OVERCURRENT" style_text_font="$value_font" style_text_color="0xfacc15" clickable="false" scrollable="false" width="300" height="13" long_mode="dots" style_text_align="left" name="fault_primary_name" />
+    <lv_label x="320" y="7" text="0x0402" style_text_font="$body_font" style_text_color="0x94a3b8" clickable="false" scrollable="false" width="75" height="15" long_mode="dots" style_text_align="right" name="fault_primary_id" />
+    <lv_label x="13" y="23" text="Action: check the load and the current limit" style_text_font="$caption_font" style_text_color="0xcbd5e1" clickable="false" scrollable="false" width="382" height="13" long_mode="dots" style_text_align="left" name="fault_primary_action" />
+  </view>
+</component>

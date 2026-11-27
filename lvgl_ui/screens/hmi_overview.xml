@@ -1,0 +1,86 @@
+<screen>
+  <view style_radius="0" style_border_width="0" style_bg_opa="100%" style_bg_color="0x090d14" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false">
+    <lv_obj x="0" y="0" width="480" height="320" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_obj">
+      <lv_obj x="64" y="34" width="408" height="230" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_obj_2">
+        <rcc_overview_hero name="ui_charging" state_text="CHARGING" sub_text="OPERATIONAL · SESSION #17" summary_x="186" card_height="74">
+          <rcc_overview_hero-steps>
+            <rcc_overview_step step_x="13" step_width="48" text="IDLE" />
+            <rcc_overview_connector line_x="64" line_width="24" />
+            <rcc_overview_step step_x="91" step_width="45" text="PRE" />
+            <rcc_overview_connector line_x="139" line_width="24" />
+            <rcc_overview_step step_x="166" step_width="59" text="RELAY" />
+            <rcc_overview_connector line_x="228" line_width="24" />
+            <rcc_overview_step step_x="255" step_width="61" text="VERIFY" />
+            <rcc_overview_connector line_x="319" line_width="24" />
+            <rcc_overview_step step_x="346" step_width="49" text="CHG" offset="1" text_color="0x38bdf8" dot_color="0x38bdf8" active_opa="255" />
+          </rcc_overview_hero-steps>
+        </rcc_overview_hero>
+        <rcc_overview_system name="ui_uart" card_y="80" card_height="150">
+          <rcc_overview_system-uart_hit>
+            <lv_obj-screen_create_event screen="hmi_device_link" trigger="clicked" />
+          </rcc_overview_system-uart_hit>
+          <rcc_overview_system-fault_hit>
+            <lv_obj-screen_create_event screen="hmi_faults" trigger="clicked" />
+          </rcc_overview_system-fault_hit>
+          <rcc_overview_system-session_hit>
+            <lv_obj-screen_create_event screen="hmi_session" trigger="clicked" />
+          </rcc_overview_system-session_hit>
+        </rcc_overview_system>
+        <rcc_telemetry_card name="ui_volt">
+          <lv_obj-screen_create_event screen="hmi_measure" trigger="clicked" />
+        </rcc_telemetry_card>
+        <rcc_telemetry_card name="ui_curr" card_x="247" card_y="80" card_height="150" title="CURR." unit="A" accent="0xfb923c" reading="8.0" summary="80%/10A" fill_width="47" unit_x="47" value_color="0xf8fafc" hide_unit="false" hide_fill="false" card_icon="hmi_icon_wave_13">
+          <lv_obj-screen_create_event screen="hmi_measure" trigger="clicked" />
+        </rcc_telemetry_card>
+        <rcc_telemetry_card name="ui_power" card_x="331" card_y="80" card_height="150" title="POWER" unit="W" accent="0x38bdf8" reading="386" summary="64%/600W" fill_width="37" unit_x="53" value_color="0xf8fafc" hide_unit="false" hide_fill="false" card_icon="hmi_icon_power_13">
+          <lv_obj-screen_create_event screen="hmi_measure" trigger="clicked" />
+        </rcc_telemetry_card>
+      </lv_obj>
+    </lv_obj>
+    <lv_obj x="0" y="0" width="56" height="320" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="100%" style_bg_color="0x06090e" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_obj_26" />
+    <lv_obj x="55" y="0" width="1" height="320" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="100%" style_bg_color="0x1e293b" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_obj_27" />
+    <lv_button x="4" y="4" width="47" height="60" clickable="true" style_radius="10" style_border_width="0" style_bg_opa="100%" style_bg_color="0x111722" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_overview">
+      <lv_image x="14" y="12" width="19" height="19" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" src="hmi_icon_home_19" style_image_recolor="0x38bdf8" style_image_recolor_opa="100%" name="ui_home_19" />
+      <lv_label x="0" y="35" width="48" height="13" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_text_font="hmi_f10" style_text_color="0xf8fafc" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" text="Overview" long_mode="wrap" style_text_align="left" style_text_letter_space="0" name="ui_overview_2" />
+    </lv_button>
+    <lv_obj x="0" y="18" width="3" height="32" clickable="false" style_radius="2" style_border_width="0" style_bg_opa="100%" style_bg_color="0x38bdf8" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_obj_28" />
+    <lv_button x="4" y="67" width="47" height="60" clickable="true" style_radius="10" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_measure">
+      <lv_image x="14" y="12" width="19" height="19" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" src="hmi_icon_gauge_19" style_image_recolor="0x64748b" style_image_recolor_opa="100%" name="ui_gauge_19" />
+      <lv_label x="1" y="35" width="44" height="13" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_text_font="hmi_f10" style_text_color="0x64748b" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" text="Measure" long_mode="wrap" style_text_align="left" style_text_letter_space="0" name="ui_measure_2" />
+      <lv_obj-screen_create_event screen="hmi_measure" trigger="clicked" />
+    </lv_button>
+    <lv_button x="4" y="130" width="47" height="60" clickable="true" style_radius="10" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_faults">
+      <lv_image x="14" y="12" width="19" height="19" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" src="hmi_icon_warn_19" style_image_recolor="0x64748b" style_image_recolor_opa="100%" name="ui_warn_19" />
+      <lv_label x="8" y="35" width="31" height="13" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_text_font="hmi_f10" style_text_color="0x64748b" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" text="Faults" long_mode="wrap" style_text_align="left" style_text_letter_space="0" name="ui_faults_2" />
+      <lv_obj-screen_create_event screen="hmi_faults" trigger="clicked" />
+    </lv_button>
+    <lv_button x="4" y="193" width="47" height="60" clickable="true" style_radius="10" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_session">
+      <lv_image x="14" y="12" width="19" height="19" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" src="hmi_icon_list_19" style_image_recolor="0x64748b" style_image_recolor_opa="100%" name="ui_list_19" />
+      <lv_label x="4" y="35" width="38" height="13" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_text_font="hmi_f10" style_text_color="0x64748b" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" text="Session" long_mode="wrap" style_text_align="left" style_text_letter_space="0" name="ui_session_2" />
+      <lv_obj-screen_create_event screen="hmi_session" trigger="clicked" />
+    </lv_button>
+    <lv_button x="4" y="256" width="47" height="60" clickable="true" style_radius="10" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_device">
+      <lv_image x="14" y="12" width="19" height="19" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" src="hmi_icon_chip_19" style_image_recolor="0x64748b" style_image_recolor_opa="100%" name="ui_chip_19" />
+      <lv_label x="6" y="35" width="35" height="13" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_text_font="hmi_f10" style_text_color="0x64748b" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" text="Device" long_mode="wrap" style_text_align="left" style_text_letter_space="0" name="ui_device_2" />
+      <lv_obj-screen_create_event screen="hmi_device" trigger="clicked" />
+    </lv_button>
+    <lv_button x="64" y="4" width="99" height="24" clickable="true" style_radius="6" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_node">
+      <lv_label x="0" y="5" width="41" height="13" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_text_font="hmi_f12b" style_text_color="0x94a3b8" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" text="NODE" long_mode="wrap" style_text_align="left" style_text_letter_space="1" name="ui_node_2" />
+      <lv_label x="49" y="5" width="50" height="13" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_text_font="hmi_f12b" style_text_color="0xcbd5e1" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" text="RCC-01" long_mode="wrap" style_text_align="left" style_text_letter_space="1" name="ui_rcc_01" />
+    </lv_button>
+    <lv_button x="239" y="5" width="122" height="23" clickable="true" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="0x111722" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" name="ui_online_0_4_s">
+      <lv_obj x="11" y="8" width="7" height="7" clickable="false" style_radius="4" style_border_width="0" style_bg_opa="100%" style_bg_color="0x22c55e" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_obj_29" />
+      <lv_label x="24" y="5" width="87" height="13" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_text_font="hmi_f12b" style_text_color="0x22c55e" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" text="ONLINE · 0.4 s" long_mode="wrap" style_text_align="left" style_text_letter_space="0" name="ui_online_0_4_s_2" />
+    </lv_button>
+    <lv_button x="438" y="4" width="34" height="24" clickable="true" style_radius="8" style_border_width="1" style_bg_opa="100%" style_bg_color="0x111722" style_border_color="0x1e293b" style_pad_top="-1" style_pad_bottom="-1" style_pad_left="-1" style_pad_right="-1" scrollable="false" name="ui_button">
+      <lv_image x="9" y="5" width="15" height="15" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" src="hmi_icon_checkc_15" style_image_recolor="0x22c55e" style_image_recolor_opa="100%" name="ui_checkc_15" />
+    </lv_button>
+    <lv_obj x="64" y="270" width="408" height="42" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_obj_30">
+      <lv_button x="0" y="0" width="408" height="42" clickable="true" style_radius="10" style_border_width="1" style_bg_opa="100%" style_bg_color="0xdc2626" style_border_color="0xffffff" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" name="ui_stop">
+        <lv_label x="191" y="12" width="49" height="17" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_text_font="hmi_f16b" style_text_color="0xffffff" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" text="STOP" long_mode="wrap" style_text_align="left" style_text_letter_space="1" name="ui_stop_2" />
+        <lv_image x="167" y="13" width="16" height="16" clickable="false" style_radius="0" style_border_width="0" style_bg_opa="0%" style_pad_top="0" style_pad_bottom="0" style_pad_left="0" style_pad_right="0" scrollable="false" src="hmi_icon_stop_16" style_image_recolor="0xffffff" style_image_recolor_opa="100%" name="ui_stop_16" />
+        <lv_obj-screen_create_event screen="hmi_command_stopping" trigger="clicked" />
+      </lv_button>
+    </lv_obj>
+  </view>
+</screen>

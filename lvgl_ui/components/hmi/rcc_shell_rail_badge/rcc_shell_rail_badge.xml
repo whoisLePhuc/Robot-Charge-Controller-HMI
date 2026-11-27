@@ -1,0 +1,3 @@
+<component>
+  <view x="31" y="8" width="8" height="8" scrollable="false" clickable="false" style_pad_all="0" style_bg_color="0xfacc15" style_bg_opa="100%" style_radius="4" style_border_width="0" style_outline_width="2" style_shadow_width="0" style_outline_color="0x06090e" extends="lv_obj" />
+</component>

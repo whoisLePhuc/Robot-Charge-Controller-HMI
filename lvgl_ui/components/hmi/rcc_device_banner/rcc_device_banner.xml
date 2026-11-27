@@ -1,0 +1,11 @@
+<component>
+  <api>
+    <prop name="caption_font" type="font" default="hmi_f10" />
+    <prop name="warning_icon" type="image" default="hmi_icon_warn_13" />
+  </api>
+  <view x="0" y="0" width="408" height="24" clickable="false" scrollable="false" style_bg_color="0x2b2309" style_bg_opa="100%" style_radius="8" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_pad_all="-1" style_border_color="0xfacc15" style_border_opa="100%" extends="lv_obj">
+    <lv_image x="11" y="5" src="$warning_icon" style_image_recolor="0xfacc15" style_image_recolor_opa="100%" clickable="false" scrollable="false" name="device_banner_icon" />
+    <lv_label x="32" y="5" text="BENCH IMAGE — NOT A PRODUCT BUILD" style_text_font="$caption_font" style_text_color="0xfacc15" clickable="false" scrollable="false" width="250" height="13" long_mode="dots" style_text_align="left" name="device_banner_title" />
+    <lv_label x="280" y="5" text="" style_text_font="$caption_font" style_text_color="0xcbd5e1" clickable="false" scrollable="false" width="115" height="13" long_mode="dots" style_text_align="right" name="device_banner_status" />
+  </view>
+</component>

@@ -1,0 +1,17 @@
+<component>
+  <api>
+    <prop name="title_font" type="font" default="hmi_f16b" />
+    <prop name="body_font" type="font" default="hmi_f12" />
+    <prop name="warning_font" type="font" default="hmi_f12b" />
+    <prop name="progress_font" type="font" default="hmi_f14b" />
+  </api>
+  <view x="30" y="50" width="420" height="220" scrollable="false" clickable="false" style_pad_all="0" style_bg_color="0x070d19" style_bg_opa="100%" style_radius="14" style_border_width="2" style_outline_width="0" style_shadow_width="0" style_border_color="0x0284c7" extends="lv_obj">
+    <lv_label x="20" y="22" text="FIRMWARE UPDATE IN PROGRESS" scrollable="false" clickable="false" style_text_font="$title_font" style_text_color="0x38bdf8" style_text_align="center" style_text_letter_space="0" width="380" height="17" long_mode="dots" />
+    <lv_label x="20" y="50" text="Target slot: writing to flash partition" scrollable="false" clickable="false" style_text_font="$body_font" style_text_color="0x94a3b8" style_text_align="center" style_text_letter_space="0" width="380" height="15" long_mode="dots" />
+    <lv_label x="20" y="77" text="DO NOT DISCONNECT POWER" scrollable="false" clickable="false" style_text_font="$warning_font" style_text_color="0xf59e0b" style_text_align="center" style_text_letter_space="0" width="380" height="13" long_mode="dots" />
+    <lv_obj x="30" y="115" width="360" height="20" scrollable="false" clickable="false" style_pad_all="0" style_bg_color="0x1e293b" style_bg_opa="100%" style_radius="8" style_border_width="0" style_outline_width="0" style_shadow_width="0" name="ota_track">
+      <lv_obj x="0" y="0" width="4" height="20" scrollable="false" clickable="false" style_pad_all="0" style_bg_color="0x38bdf8" style_bg_opa="100%" style_radius="8" style_border_width="0" style_outline_width="0" style_shadow_width="0" name="ota_fill" />
+    </lv_obj>
+    <lv_label x="20" y="152" text="Writing: 0%" scrollable="false" clickable="false" style_text_font="$progress_font" style_text_color="0xffffff" style_text_align="center" style_text_letter_space="0" width="380" height="16" long_mode="dots" name="ota_status" />
+  </view>
+</component>

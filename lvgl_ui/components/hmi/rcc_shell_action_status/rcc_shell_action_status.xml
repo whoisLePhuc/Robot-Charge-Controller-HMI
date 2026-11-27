@@ -1,0 +1,14 @@
+<component>
+  <api>
+    <prop name="message_width" type="int" default="256" />
+    <prop name="title" type="string" default="CHARGING" />
+    <prop name="subtitle" type="string" default="Session #17" />
+    <prop name="title_color" type="color" default="0xf8fafc" />
+    <prop name="title_font" type="font" default="hmi_f12b" />
+    <prop name="body_font" type="font" default="hmi_f10" />
+  </api>
+  <view x="0" y="0" width="$message_width" height="42" scrollable="false" clickable="false" style_pad_all="-1" style_bg_color="0x111722" style_bg_opa="100%" style_radius="10" style_border_width="1" style_outline_width="0" style_shadow_width="0" style_border_color="0x1e293b" extends="lv_obj">
+    <lv_label x="13" y="8" text="$title" scrollable="false" clickable="false" style_text_font="$title_font" style_text_color="$title_color" style_text_align="left" style_text_letter_space="0" width="{message_width - 26}" height="13" long_mode="dots" />
+    <lv_label x="13" y="23" text="$subtitle" scrollable="false" clickable="false" style_text_font="$body_font" style_text_color="0x94a3b8" style_text_align="left" style_text_letter_space="0" width="{message_width - 26}" height="13" long_mode="dots" />
+  </view>
+</component>

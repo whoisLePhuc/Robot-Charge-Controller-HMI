@@ -1,0 +1,14 @@
+<component>
+  <api>
+    <prop name="badge_x" type="int" default="0" />
+    <prop name="badge_y" type="int" default="0" />
+    <prop name="mark_x" type="int" default="4" />
+    <prop name="mark_y" type="int" default="3" />
+    <prop name="mark" type="image" default="hmi_icon_check_11" />
+    <prop name="mark_color" type="color" default="0x22c55e" />
+    <prop name="badge_color" type="color" default="0x0a2617" />
+  </api>
+  <view extends="lv_obj" scrollable="false" clickable="false" x="$badge_x" y="$badge_y" width="18" height="16" style_bg_opa="100%" style_border_width="0" style_outline_width="0" style_shadow_width="0" style_pad_all="0" style_bg_color="$badge_color" style_radius="4">
+    <lv_image x="$mark_x" y="$mark_y" src="$mark" clickable="false" scrollable="false" style_image_recolor="$mark_color" style_image_recolor_opa="100%" />
+  </view>
+</component>
