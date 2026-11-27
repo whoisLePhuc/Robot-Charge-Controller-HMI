@@ -3,7 +3,7 @@
 Every module is an ESP-IDF component under `components/<layer>/<module>/`, with a public `include/` and a
 private `src/`. `main/app.c` is the composition root: the only code that sees every component and the only
 place where modules are started and connected to each other. Design record and rationale:
-`../../docs/firmware-restructure-design.md`.
+`../../docs/09-decisions/0001-esp-idf-component-layout.md`.
 
 ```
 main/            main.c -> app_run() in app.c: boot check, watchdog, services, board, link + UI, alive loop

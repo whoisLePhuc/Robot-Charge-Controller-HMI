@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """RCC operational-UART peer for testing the real HMI. No physical outputs.
 
-Wire contract: docs/controller-interface.md, controller rcc_router_query.c,
+Wire contract: docs/04-controller-protocol/commands-and-payloads.md, controller rcc_router_query.c,
 rcc_event_log.c and the HMI rcc_codec.c. Python 3.9+, pyserial for serial mode.
 The model is a UI/protocol test double, not a replacement for RCC safety logic.
 """

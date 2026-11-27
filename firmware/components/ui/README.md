@@ -186,4 +186,4 @@ The firmware compiles generated component C directly from `lvgl_ui/components/hm
 Edit XML in LVGL Pro, export with Ctrl+B, then rebuild firmware. The C adapters bind named widgets to
 the existing model and callbacks. `sdkconfig.defaults` enables widget names and configures a 128 KiB
 LVGL heap. This exceeds the original 64 KiB restructuring constraint and requires board validation.
-See `lvgl_ui/HMI.md` for the editing workflow.
+See `lvgl_ui/HMI.md` (a pointer) and `docs/05-ui/lvgl-pro-workflow.md` for the editing workflow.

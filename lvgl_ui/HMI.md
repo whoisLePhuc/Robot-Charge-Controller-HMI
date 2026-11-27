@@ -1,22 +1,8 @@
-# Robot Charge Controller HMI trong LVGL Pro
+# Robot Charge Controller HMI in LVGL Pro
 
-Mở thư mục `lvgl_ui` trong LVGL Pro Editor. Chọn một file trong `screens/` để xem và chỉnh ở độ phân giải 480 × 320. Màn hình được dựng từ cây widget của simulator firmware. Bạn có thể chọn riêng từng vùng, nút, nhãn hoặc icon để chỉnh trong Design mode hoặc XML.
+The full workflow is now in the project documentation:
+[docs/05-ui/lvgl-pro-workflow.md](../docs/05-ui/lvgl-pro-workflow.md).
 
-| Nội dung | File XML |
-| --- | --- |
-| Năm trang chính | `hmi_overview`, `hmi_measure`, `hmi_faults`, `hmi_session`, `hmi_device` |
-| Trạng thái HMI | Hậu tố `_idle`, `_precheck`, `_inhibited`, `_fault`, `_offline`, `_remote`; các trang không có hậu tố dùng dữ liệu Charging |
-| Tab Device | `hmi_device_link`, `hmi_device_settings` |
-| Xác nhận và kết quả lệnh | `hmi_confirm`, `hmi_command_*` |
-| Wi-Fi và bàn phím | `hmi_wifi_*` |
-| Tiến độ OTA | `hmi_ota_*` |
+In short: open this `lvgl_ui` folder in the LVGL Pro Editor, edit the layout components under `components/hmi/`, press Ctrl+B to export C, and build the firmware from an ESP-IDF shell with `idf.py build`. Keep the existing widget names: the firmware finds them by name. Only `components/hmi/*/*_gen.c` is compiled into the firmware; `screens/` holds previews with sample data.
 
-Trong chế độ Preview, thanh điều hướng chuyển giữa năm trang. Có thể chạy thử luồng START từ `hmi_overview_idle` và luồng Wi-Fi từ `hmi_device_settings`. Các trạng thái kết quả khác mở trực tiếp từ danh sách XML.
-
-## Chỉnh giao diện firmware
-
-Các component trong `components/hmi/` là bố cục được firmware sử dụng. Các nhóm `rcc_overview_*`, `rcc_measure_*`, `rcc_faults_*`, `rcc_session_*`, `rcc_device_*`, `rcc_wifi_*` và `rcc_shell_*` tương ứng với từng phần giao diện. Card điện áp, dòng và công suất dùng `rcc_telemetry_card`.
-
-Mở component cần chỉnh trong LVGL Pro, chỉnh bố cục rồi bấm Ctrl+B để xuất lại mã C. Build firmware bằng `idf.py build`. Giữ tên các widget đã có để firmware cập nhật dữ liệu và gắn callback. Các màn hình theo trạng thái trong `screens/` cung cấp dữ liệu mẫu để xem trước.
-
-Firmware sử dụng `CONFIG_LV_USE_OBJ_NAME=y` và `CONFIG_LV_MEM_SIZE=131072`. Nếu đã có `sdkconfig` từ trước, cập nhật hai cấu hình này bằng `idf.py menuconfig` trước khi build.
+The firmware needs `CONFIG_LV_USE_OBJ_NAME=y` and `CONFIG_LV_MEM_SIZE=131072`. If a `firmware/sdkconfig` already exists from before, update both through `idf.py menuconfig` or regenerate it from `sdkconfig.defaults`.

@@ -1,10 +1,10 @@
 # Robot Charge Controller HMI
 
-Project LVGL Pro cho màn hình 480 × 320.
+LVGL Pro project for the 480 × 320 display.
 
-- Mở `screens/hmi_overview.xml` để xem Overview.
-- Chỉnh các component trong `components/hmi/`.
-- Bấm Ctrl+B để xuất C, sau đó build firmware bằng ESP-IDF.
-- Quy trình chi tiết và cấu hình firmware nằm trong [HMI.md](HMI.md).
+- Open `screens/hmi_overview.xml` to see the Overview.
+- Edit the components in `components/hmi/`.
+- Press Ctrl+B to export C, then build the firmware with ESP-IDF.
+- Full workflow: [docs/05-ui/lvgl-pro-workflow.md](../docs/05-ui/lvgl-pro-workflow.md) (short version in [HMI.md](HMI.md)).
 
-`preview-build/`, `preview-bin/`, `build/` và `.cache.json` được tạo lại khi dùng Editor và được bỏ qua trong Git.
+`preview-build/`, `preview-bin/`, `build/` and `.cache.json` are recreated by the Editor and ignored by Git.

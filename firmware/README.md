@@ -3,7 +3,7 @@
 Firmware for the Elecrow DLE06235B / ES3C35P ESP32-S3 display (480x320 LVGL HMI for the Robot Charge Controller).
 Built with **ESP-IDF 6.1.0** and `idf.py`; PlatformIO is not used.
 
-Status: the restructure in `../docs/firmware-restructure-design.md` is done; not yet run on a board. Behaviour
+Status: the restructure in `../docs/09-decisions/0001-esp-idf-component-layout.md` is done; not yet run on a board. Behaviour
 and UI are those of the former PlatformIO project (`firmware/src`, removed; see git history before the rename).
 
 ## Layout
