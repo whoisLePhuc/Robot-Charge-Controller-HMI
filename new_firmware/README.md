@@ -3,8 +3,19 @@
 Firmware for the Elecrow DLE06235B / ES3C35P ESP32-S3 display (480x320 LVGL HMI for the Robot Charge Controller).
 Built with **ESP-IDF 6.1.0** and `idf.py`; PlatformIO is not used.
 
-Status: phase 1 of `../docs/firmware-restructure-design.md`. The sources under `main/` are a verbatim copy of
-`../firmware/src/` (one component). The layered component structure is phase 2.
+Status: phases 1 and 2 of `../docs/firmware-restructure-design.md` are done; not yet run on a board. Behaviour
+and UI are those of `../firmware/` (PlatformIO), which this project replaces.
+
+## Layout
+
+```
+main/          main.c -> app.c: the composition root (start order, wiring between modules)
+components/    common / bsp / protocol / services / ui, one ESP-IDF component per module
+test/host/     host unit tests (rcc_codec, hmi_present, controller_sim.py)
+tools/         sim/ (PC simulator, pixel + morph regression), controller_sim.py, gen_icons.py
+```
+
+Layers, dependency rules and "where do I change X": `components/README.md`. UI internals: `components/ui/README.md`.
 
 ## Build, flash, monitor
 
@@ -23,7 +34,7 @@ Configuration:
 |---|---|
 | `sdkconfig.defaults` | Board settings (16 MB QIO flash, 8 MB octal PSRAM, USB-Serial-JTAG console, rollback). `sdkconfig` is generated from it and is not tracked |
 | `partitions.csv` | Dual OTA (`ota_0`/`ota_1` 3.5 MB each), NVS, 8 MB `storage` |
-| `dependencies.lock` | Pins lvgl 9.6.0~1, esp_lvgl_port 2.9.0, esp_lcd_st77922 2.1.1 (`main/idf_component.yml`) |
+| `dependencies.lock` | Pins lvgl 9.6.0~1, esp_lvgl_port 2.9.0, esp_lcd_st77922 2.1.1 (each component's `idf_component.yml`) |
 
 ## Checks
 
@@ -35,4 +46,4 @@ python -m unittest discover -s test/host -p test_controller_sim.py -v
 ```
 
 The simulator compiles LVGL from `managed_components/`, so run `idf.py build` (or `idf.py reconfigure`) once first.
-UI layering rules: `main/ui/README.md`.
+UI layering rules: `components/ui/README.md`.

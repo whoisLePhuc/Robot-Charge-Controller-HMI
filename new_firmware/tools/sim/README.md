@@ -1,6 +1,6 @@
 # HMI simulator (PC render of the real UI code)
 
-Compiles `main/hmi_ui.c`, `main/ui/` (theme, widgets, pages, shell, Wi-Fi flow, presentation logic), the generated fonts/icons and LVGL 9.6 (from `managed_components`)
+Compiles the UI components `components/ui/{ui_app,ui_core,ui_present,ui_assets}` (shell, pages, Wi-Fi flow, theme, widgets, presentation logic, generated fonts/icons) and LVGL 9.6 (from `managed_components`)
 for the PC, feeds the UI simulated controller snapshots (`sim_scenarios.c`) and writes PNGs.
 No ESP-IDF needed. Layout, fonts, colours: compare with `docs/mockups/hmi-ui-landscape.html`.
 
@@ -24,7 +24,7 @@ event, the ring drops its oldest when full). Extra scenario MANYFAULT (long faul
 `check_morph.py` (run by `check.sh`) covers all four retained pages (Overview, Measure, Faults, Session): every ordered scenario
 pair, every scenario -> `+aged` / `+evt`, and a scroll-survival check on Faults and Session (scroll, age live, compare with a fresh
 render of the aged snapshot scrolled the same way). It prints `MORPH DIFF: none (...)` when the in-place update equals a fresh build.
-Layering and how to add a page: `main/ui/README.md`.
+Layering and how to add a page: `components/ui/README.md`.
 
 Scenarios: CHARGING IDLE PRECHECK INHIBITED FAULT OFFLINE REMOTE. Pages 0-4 = Overview,
 Measure, Faults, Session, Device. Command overlays: `cmd=stopping|stopped|timeout|queuefull|noauth|accepted`. Wi-Fi flow: `click=wifi=list|scroll|taps|info|open|pass|sym|show|shift|busy|done|fail|noap|noip`.
@@ -33,4 +33,4 @@ Edit the numbers in `sim_scenarios.c` to try other data. `lv_conf.h` mirrors the
 
 Regenerate fonts / icons (needs node `lv_font_conv`, python `cairosvg pillow`):
 `new_firmware/tools/gen_icons.py` (icons from the mockup SVGs) and `lv_font_conv` commands in
-`new_firmware/main/hmi_fonts/README.md`.
+`new_firmware/components/ui/ui_assets/src/fonts/README.md`.
